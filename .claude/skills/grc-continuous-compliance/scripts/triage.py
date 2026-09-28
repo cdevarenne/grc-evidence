@@ -166,15 +166,21 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--variant", choices=VARIANTS, default="scoped")
     parser.add_argument("--abstain-on", choices=ABSTAIN, default="low", help="confidence levels treated as `none`")
+    parser.add_argument(
+        "--batch", action="store_true", help="send as one Message Batch: half price, results in minutes, not seconds"
+    )
     args = parser.parse_args()
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
     scoped = args.variant == "scoped"
     gaps = scan_digest(mapping, targets=scoped)["gaps"]
     bundle_doc = bundle_digest(load_bundle(args.knowledge), scoped=scoped)
     llm = LLM.from_env(args.out, default_model=TRIAGE_MODEL)
-    proposals = apply_cutoff(triage(llm, bundle_doc, gaps, variant=args.variant), ABSTAIN[args.abstain_on])
+    proposals = apply_cutoff(
+        triage(llm, bundle_doc, gaps, batch=args.batch, variant=args.variant), ABSTAIN[args.abstain_on]
+    )
     (args.out / "proposals.json").write_text(json.dumps(proposals, indent=2) + "\n", encoding="utf-8")
-    print(f"triage ({llm.model}, {args.variant}, abstain on {args.abstain_on}): {len(proposals)} proposal(s) in "
+    mode = "batch" if args.batch else "live"
+    print(f"triage ({llm.model}, {args.variant}, abstain on {args.abstain_on}, {mode}): {len(proposals)} proposal(s) in "
           f"{args.out / 'proposals.json'}; nothing applied to knowledge/")
 
 

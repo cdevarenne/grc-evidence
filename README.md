@@ -56,6 +56,8 @@ An optional Claude API step adds words and proposals on top, never statuses:
   Default: Sonnet 5, each control's framework scope and each gap's files in the
   input, and `low` confidence proposals turned into `none` (the model's guess is
   kept in `cutoff_from`), chosen by the measurement below.
+  `make triage TRIAGE_ARGS=--batch` sends it as one Message Batch instead:
+  half price, results in minutes rather than seconds.
 - **`make eval-triage`** scores triage on 65 labeled gaps (accuracy, and
   precision and recall of `none`) through the Message Batches API. Cases are
   split into `tune` (seen while diagnosing a problem), `holdout`, and

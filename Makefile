@@ -25,7 +25,7 @@ narrate:
 	$(PY) $(SCRIPTS)/render_report.py --knowledge knowledge --out out
 
 triage:
-	$(PY_LLM) $(SCRIPTS)/triage.py --knowledge knowledge --out out
+	$(PY_LLM) $(SCRIPTS)/triage.py --knowledge knowledge --out out $(TRIAGE_ARGS)
 
 eval-triage:
 	$(PY_LLM) $(SCRIPTS)/eval_triage.py --knowledge knowledge --out out $(EVAL_ARGS)

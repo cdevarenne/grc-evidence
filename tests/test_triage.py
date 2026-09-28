@@ -106,3 +106,33 @@ def test_unknown_variant_is_refused() -> None:
 
     with pytest.raises(ValueError, match="variant"):
         request(DIGEST, _gaps(), "tuned")
+
+
+def test_main_batch_flag_sends_one_message_batch(tmp_path, monkeypatch) -> None:
+    import sys
+
+    import triage as triage_module
+
+    (tmp_path / "mapping.json").write_text(json.dumps(MAPPING))
+    ok = {"proposal": "none", "rationale": "r", "confidence": "high"}
+    calls: list[str] = []
+
+    class Recorder(StubLLM):
+        model = "stub"
+
+        def complete(self, request):  # type: ignore[no-untyped-def]
+            calls.append("complete")
+            gaps = json.loads(request.user.split("\n", 1)[1])
+            return {"proposals": [ok | {"rule": g["rule"]} for g in gaps]}
+
+        def complete_batch(self, requests):  # type: ignore[no-untyped-def]
+            calls.append("batch")
+            return {cid: self.complete(r) for cid, r in requests.items()}
+
+    monkeypatch.setattr(triage_module.LLM, "from_env", staticmethod(lambda out, default_model: Recorder({})))
+    for flag, expected in (([], "complete"), (["--batch"], "batch")):
+        calls.clear()
+        monkeypatch.setattr(sys, "argv", ["triage", "--knowledge", str(FIXTURES / "bundle"), "--out", str(tmp_path), *flag])
+        triage_module.main()
+        assert calls[0] == expected
+    assert len(json.loads((tmp_path / "proposals.json").read_text())) == 2
