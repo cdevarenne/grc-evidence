@@ -21,6 +21,9 @@ MODES = ("replay", "record", "anthropic", "claude-cli")
 DEFAULT_MODEL = "claude-haiku-4-5"
 # USD per million tokens (input, output), from the official pricing page; verify before relying on totals.
 PRICES = {"claude-haiku-4-5": (1.00, 5.00), "claude-sonnet-5": (2.00, 10.00)}
+# Per-model request settings. Sonnet 5 thinks by default and thinking tokens count against max_tokens;
+# turning it off keeps the bounds, and the comparison with Haiku 4.5 (no thinking), like for like.
+MODEL_PARAMS: dict[str, Json] = {"claude-sonnet-5": {"thinking": {"type": "disabled"}}}
 CACHE_WRITE, CACHE_READ, BATCH = 1.25, 0.10, 0.50  # multipliers on the input price / on the whole call
 CHARS_PER_TOKEN = 3  # conservative: overestimates input tokens for the budget guard
 CUSTOM_ID = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")  # Message Batches API rule for custom_id
@@ -171,6 +174,7 @@ class LLM:
             "system": [{"type": "text", "text": request.system, "cache_control": {"type": "ephemeral"}}],
             "messages": [{"role": "user", "content": request.user}],
             "output_config": {"format": {"type": "json_schema", "schema": request.schema}},
+            **MODEL_PARAMS.get(self.model, {}),
         }
 
     def _client(self) -> Any:

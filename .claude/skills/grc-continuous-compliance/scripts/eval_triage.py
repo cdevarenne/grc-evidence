@@ -21,6 +21,10 @@ from triage import VARIANTS, chunk_requests, parse
 
 Json = dict[str, Any]
 SPLITS = ("tune", "holdout")
+AI_PREFIXES = ("iso42001:", "eu-ai-act:")
+# Confidence cutoffs (issue #32): treat proposals at these confidence levels as `none`. The cutoff is
+# selected on `tune` and only reported on `holdout`, so the holdout number stays honest.
+CUTOFFS = {"as-is": (), "low->none": ("low",), "low+medium->none": ("low", "medium")}
 
 
 def load_cases(path: Path) -> list[Json]:
@@ -37,6 +41,23 @@ def gap(case: Json) -> Json:
     }
 
 
+def _accuracy(pairs: list[tuple[Json, Json]]) -> float | None:
+    return round(sum(p["proposal"] == c["expected"] for c, p in pairs) / len(pairs), 3) if pairs else None
+
+
+def apply_cutoff(proposals: list[Json], abstain_on: tuple[str, ...]) -> list[Json]:
+    """Proposals whose confidence is in `abstain_on` become `none`; `none` and `invalid` stay as they are."""
+    return [
+        p | {"proposal": "none"} if p["proposal"] not in ("none", "invalid") and p.get("confidence") in abstain_on else p
+        for p in proposals
+    ]
+
+
+def select_cutoff(tune_scores: dict[str, Json]) -> str:
+    """Best tune accuracy; on a tie, the cutoff that abstains least (CUTOFFS order)."""
+    return max(CUTOFFS, key=lambda name: (tune_scores[name]["accuracy"], -list(CUTOFFS).index(name)))
+
+
 def score(cases: list[Json], proposals: list[Json]) -> Json:
     """Metrics over paired (case, proposal). `none` precision/recall measures abstention quality."""
     pairs = list(zip(cases, proposals, strict=True))
@@ -51,6 +72,7 @@ def score(cases: list[Json], proposals: list[Json]) -> Json:
         "none_precision": round(true_none / len(said_none), 3) if said_none else None,
         "none_recall": round(true_none / len(is_none), 3) if is_none else None,
         "invalid_rate": round(sum(p["proposal"] == "invalid" for _, p in pairs) / n, 3) if n else 0.0,
+        "ai_accuracy": _accuracy([(c, p) for c, p in pairs if c["expected"].startswith(AI_PREFIXES)]),
         "misses": [
             {"rule": c["rule"], "expected": c["expected"], "got": p["proposal"]}
             for c, p in pairs
@@ -59,8 +81,12 @@ def score(cases: list[Json], proposals: list[Json]) -> Json:
     }
 
 
-def evaluate(llm: LLM, bundle: Bundle, cases: list[Json], variants: list[str]) -> dict[str, dict[str, Json]]:
-    """{variant: {split: score}}. Every (variant, split) is chunked on its own, then all go in one batch."""
+def evaluate(llm: LLM, bundle: Bundle, cases: list[Json], variants: list[str]) -> dict[str, Json]:
+    """{variant: {"selected_cutoff", split: {"cutoffs": {name: score}, "answers": [...]}}}.
+
+    Every (variant, split) is chunked on its own, then all go in one batch. Each cutoff is scored on
+    each split; the cutoff is selected on `tune` alone.
+    """
     groups: dict[tuple[str, str], tuple[list[Json], dict[str, Any], set[str]]] = {}
     requests: dict[str, Any] = {}
     for variant in variants:
@@ -71,10 +97,19 @@ def evaluate(llm: LLM, bundle: Bundle, cases: list[Json], variants: list[str]) -
             groups[variant, split] = (split_cases, chunks, set(bundle_doc))
             requests |= {f"{variant}-{split}-{cid}": req for cid, (req, _) in chunks.items()}
     outputs = llm.complete_batch(requests)
-    results: dict[str, dict[str, Json]] = {v: {} for v in variants}
+    results: dict[str, Json] = {v: {} for v in variants}
     for (variant, split), (split_cases, chunks, keys) in groups.items():
         mine = {cid: outputs[f"{variant}-{split}-{cid}"] for cid in chunks}
-        results[variant][split] = score(split_cases, parse(mine, chunks, keys))
+        proposals = parse(mine, chunks, keys)
+        results[variant][split] = {
+            "cutoffs": {name: score(split_cases, apply_cutoff(proposals, on)) for name, on in CUTOFFS.items()},
+            "answers": [
+                {"rule": c["rule"], "expected": c["expected"], "proposal": p["proposal"], "confidence": p.get("confidence")}
+                for c, p in zip(split_cases, proposals, strict=True)
+            ],
+        }
+    for variant in variants:
+        results[variant]["selected_cutoff"] = select_cutoff(results[variant]["tune"]["cutoffs"])
     return results
 
 
@@ -102,16 +137,19 @@ def main() -> None:
         "cost_per_case_usd": round(llm.spent_usd() / runs, 6) if runs else 0.0,
         "results": results,
     }
-    path = args.out / "eval" / f"triage-{datetime.now(UTC).date().isoformat()}.json"
+    path = args.out / "eval" / f"triage-{datetime.now(UTC).date().isoformat()}-{llm.model}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
-    print(f"eval-triage ({llm.mode}, ${doc['cost_usd']}) -> {path}")
-    print(f"{'variant':<9} {'split':<8} {'cases':>5} {'acc':>6} {'none P':>7} {'none R':>7} {'invalid':>8}")
-    for variant, splits in results.items():
-        for split, r in splits.items():
-            print(f"{variant:<9} {split:<8} {r['cases']:>5} {r['accuracy']:>6} {r['none_precision']!s:>7} "
-                  f"{r['none_recall']!s:>7} {r['invalid_rate']:>8}")
-
+    print(f"eval-triage ({llm.model}, {llm.mode}, ${doc['cost_usd']}) -> {path}")
+    print("  * = cutoff selected on tune; read the holdout columns for that row")
+    print(f"  {'variant':<9} {'cutoff':<17} {'tune acc':>8} {'tune noneR':>10} "
+          f"{'hold acc':>8} {'hold noneR':>10} {'hold AI acc':>11} {'invalid':>7}")
+    for variant, r in results.items():
+        for name in CUTOFFS:
+            t, h = r["tune"]["cutoffs"][name], r["holdout"]["cutoffs"][name]
+            mark = "*" if name == r["selected_cutoff"] else " "
+            print(f"{mark} {variant:<9} {name:<17} {t['accuracy']:>8} {t['none_recall']!s:>10} "
+                  f"{h['accuracy']:>8} {h['none_recall']!s:>10} {h['ai_accuracy']!s:>11} {h['invalid_rate']:>7}")
 
 if __name__ == "__main__":
     main()

@@ -172,3 +172,11 @@ def test_batch_custom_ids_are_checked_before_any_call(tmp_path: Path, custom_id:
     with pytest.raises(LLMError, match="custom_id"):
         _llm(tmp_path, mode="anthropic", client=client).complete_batch({custom_id: REQ})
     assert client.calls == []
+
+
+def test_sonnet_runs_without_thinking_and_haiku_is_unchanged(tmp_path: Path) -> None:
+    sonnet, haiku = FakeClient(), FakeClient()
+    _llm(tmp_path / "s", mode="anthropic", model="claude-sonnet-5", client=sonnet).complete(REQ)
+    _llm(tmp_path / "h", mode="anthropic", client=haiku).complete(REQ)
+    assert sonnet.calls[0]["thinking"] == {"type": "disabled"}
+    assert "thinking" not in haiku.calls[0]
