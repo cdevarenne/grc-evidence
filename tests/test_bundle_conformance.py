@@ -10,7 +10,10 @@ from okf_lib import FRAMEWORK_TYPES, load_bundle
 
 KNOWLEDGE = Path(__file__).parent.parent / "knowledge"
 TOOLS = {"semgrep", "trivy", "checkov", "conftest"}
-TYPES = {*FRAMEWORK_TYPES.values(), "Crosswalk", "Stack Component", "Rego Policy", "Semgrep Rule", "Scanner", "Reference"}
+TYPES = {
+    *FRAMEWORK_TYPES.values(), "Crosswalk", "Stack Component", "Rego Policy", "Semgrep Rule", "Scanner", "Reference",
+    "Suppression",
+}
 RISK_TIERS = {"minimal", "limited", "high"}
 BUNDLE = load_bundle(KNOWLEDGE)  # raises BundleError on a missing or empty `type` (OKF §11)
 
@@ -124,3 +127,10 @@ def test_every_concept_is_human_verified(concept) -> None:
     verified = concept.frontmatter.get("verified")
     entries = verified if isinstance(verified, list) else [verified] if verified else []
     assert any(str(e.get("by", "")).startswith("human:") for e in entries), f"{concept.path}: not human-verified"
+
+
+def test_suppressions_name_a_known_tool_and_one_owner() -> None:
+    """Load-time checks enforce kind, exact match, owner, reason, and the 90-day window; this adds the tool set."""
+    for s in BUNDLE.suppressions():
+        assert s.tool in TOOLS, f"{s.id}: unknown tool {s.tool!r}"
+        assert s.owner.startswith("human:"), s.id

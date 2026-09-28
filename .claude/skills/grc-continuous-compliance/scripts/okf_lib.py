@@ -6,6 +6,7 @@ import posixpath
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import date, timedelta
 from fnmatch import fnmatchcase
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,9 @@ from typing import Any
 import yaml
 
 RESERVED = frozenset({"index.md", "log.md"})
+SUPPRESSION_TYPE = "Suppression"
+SUPPRESSION_KINDS = ("false-positive", "accepted-risk")
+MAX_SUPPRESSION_DAYS = 90
 CONTROL_TYPE = "SOC 2 Control"
 FRAMEWORK_TYPES = {"soc2": CONTROL_TYPE, "iso42001": "ISO/IEC 42001 Control", "eu-ai-act": "EU AI Act Article"}
 FRAMEWORK_TITLES = {"soc2": "SOC 2", "iso42001": "ISO/IEC 42001", "eu-ai-act": "EU AI Act"}
@@ -76,6 +80,33 @@ class Concept:
 
 
 @dataclass(frozen=True)
+class Suppression:
+    """A reviewed, expiring decision about one exact finding (Spec C)."""
+
+    id: str
+    kind: str
+    tool: str
+    rule_id: str
+    target: str
+    message_contains: str
+    owner: str
+    approved: date
+    expires: date
+    reason: str
+
+    def matches(self, finding: Mapping[str, Any]) -> bool:
+        """Exact tool, rule id, and target; `message_contains` narrows it when set. No wildcards."""
+        return (
+            (finding["tool"], finding["rule_id"], finding["target"]) == (self.tool, self.rule_id, self.target)
+            and self.message_contains in finding["message"]
+        )
+
+    def active(self, today: date) -> bool:
+        """In force from its approval date through its expiry date, inclusive."""
+        return self.approved <= today <= self.expires
+
+
+@dataclass(frozen=True)
 class Bundle:
     """All concepts in a bundle, keyed by concept id."""
 
@@ -119,6 +150,10 @@ class Bundle:
                 if len(ids) == 2:
                     pairs.append((cw.id, ids[0], ids[1]))
         return pairs
+
+    def suppressions(self) -> list[Suppression]:
+        """Suppression concepts as typed records, sorted by id."""
+        return [_suppression(c, self.section(c, "Reason") or "") for c in self.of_type(SUPPRESSION_TYPE)]
 
     def section(self, concept: Concept, heading: str) -> str | None:
         """Body text under `# heading`, up to the next level-1 heading."""
@@ -193,6 +228,59 @@ def _check_control(rel_path: str, fm: Mapping[str, Any], type_: str) -> None:
         raise BundleError(f"{rel_path}: 'applies_when' must map each field to a YAML list")
 
 
+def _date(rel_path: str, value: Any, key: str) -> date:
+    if isinstance(value, date):
+        return value
+    try:
+        return date.fromisoformat(str(value))
+    except ValueError as e:
+        raise BundleError(f"{rel_path}: '{key}' must be an ISO date (YYYY-MM-DD)") from e
+
+
+def _check_suppression(rel_path: str, fm: Mapping[str, Any], body: str) -> None:
+    """A suppression names one exact finding, a kind, a human owner, and a window of at most 90 days."""
+    if fm.get("kind") not in SUPPRESSION_KINDS:
+        raise BundleError(f"{rel_path}: 'kind' must be one of {SUPPRESSION_KINDS}")
+    finding = fm.get("finding")
+    if not isinstance(finding, dict) or not all(str(finding.get(k) or "").strip() for k in ("tool", "rule_id", "target")):
+        raise BundleError(f"{rel_path}: 'finding' needs tool, rule_id, and target")
+    if any(ch in str(finding[k]) for k in ("tool", "rule_id", "target") for ch in "*?["):
+        raise BundleError(f"{rel_path}: suppressions match one exact finding; no wildcards")
+    if not str(fm.get("owner") or "").startswith("human:"):
+        raise BundleError(f"{rel_path}: 'owner' must be a person (human:<name>)")
+    approved, expires = _date(rel_path, fm.get("approved"), "approved"), _date(rel_path, fm.get("expires"), "expires")
+    if not approved < expires <= approved + timedelta(days=MAX_SUPPRESSION_DAYS):
+        raise BundleError(f"{rel_path}: 'expires' must fall within {MAX_SUPPRESSION_DAYS} days after 'approved'")
+    if not re.search(r"^# Reason\s*\n\s*\S", body, re.M):
+        raise BundleError(f"{rel_path}: a suppression needs a non-empty '# Reason' section")
+
+
+def _suppression(concept: Concept, reason: str) -> Suppression:
+    fm, finding = concept.frontmatter, concept.frontmatter["finding"]
+    return Suppression(
+        id=concept.id,
+        kind=fm["kind"],
+        tool=str(finding["tool"]),
+        rule_id=str(finding["rule_id"]),
+        target=str(finding["target"]),
+        message_contains=str(finding.get("message_contains") or ""),
+        owner=str(fm["owner"]),
+        approved=_date(concept.path, fm["approved"], "approved"),
+        expires=_date(concept.path, fm["expires"], "expires"),
+        reason=reason,
+    )
+
+
+def _check_accepted_risks(bundle: Bundle) -> None:
+    """An accepted risk must be on a finding that maps to an in-bundle control; a gap has no risk owner."""
+    for s in bundle.suppressions():
+        if s.kind != "accepted-risk":
+            continue
+        keys = {k for c in bundle.by_rule(s.tool, s.rule_id) for k in c.control_keys if bundle.control(k)}
+        if not keys:
+            raise BundleError(f"{s.id}: accepted-risk needs a finding that maps to a control; {s.tool}:{s.rule_id} is a gap")
+
+
 def _parse(rel_path: str, text: str) -> Concept:
     m = _FRONTMATTER.match(text)
     if not m:
@@ -210,6 +298,8 @@ def _parse(rel_path: str, text: str) -> Concept:
     _check_grounding(rel_path, tags, rule_ids)
     type_ = str(fm["type"]).strip()
     _check_control(rel_path, fm, type_)
+    if type_ == SUPPRESSION_TYPE:
+        _check_suppression(rel_path, fm, body)
     return Concept(
         id=stem,
         path=rel_path,
@@ -237,4 +327,6 @@ def load_bundle(root: Path) -> Bundle:
         rel = path.relative_to(root).as_posix()
         concept = _parse(rel, path.read_text(encoding="utf-8"))
         concepts[concept.id] = concept
-    return Bundle(concepts=concepts)
+    bundle = Bundle(concepts=concepts)
+    _check_accepted_risks(bundle)
+    return bundle
