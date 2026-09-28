@@ -7,7 +7,7 @@ from map_findings import map_findings
 from okf_lib import Bundle, load_bundle
 from oscal_schema import validate
 from run_scan import load_pins
-from to_oscal import NO_SSP_HREF, assessment_plan, assessment_results, component_definition
+from to_oscal import AP_HREF, NO_SSP_HREF, assessment_plan, assessment_results, component_definition
 
 FIXTURES = Path(__file__).parent / "fixtures"
 NOW = "2026-09-25T12:00:00+00:00"
@@ -67,6 +67,11 @@ def test_coverage_gaps_are_risks_not_findings(bundle: Bundle, mapping: dict) -> 
 def test_output_is_deterministic(bundle: Bundle, mapping: dict) -> None:
     assert assessment_results(bundle, mapping, NOW) == assessment_results(bundle, mapping, NOW)
     assert component_definition(bundle, NOW) == component_definition(bundle, NOW)
+
+
+def test_results_import_the_plan_next_to_them(bundle: Bundle, mapping: dict) -> None:
+    assert assessment_results(bundle, mapping, NOW)["assessment-results"]["import-ap"] == {"href": AP_HREF}
+    assert AP_HREF == "assessment-plan.json"
 
 
 def test_validator_rejects_missing_required_field(bundle: Bundle, mapping: dict) -> None:
@@ -203,6 +208,14 @@ def test_plan_imports_the_ssp_placeholder(bundle: Bundle, mapping: dict) -> None
 def test_plan_scopes_every_applicable_control_including_unevidenced(bundle: Bundle, mapping: dict) -> None:
     planned = _codes(_plan(bundle, mapping)["reviewed-controls"]["control-selections"])
     assert planned == ["cc6.1", "cc7.1", "cc7.2", "cc8.1"]  # cc7.2 has no scanner: planned, not assessed
+
+
+def test_results_review_a_subset_of_the_plan() -> None:
+    for b, m in ((load_bundle(FIXTURES / "bundle"), None), _ai()):
+        m = m or map_findings(b, json.loads((FIXTURES / "findings.json").read_text()))
+        (result,) = assessment_results(b, m, NOW)["assessment-results"]["results"]
+        reviewed = set(_codes(result["reviewed-controls"]["control-selections"]))
+        assert reviewed <= set(_codes(_plan(b, m)["reviewed-controls"]["control-selections"]))
 
 
 def test_plan_excludes_not_applicable_controls() -> None:

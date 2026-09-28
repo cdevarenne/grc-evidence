@@ -82,7 +82,16 @@ def test_no_suppression_is_unused(mapping: dict) -> None:
 def test_outputs_exist_and_oscal_validates(mapping: dict) -> None:
     assert (OUT / "report.md").read_text().startswith("# Compliance Scan Report")
     validate(json.loads((OUT / "oscal" / "component-definition.json").read_text()), "oscal_component_schema.json")
-    validate(json.loads((OUT / "oscal" / "assessment-results.json").read_text()), "oscal_assessment-results_schema.json")
+    validate(json.loads((OUT / "oscal" / "assessment-plan.json").read_text()), "oscal_assessment-plan_schema.json")
+    results = json.loads((OUT / "oscal" / "assessment-results.json").read_text())
+    validate(results, "oscal_assessment-results_schema.json")
+    assert (OUT / "oscal" / results["assessment-results"]["import-ap"]["href"]).is_file()
+
+
+def test_plan_names_the_monitoring_control_the_results_leave_unassessed(mapping: dict) -> None:
+    plan = json.loads((OUT / "oscal" / "assessment-plan.json").read_text())["assessment-plan"]
+    planned = {c["control-id"] for s in plan["reviewed-controls"]["control-selections"] for c in s["include-controls"]}
+    assert "cc7.2" in planned and "art-12" not in planned
 
 
 def test_monitoring_control_is_not_assessed(mapping: dict) -> None:

@@ -17,7 +17,7 @@ bootstrap:
 scan:
 	$(PY) $(SCRIPTS)/run_scan.py --target app --out out
 	$(PY) $(SCRIPTS)/map_findings.py --knowledge knowledge --out out
-	$(PY) $(SCRIPTS)/to_oscal.py --knowledge knowledge --out out
+	$(PY) $(SCRIPTS)/to_oscal.py --knowledge knowledge --out out --target app
 	$(PY) $(SCRIPTS)/render_report.py --knowledge knowledge --out out
 
 narrate:
