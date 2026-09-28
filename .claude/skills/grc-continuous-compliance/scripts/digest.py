@@ -28,18 +28,22 @@ def bundle_digest(bundle: Bundle, scoped: bool = False) -> Json:
 
 
 def scan_digest(mapping: Json, targets: bool = False) -> Json:
-    """Per control: status and counts. Per coverage-gap rule: tool, rule_id, first message line, count.
+    """Per control: status and open-finding counts. Per coverage-gap rule: tool, rule_id, first message line, count.
+
+    Accepted risks and suppressed false positives are counted apart, never as open findings (Spec C).
 
     `targets=True` adds up to MAX_TARGETS files each gap rule fired on, so triage can see where it was found.
     """
-    controls = {
-        key: {
+    controls = {}
+    for key, entry in sorted(mapping["controls"].items()):
+        open_findings = [f for f in entry["findings"] if not f.get("accepted")]
+        controls[key] = {
             "status": entry["status"],
-            "findings": len(entry["findings"]),
-            "by_severity": dict(sorted(Counter(f["severity"] for f in entry["findings"]).items())),
+            "findings": len(open_findings),
+            "by_severity": dict(sorted(Counter(f["severity"] for f in open_findings).items())),
         }
-        for key, entry in sorted(mapping["controls"].items())
-    }
+        if accepted := len(entry["findings"]) - len(open_findings):
+            controls[key]["accepted_risks"] = accepted  # only when present, so earlier digests are unchanged
     gaps: dict[tuple[str, str], Json] = {}
     for u in mapping["unmapped"]:
         f = u["finding"]
@@ -54,7 +58,10 @@ def scan_digest(mapping: Json, targets: bool = False) -> Json:
     for gap in gaps.values():
         if targets:
             gap["targets"] = sorted(gap["targets"])[:MAX_TARGETS]
-    return {"controls": controls, "gaps": [gaps[k] for k in sorted(gaps)]}
+    digest = {"controls": controls, "gaps": [gaps[k] for k in sorted(gaps)]}
+    if false_positives := sum(x["kind"] == "false-positive" for x in mapping.get("suppressed", [])):
+        digest["suppressed_false_positives"] = false_positives
+    return digest
 
 
 def dumps(doc: Json) -> str:

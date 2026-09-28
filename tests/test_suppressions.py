@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from digest import scan_digest
 from map_findings import map_findings
 from okf_lib import BundleError, load_bundle
 from oscal_schema import validate
@@ -169,3 +170,12 @@ def test_reason_renders_as_one_plain_table_cell(tmp_path: Path) -> None:
     bundle = _bundle(tmp_path, fp=fp)
     report = render_report(bundle, map_findings(bundle, FINDINGS, today=IN_FORCE), NOW)
     assert "| See CC7.1 \\| and more. |" in report
+
+
+def test_digest_counts_accepted_and_false_positives_apart(tmp_path: Path) -> None:
+    m = _mapping(tmp_path, accepted=ACCEPTED, fp=FALSE_POSITIVE)
+    d = scan_digest(m)
+    assert d["controls"]["soc2:cc7.1"] == {"status": "not-satisfied", "findings": 0, "by_severity": {},
+                                           "accepted_risks": 1}
+    assert d["suppressed_false_positives"] == 1
+    assert "accepted_risks" not in d["controls"]["soc2:cc6.1"]
