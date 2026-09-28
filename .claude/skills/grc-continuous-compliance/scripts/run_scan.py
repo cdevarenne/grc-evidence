@@ -6,13 +6,16 @@ import argparse
 import json
 import shutil
 import subprocess
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 Finding = dict[str, Any]
 SEVERITIES = ("critical", "high", "medium", "low", "info", "unknown")
 _SEMGREP_SEVERITY = {"ERROR": "high", "WARNING": "medium", "INFO": "low"}
+# Files Conftest checks, relative to the scan target.
+CONFTEST_PATTERNS = ("k8s/**/*.yaml", "k8s/**/*.yml", "infra/**/*.tf", "ai-inventory.yaml")
 
 
 class ScanError(RuntimeError):
@@ -115,25 +118,45 @@ def _check_target(repo: Path, target_dir: str) -> None:
         raise ScanError(f"--target {target_dir!r} must be a directory inside the repo root {repo}")
 
 
+@dataclass(frozen=True)
+class ScannerRun:
+    """One scanner invocation. The assessment plan reads these, so it cannot drift from what runs."""
+
+    tool: str
+    title: str
+    argv: tuple[str, ...]
+    in_target: bool  # run with cwd = the scan target; otherwise the repo root
+    pin: str  # the tools.lock key holding this scanner's version
+    normalize: Callable[[Any, str], list[Finding]]
+
+
+def scanner_runs(target_dir: str, conftest_inputs: Sequence[str]) -> list[ScannerRun]:
+    """The five scanner runs over `target_dir`, in execution order."""
+    return [
+        ScannerRun("semgrep", "Semgrep code scan", ("semgrep", "scan", "--config", "policies/semgrep", "--metrics=off", "--json", "--quiet", target_dir), False, "SEMGREP_VERSION", normalize_semgrep),
+        ScannerRun("trivy", "Trivy misconfiguration scan", ("trivy", "config", "--quiet", "--format", "json", target_dir), False, "TRIVY_VERSION", normalize_trivy),
+        ScannerRun("trivy", "Trivy dependency vulnerability scan", ("trivy", "fs", "--quiet", "--scanners", "vuln", "--format", "json", target_dir), False, "TRIVY_VERSION", normalize_trivy),
+        ScannerRun("checkov", "Checkov infrastructure-as-code scan", ("checkov", "-d", ".", "--framework", "terraform", "kubernetes", "dockerfile", "-o", "json", "--quiet", "--compact"), True, "CHECKOV_VERSION", normalize_checkov),
+        ScannerRun("conftest", "Conftest policy check", ("conftest", "test", "--all-namespaces", "--no-color", "-o", "json", "-p", "policies/rego", *conftest_inputs), False, "CONFTEST_VERSION", normalize_conftest),
+    ]
+
+
+def load_pins(lock: Path) -> dict[str, str]:
+    """`KEY=value` lines of tools.lock; comments and blank lines are skipped."""
+    lines = [ln for ln in lock.read_text(encoding="utf-8").splitlines() if ln.strip() and not ln.startswith("#")]
+    return dict(ln.split("=", 1) for ln in lines)
+
+
 def scan(repo: Path, target_dir: str) -> list[Finding]:
     """Run all four scanners over `repo/target_dir` and return deduplicated findings."""
     _check_target(repo, target_dir)
     target = repo / target_dir
     conftest_inputs = sorted(
-        p.relative_to(repo).as_posix()
-        for pattern in ("k8s/**/*.yaml", "k8s/**/*.yml", "infra/**/*.tf", "ai-inventory.yaml")
-        for p in target.glob(pattern)
+        p.relative_to(repo).as_posix() for pattern in CONFTEST_PATTERNS for p in target.glob(pattern)
     )
-    runs: list[tuple[str, list[str], Path, Callable[[Any, str], list[Finding]]]] = [
-        ("semgrep", ["semgrep", "scan", "--config", "policies/semgrep", "--metrics=off", "--json", "--quiet", target_dir], repo, normalize_semgrep),
-        ("trivy", ["trivy", "config", "--quiet", "--format", "json", target_dir], repo, normalize_trivy),
-        ("trivy", ["trivy", "fs", "--quiet", "--scanners", "vuln", "--format", "json", target_dir], repo, normalize_trivy),
-        ("checkov", ["checkov", "-d", ".", "--framework", "terraform", "kubernetes", "dockerfile", "-o", "json", "--quiet", "--compact"], target, normalize_checkov),
-        ("conftest", ["conftest", "test", "--all-namespaces", "--no-color", "-o", "json", "-p", "policies/rego", *conftest_inputs], repo, normalize_conftest),
-    ]
     findings: list[Finding] = []
-    for tool, argv, cwd, normalize in runs:
-        findings += normalize(run_tool(tool, argv, cwd), target_dir)
+    for run in scanner_runs(target_dir, conftest_inputs):
+        findings += run.normalize(run_tool(run.tool, list(run.argv), target if run.in_target else repo), target_dir)
     return dedupe(findings)
 
 

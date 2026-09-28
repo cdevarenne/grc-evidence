@@ -6,14 +6,17 @@ from typing import Any
 import pytest
 
 from run_scan import (
+    CONFTEST_PATTERNS,
     ScanError,
     dedupe,
+    load_pins,
     normalize_checkov,
     normalize_conftest,
     normalize_semgrep,
     normalize_trivy,
     run_tool,
     scan,
+    scanner_runs,
 )
 
 OUTPUT = Path(__file__).parent / "fixtures" / "scanner_output"
@@ -134,3 +137,22 @@ def test_semgrep_errors_fail_the_scan() -> None:
 def test_scan_rejects_targets_outside_the_repo(tmp_path: Path, target: str) -> None:
     with pytest.raises(ScanError, match="--target"):
         scan(tmp_path, target)
+
+
+def test_scanner_runs_cover_every_tool_with_a_pin() -> None:
+    runs = scanner_runs("app", ["app/k8s/deployment.yaml"])
+    assert [r.tool for r in runs] == ["semgrep", "trivy", "trivy", "checkov", "conftest"]
+    pins = load_pins(Path(__file__).parent.parent / "tools.lock")
+    assert all(r.pin in pins for r in runs)
+    assert runs[-1].argv[-1] == "app/k8s/deployment.yaml"
+    assert [r.in_target for r in runs] == [False, False, False, True, False]
+
+
+def test_conftest_patterns_include_the_ai_inventory() -> None:
+    assert "ai-inventory.yaml" in CONFTEST_PATTERNS
+
+
+def test_load_pins_skips_comments_and_blank_lines(tmp_path: Path) -> None:
+    lock = tmp_path / "tools.lock"
+    lock.write_text("# pins\n\nSEMGREP_VERSION=1.0.0\nOKF_COMMIT=abc\n", encoding="utf-8")
+    assert load_pins(lock) == {"SEMGREP_VERSION": "1.0.0", "OKF_COMMIT": "abc"}
