@@ -1,0 +1,18 @@
+rules:
+  - id: llm-prompt-logged
+    languages: [python]
+    severity: ERROR
+    message: A prompt or model completion is written to the log in clear text; log a hash or an id instead.
+    patterns:
+      - pattern-either:
+          - pattern: $LOG.$LEVEL(..., $VAR, ...)
+          - pattern: $LOG.$LEVEL(..., $VAR.$ATTR, ...)
+      - metavariable-regex:
+          metavariable: $LOG
+          regex: ^(logger|log|logging)$
+      - metavariable-regex:
+          metavariable: $LEVEL
+          regex: ^(debug|info|warning|error|critical|exception|log)$
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: (?i)^([a-z0-9]+_)*(prompt|completion)s?$

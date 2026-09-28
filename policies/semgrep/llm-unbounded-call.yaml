@@ -1,0 +1,8 @@
+rules:
+  - id: llm-unbounded-call
+    languages: [python]
+    severity: WARNING
+    message: LLM call without both a timeout and a max_tokens bound; set both.
+    patterns:
+      - pattern: $CLIENT.messages.create(...)
+      - pattern-not: $CLIENT.messages.create(..., timeout=$T, max_tokens=$M, ...)

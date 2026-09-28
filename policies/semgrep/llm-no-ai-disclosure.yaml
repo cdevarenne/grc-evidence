@@ -1,0 +1,13 @@
+rules:
+  - id: llm-no-ai-disclosure
+    languages: [python]
+    severity: WARNING
+    message: A view returns model output without telling the user it is AI-generated; add an ai_generated field.
+    patterns:
+      - pattern-inside: |
+          def $VIEW(...):
+              ...
+              $OUT = $CLIENT.messages.create(...)
+              ...
+      - pattern: Response({...})
+      - pattern-not: 'Response({..., "ai_generated": $V, ...})'
