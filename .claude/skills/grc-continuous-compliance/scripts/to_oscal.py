@@ -145,8 +145,10 @@ def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
     A clean automated scan never produces a `satisfied` finding: automation evidences a
     control but does not attest it. A `not-applicable` control is neither reviewed nor a finding.
     """
+    suppressed = mapping.get("suppressed", [])
     all_findings = [f for c in mapping["controls"].values() for f in c["findings"]]
     all_findings += [u["finding"] for u in mapping["unmapped"]]
+    all_findings += [s["finding"] for s in suppressed if s["kind"] == "false-positive"]
     observations = {_finding_key(f): _observation(f, now) for f in all_findings}
     assessed = sorted(
         key for key, c in mapping["controls"].items() if c["status"] not in ("not-assessed", "not-applicable")
@@ -183,6 +185,18 @@ def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
         }
         for u in mapping["unmapped"]
     ]
+    risks += [
+        {
+            "uuid": _uuid("risk", "accepted", _finding_key(a["finding"])),
+            "title": f"Accepted risk: {a['finding']['tool']} {a['finding']['rule_id']}",
+            "description": f"{a['reason']} Accepted by {a['owner']} until {a['expires']} ({a['suppression']}).",
+            "statement": a["finding"]["message"],
+            "status": "deviation-approved",
+            "related-observations": [{"observation-uuid": observations[_finding_key(a["finding"])]["uuid"]}],
+        }
+        for a in suppressed
+        if a["kind"] == "accepted-risk"
+    ]
     result: Json = {
         "uuid": _uuid("result"),
         "title": "Automated compliance scan",
@@ -196,7 +210,11 @@ def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
         result["risks"] = risks
     if findings:
         result["findings"] = findings
-    if remarks := _remarks(mapping):
+    remarks = _remarks(mapping)
+    if false_positives := sorted({s["suppression"] for s in suppressed if s["kind"] == "false-positive"}):
+        fp = "Suppressed as false positives (reviewed; see the bundle): " + ", ".join(false_positives)
+        remarks = f"{remarks}. {fp}" if remarks else fp
+    if remarks:
         result["remarks"] = remarks
     return {
         "assessment-results": {

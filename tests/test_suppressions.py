@@ -9,6 +9,8 @@ import pytest
 
 from map_findings import map_findings
 from okf_lib import BundleError, load_bundle
+from oscal_schema import validate
+from to_oscal import assessment_results
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FINDINGS = json.loads((FIXTURES / "findings.json").read_text())
@@ -130,3 +132,20 @@ def test_message_contains_narrows_the_match(tmp_path: Path) -> None:
 def test_no_suppressions_means_no_new_keys() -> None:
     m = map_findings(load_bundle(FIXTURES / "bundle"), FINDINGS, today=IN_FORCE)
     assert set(m) == {"controls", "unmapped"}
+
+
+# -- outputs ------------------------------------------------------------------------------------------
+
+
+def test_oscal_records_accepted_risk_as_deviation_approved(tmp_path: Path) -> None:
+    bundle = _bundle(tmp_path, accepted=ACCEPTED, fp=FALSE_POSITIVE)
+    m = map_findings(bundle, FINDINGS, today=IN_FORCE)
+    doc = assessment_results(bundle, m, NOW)
+    validate(doc, "oscal_assessment-results_schema.json")
+    (result,) = doc["assessment-results"]["results"]
+    (accepted,) = [r for r in result["risks"] if r["status"] == "deviation-approved"]
+    assert accepted["title"] == "Accepted risk: trivy CVE-2024-0001"
+    assert "cc7.1" in {f["target"]["target-id"] for f in result["findings"]}
+    assert "Suppressed as false positives (reviewed; see the bundle): suppressions/fp" in result["remarks"]
+    assert any(o["title"] == "checkov CKV_TEST_99" for o in result["observations"])
+    assert not any(r["title"] == "Coverage gap: checkov CKV_TEST_99" for r in result["risks"])

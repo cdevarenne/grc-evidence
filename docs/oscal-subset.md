@@ -22,8 +22,8 @@ subset, not a complete OSCAL implementation.
 | `results[0].reviewed-controls` | one `control-selection` per framework, described by the framework's source title; includes every control whose status is not `not-assessed` or `not-applicable` |
 | `results[0].observations[]` | one per scanner finding; `methods: [TEST]` |
 | `results[0].findings[]` | one per control with open violations; `target.status.state` is always `not-satisfied` |
-| `results[0].risks[]` | one per unmapped finding, titled "Coverage gap: …", `status: open` |
-| `results[0].remarks` | lists controls with no violations detected, controls not assessed, and controls not applicable at the declared AI risk tier (by `framework:code` key) |
+| `results[0].risks[]` | one per unmapped finding, titled "Coverage gap: …", `status: open`; and one per accepted-risk suppression, titled "Accepted risk: …", `status: deviation-approved`, with the owner, expiry, and reason in its description |
+| `results[0].remarks` | lists controls with no violations detected, controls not assessed, controls not applicable at the declared AI risk tier (by `framework:code` key), and false-positive suppressions (by suppression id) |
 
 ## Deliberately not modeled
 
@@ -40,3 +40,7 @@ subset, not a complete OSCAL implementation.
   and `control-id` values are the Annex A group ids (`a.6`).
 - `not-applicable` as a finding: a control excluded by the declared AI risk tier
   is not assessed, so it is named in `remarks`, never reported as a pass.
+- A suppressed finding as a pass: a false positive keeps its observation and is
+  named in `remarks`; an accepted risk keeps its control's `not-satisfied`
+  finding and adds a `deviation-approved` risk. OSCAL findings have only
+  `satisfied` and `not-satisfied`, so there is no separate accepted state.
