@@ -35,3 +35,10 @@ def test_replay_bills_nothing(tmp_path: Path) -> None:
     llm = _replay(tmp_path)
     narrate(llm, bundle_digest(BUNDLE), MAPPING)
     assert llm.spent_usd() == 0.0
+
+
+def test_recorded_scoped_triage_proposals_are_valid(tmp_path: Path) -> None:
+    gaps = scan_digest(MAPPING, targets=True)["gaps"]
+    proposals = triage(_replay(tmp_path), bundle_digest(BUNDLE, scoped=True), gaps, variant="scoped")
+    assert [p["rule"] for p in proposals] == ["checkov:CKV_TEST_99", "conftest:orphan_rule"]
+    assert all(p["proposal"] != "invalid" for p in proposals), proposals

@@ -78,9 +78,16 @@ cost. A full run on the sample app costs about $0.04 on Haiku.
 landed on the right control, but the model said `none` for only 1 of the 10 gaps
 that no control fits. Eight of those nine misses put ordinary infrastructure
 rules (health checks, probes, backups, CPU limits) on ISO/IEC 42001 or EU AI Act
-controls. The diagnosis, the fix (the `scoped` variant: each control's
-framework scope and each gap's target files), and its held-out measurement are
-tracked in [issue #32](https://github.com/cdevarenne/okf-grc-skill/issues/32).
+controls.
+
+**Scoped variant** ([issue #32](https://github.com/cdevarenne/okf-grc-skill/issues/32);
+[`examples/triage-eval-scoped.json`](examples/triage-eval-scoped.json), $0.022):
+giving triage each control's framework scope and each gap's target files
+removed every infrastructure-to-AI-control miss, but the held-out result did not
+move: accuracy 0.667 and `none` recall 0.2 for both variants on 15 held-out
+cases. The model still prefers a plausible control to `none`; with the AI
+controls ruled out, those gaps land on SOC 2 controls instead. The tune split
+improved (0.64 to 0.84), but it shaped the diagnosis, so it is not evidence.
 This is why triage only proposes: a person decides.
 
 Prompt caching is requested but does not take effect on Haiku 4.5 today: its
