@@ -205,7 +205,8 @@ EU AI Act articles through the same `rule_ids` declarations, keyed
 *The OKF knowledge bundle (`knowledge/`) rendered by the OKF reference visualizer
 (`make render` → `out/knowledge-viz.html`). Each node is one concept file — a SOC 2,
 ISO/IEC 42001, or EU AI Act control, a crosswalk, a guardrail policy, a scanner,
-or a stack component — and each edge is a markdown link between them. It is a browsing aid; the scan pipeline reads the same files
+a stack component, or a suppression — and each edge is a markdown link between
+them. It is a browsing aid; the scan pipeline reads the same files
 directly and does not use the graph.*
 
 ## How this was built
