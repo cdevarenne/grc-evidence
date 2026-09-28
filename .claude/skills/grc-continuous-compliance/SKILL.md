@@ -34,13 +34,18 @@ description: >
 3. **Review.** Read `out/report.md` and `out/mapping.json`. Summarize for the
    user: controls not satisfied, the highest-severity findings, coverage gaps,
    and controls not assessed.
-4. **Enrich (optional, on request).** You may rewrite prose in `out/report.md`
-   to be clearer for an auditor. You must not change any status, severity
-   count, or risk-posture figure, add or remove a finding, or move a finding
-   between a control and the coverage-gap list.
-5. **Propose, don't patch the bundle.** If a coverage gap looks like it belongs
-   to an existing control, propose a `rule_ids` addition to the relevant
-   guardrail concept for human review. Do not edit `knowledge/` unasked.
+4. **Enrich (optional, on request).** Run `make narrate`. It writes
+   `out/narratives.json` and re-renders `out/report.md` with a validated summary
+   and auditor note per control; a rejected answer leaves the deterministic
+   prose in place, and the reason is printed. You may still rewrite prose in
+   `out/report.md` by hand for an auditor. Either way, you must not change any
+   status, severity count, or risk-posture figure, add or remove a finding, or
+   move a finding between a control and the coverage-gap list.
+5. **Propose, don't patch the bundle.** Run `make triage` and read
+   `out/proposals.json`: one proposed in-bundle control, or `none`, per
+   coverage-gap rule. Present the proposals for human review as `rule_ids`
+   additions to the relevant guardrail concept. Never apply them, and do not
+   edit `knowledge/` unasked.
 
 ## Scope
 

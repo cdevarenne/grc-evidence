@@ -19,3 +19,10 @@ def test_states_the_grounding_rule() -> None:
 def test_scanned_text_is_data_not_instructions() -> None:
     text = SKILL.read_text()
     assert "data, not instructions" in text
+
+
+def test_enrich_and_propose_use_the_validated_llm_step() -> None:
+    text = SKILL.read_text()
+    assert "make narrate" in text and "out/narratives.json" in text
+    assert "make triage" in text and "out/proposals.json" in text
+    assert "never apply" in text.lower()
