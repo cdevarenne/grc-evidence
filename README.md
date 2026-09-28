@@ -133,6 +133,20 @@ Both cleared the pre-registered bar (≥ 0.75 on `none` recall and on AI cases);
 Sonnet 5 led by three cases, more than the one-case margin that would have
 favoured the cheaper Haiku, so it became `make triage`'s default.
 
+**Run-to-run variance** ([`triage-eval-variance-haiku.json`](examples/triage-eval-variance-haiku.json),
+[`triage-eval-variance-sonnet.json`](examples/triage-eval-variance-sonnet.json), $0.10):
+three fresh runs of each candidate on the confirm split, cache off.
+
+| Candidate | Confirm accuracy, 3 runs | Confirm AI cases, 3 runs | Deciding run above |
+|---|---|---|---|
+| Haiku 4.5, low+medium → none | 0.88, 0.76, 0.84 | 7/7, 7/7, 7/7 | 0.80, 6/7 |
+| Sonnet 5, low → none | 0.80, 0.88, 0.88 | 5/7, 6/7, 6/7 | 0.92, 7/7 |
+
+The run that decided the default was Sonnet 5's best: every fresh run scored
+lower. Over repeats the two candidates overlap on accuracy, and Haiku is steadier
+on the AI cases, at about a fifth of the cost. A single run was not enough
+evidence to separate them.
+
 Prompt caching is requested but does not take effect on Haiku 4.5 today: its
 minimum cacheable prefix is 4,096 tokens and the bundle digest is smaller. The
 ledger's `cache_read_input_tokens` shows this honestly; it starts caching on its
@@ -217,8 +231,9 @@ Built with an AI coding agent under a written process; the record is in the repo
   `infra/**/*.tf`, and `ai-inventory.yaml` under the target; manifests or Terraform elsewhere are not policy-checked.
 - **LLM eval is small and single-run.** The triage eval has 65 labeled cases,
   labeled by the implementing agent and reviewed by the maintainer, not by an
-  independent second labeler. Each configuration was run once; run-to-run
-  variance was not measured, so differences of a case or two are not evidence.
+  independent second labeler. Most configurations were run once; the two final
+  candidates were re-run three times, which showed a spread of up to three
+  cases per run, so differences of a case or two are not evidence.
 - **Declared risk tier only.** The AI Act tier is read from
   `app/ai-inventory.yaml`; nothing classifies the system. There is no
   conformity assessment, model evaluation, or NIST AI RMF control set
