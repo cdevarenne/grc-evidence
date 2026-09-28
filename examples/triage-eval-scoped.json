@@ -1,0 +1,163 @@
+{
+  "model": "claude-haiku-4-5",
+  "mode": "anthropic",
+  "cost_usd": 0.021613,
+  "cost_per_case_usd": 0.00027,
+  "results": {
+    "baseline": {
+      "tune": {
+        "cases": 25,
+        "accuracy": 0.64,
+        "none_precision": 1.0,
+        "none_recall": 0.1,
+        "invalid_rate": 0.0,
+        "misses": [
+          {
+            "rule": "checkov:CKV_GCP_6",
+            "expected": "none",
+            "got": "soc2:cc6.6"
+          },
+          {
+            "rule": "checkov:CKV_GCP_14",
+            "expected": "none",
+            "got": "eu-ai-act:art-15"
+          },
+          {
+            "rule": "checkov:CKV_GCP_78",
+            "expected": "none",
+            "got": "eu-ai-act:art-15"
+          },
+          {
+            "rule": "trivy:AVD-GCP-0066",
+            "expected": "none",
+            "got": "eu-ai-act:art-15"
+          },
+          {
+            "rule": "trivy:DS-0026",
+            "expected": "none",
+            "got": "iso42001:a.6"
+          },
+          {
+            "rule": "checkov:CKV_DOCKER_2",
+            "expected": "none",
+            "got": "iso42001:a.6"
+          },
+          {
+            "rule": "checkov:CKV_K8S_8",
+            "expected": "none",
+            "got": "iso42001:a.6"
+          },
+          {
+            "rule": "checkov:CKV_K8S_9",
+            "expected": "none",
+            "got": "iso42001:a.6"
+          },
+          {
+            "rule": "checkov:CKV_K8S_11",
+            "expected": "none",
+            "got": "iso42001:a.6"
+          }
+        ]
+      },
+      "holdout": {
+        "cases": 15,
+        "accuracy": 0.667,
+        "none_precision": 1.0,
+        "none_recall": 0.2,
+        "invalid_rate": 0.0,
+        "misses": [
+          {
+            "rule": "semgrep:python-pickle-load-request",
+            "expected": "soc2:cc7.1",
+            "got": "iso42001:a.6"
+          },
+          {
+            "rule": "checkov:CKV_K8S_10",
+            "expected": "none",
+            "got": "iso42001:a.6"
+          },
+          {
+            "rule": "checkov:CKV_K8S_12",
+            "expected": "none",
+            "got": "iso42001:a.6"
+          },
+          {
+            "rule": "checkov:CKV_K8S_13",
+            "expected": "none",
+            "got": "iso42001:a.6"
+          },
+          {
+            "rule": "trivy:DS-0005",
+            "expected": "none",
+            "got": "soc2:cc8.1"
+          }
+        ]
+      }
+    },
+    "scoped": {
+      "tune": {
+        "cases": 25,
+        "accuracy": 0.84,
+        "none_precision": 1.0,
+        "none_recall": 0.6,
+        "invalid_rate": 0.0,
+        "misses": [
+          {
+            "rule": "checkov:CKV_GCP_6",
+            "expected": "none",
+            "got": "soc2:cc6.6"
+          },
+          {
+            "rule": "trivy:AVD-GCP-0066",
+            "expected": "none",
+            "got": "soc2:cc6.1"
+          },
+          {
+            "rule": "checkov:CKV_K8S_11",
+            "expected": "none",
+            "got": "soc2:cc6.1"
+          },
+          {
+            "rule": "trivy:DS-0017",
+            "expected": "none",
+            "got": "soc2:cc7.1"
+          }
+        ]
+      },
+      "holdout": {
+        "cases": 15,
+        "accuracy": 0.667,
+        "none_precision": 1.0,
+        "none_recall": 0.2,
+        "invalid_rate": 0.0,
+        "misses": [
+          {
+            "rule": "semgrep:llm-chat-no-ai-notice",
+            "expected": "eu-ai-act:art-50",
+            "got": "iso42001:a.8"
+          },
+          {
+            "rule": "checkov:CKV_K8S_10",
+            "expected": "none",
+            "got": "soc2:cc7.2"
+          },
+          {
+            "rule": "checkov:CKV_K8S_12",
+            "expected": "none",
+            "got": "soc2:cc7.2"
+          },
+          {
+            "rule": "checkov:CKV_K8S_13",
+            "expected": "none",
+            "got": "soc2:cc7.2"
+          },
+          {
+            "rule": "trivy:DS-0005",
+            "expected": "none",
+            "got": "soc2:cc8.1"
+          }
+        ]
+      }
+    }
+  }
+}

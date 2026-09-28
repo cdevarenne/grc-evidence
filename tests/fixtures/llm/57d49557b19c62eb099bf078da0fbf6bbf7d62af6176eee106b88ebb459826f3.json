@@ -1,0 +1,26 @@
+{
+  "model": "claude-haiku-4-5",
+  "output": {
+    "proposals": [
+      {
+        "confidence": "medium",
+        "proposal": "soc2:cc7.2",
+        "rationale": "Missing HEALTHCHECK in Dockerfile prevents monitoring of application health status and availability.",
+        "rule": "checkov:CKV_TEST_99"
+      },
+      {
+        "confidence": "high",
+        "proposal": "none",
+        "rationale": "The orphan rule finding in Terraform configuration does not map to any control in the bundle digest.",
+        "rule": "conftest:orphan_rule"
+      }
+    ]
+  },
+  "task": "triage",
+  "usage": {
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "input_tokens": 1023,
+    "output_tokens": 100
+  }
+}
