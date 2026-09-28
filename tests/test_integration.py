@@ -55,3 +55,27 @@ def test_outputs_exist_and_oscal_validates(mapping: dict) -> None:
 
 def test_monitoring_control_is_not_assessed(mapping: dict) -> None:
     assert mapping["controls"]["soc2:cc7.2"]["status"] == "not-assessed"
+
+
+def test_high_risk_articles_are_not_applicable_at_limited_tier(mapping: dict) -> None:
+    high_risk = [f"eu-ai-act:art-{n}" for n in (9, 10, 12, 13, 14, 15)]
+    assert {mapping["controls"][k]["status"] for k in high_risk} == {"not-applicable"}
+    assert mapping["controls"]["eu-ai-act:art-50"]["status"] == "not-satisfied"
+
+
+def test_not_applicable_article_keeps_its_finding(mapping: dict) -> None:
+    entry = mapping["controls"]["eu-ai-act:art-12"]
+    assert [f["rule_id"] for f in entry["findings"]] == ["llm-prompt-logged"]
+    assert entry["reason"] == "control-not-applicable"
+
+
+def test_report_has_a_section_per_framework_and_a_crosswalk(mapping: dict) -> None:
+    report = (OUT / "report.md").read_text()
+    for heading in ("## SOC 2", "## ISO/IEC 42001", "## EU AI Act", "## Crosswalk", "## Not applicable"):
+        assert f"\n{heading}\n" in report, heading
+
+
+def test_oscal_has_one_source_per_framework(mapping: dict) -> None:
+    doc = json.loads((OUT / "oscal" / "component-definition.json").read_text())
+    titles = [r["title"] for r in doc["component-definition"]["back-matter"]["resources"]]
+    assert [t.split(" ")[0] for t in titles] == ["AICPA", "ISO/IEC", "Regulation"]
