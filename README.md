@@ -70,6 +70,16 @@ and a budget guard that stops before a call could pass `LLM_BUDGET_USD`. Every
 call is logged to `out/llm-usage.jsonl`, and the report footer shows the run's
 cost. A full run on the sample app costs about $0.04 on Haiku.
 
+**First eval baseline** (Haiku 4.5, one Message Batch, $0.009): accuracy 0.64,
+`none` precision 1.0, `none` recall 0.1, no invalid outputs. Every clear match
+landed on the right control, but the model said `none` for only 1 of the 10 gaps
+that no control fits. Eight of those nine misses put ordinary infrastructure
+rules (health checks, probes, backups, CPU limits) on ISO/IEC 42001 or EU AI Act
+controls: the bundle digest gives each control's intent but not that AI
+controls cover AI components only. Adding that scope to the digest is the next
+improvement, to be measured on a held-out split rather than tuned against these
+25 labels. This is why triage only proposes: a person decides.
+
 Prompt caching is requested but does not take effect on Haiku 4.5 today: its
 minimum cacheable prefix is 4,096 tokens and the bundle digest is smaller. The
 ledger's `cache_read_input_tokens` shows this honestly; it starts caching on its
