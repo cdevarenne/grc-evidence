@@ -183,6 +183,10 @@ directly and does not use the graph.*
   scanner set is fixed in `run_scan.py`.
 - **Fixed scan layout.** Conftest reads `k8s/**/*.{yaml,yml}`,
   `infra/**/*.tf`, and `ai-inventory.yaml` under the target; manifests or Terraform elsewhere are not policy-checked.
+- **LLM eval is small and single-run.** The triage eval has 65 labeled cases,
+  labeled by the implementing agent and reviewed by the maintainer, not by an
+  independent second labeler. Each configuration was run once; run-to-run
+  variance was not measured, so differences of a case or two are not evidence.
 - **Declared risk tier only.** The AI Act tier is read from
   `app/ai-inventory.yaml`; nothing classifies the system. There is no
   conformity assessment, model evaluation, or NIST AI RMF control set

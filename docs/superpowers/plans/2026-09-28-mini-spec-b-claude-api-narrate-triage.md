@@ -1,5 +1,12 @@
 # Mini Spec B — Claude API Step: Narrate and Gap Triage — Implementation Plan
 
+> **Status (2026-09-28): implemented, then revised by measurement.** This plan is the record of the
+> original design. Triage changed after its first eval ([issue #32](https://github.com/cdevarenne/okf-grc-skill/issues/32)):
+> each gap now carries its exact `rule` string and target files, the input carries each control's
+> framework scope, the eval has `tune`, `holdout`, and `confirm` splits, and the default triage
+> configuration is Sonnet 5 with low-confidence proposals turned into `none`. See the README's
+> "LLM step and cost" section for the current behavior and measured results.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** `make narrate` and `make triage` run after `make scan` and add a small, headless, cost-bounded Claude API step: per-control prose that is rejected outright if it changes any status, count, or mapping, and per-gap control proposals (`none` included) that are written for human review and never applied. Every call is logged with tokens and cost; a budget guard stops a run before it overspends; tests and CI never touch the network.
