@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from llm import LLM, BudgetExceeded, LLMError, Request, cost_usd, worst_case_usd
+from llm import REQUEST_TIMEOUT_S, LLM, BudgetExceeded, LLMError, Request, cost_usd, worst_case_usd
 
 SCHEMA = {"type": "object", "properties": {"x": {"type": "integer"}}, "required": ["x"], "additionalProperties": False}
 REQ = Request(task="t", system="stable bundle digest", user="per-run digest", schema=SCHEMA, max_tokens=100)
@@ -73,6 +73,7 @@ def test_api_call_uses_cache_control_bounds_and_structured_output(tmp_path: Path
     assert _llm(tmp_path, mode="anthropic", client=client).complete(REQ) == {"x": 1}
     (params,) = client.calls
     assert params["model"] == "claude-haiku-4-5" and params["max_tokens"] == 100
+    assert params["timeout"] == REQUEST_TIMEOUT_S
     assert params["system"] == [{"type": "text", "text": "stable bundle digest", "cache_control": {"type": "ephemeral"}}]
     assert params["output_config"] == {"format": {"type": "json_schema", "schema": SCHEMA}}
     (entry,) = _ledger(tmp_path)
@@ -133,3 +134,32 @@ def test_claude_cli_mode_runs_headless_claude(tmp_path: Path) -> None:
     assert seen[0][:4] == ["claude", "-p", "--output-format", "json"]
     (entry,) = _ledger(tmp_path)
     assert entry["mode"] == "claude-cli" and entry["cost_usd"] == 0.0
+
+
+class FakeBatches:
+    """Stands in for client.messages.batches: ends at once and returns one canned result per request."""
+
+    def __init__(self, message: SimpleNamespace) -> None:
+        self.message = message
+        self.created: list[dict[str, Any]] = []
+
+    def create(self, requests: list[dict[str, Any]]) -> SimpleNamespace:
+        self.created = requests
+        return SimpleNamespace(id="batch_1")
+
+    def retrieve(self, batch_id: str) -> SimpleNamespace:
+        return SimpleNamespace(id=batch_id, processing_status="ended")
+
+    def results(self, batch_id: str) -> list[SimpleNamespace]:
+        ok = SimpleNamespace(type="succeeded", message=self.message)
+        return [SimpleNamespace(custom_id=r["custom_id"], result=ok) for r in reversed(self.created)]
+
+
+def test_batch_bounds_each_request_and_bills_half(tmp_path: Path) -> None:
+    client = FakeClient()
+    client.messages.batches = FakeBatches(client.message)
+    other = Request(task="t", system="stable bundle digest", user="another digest", schema=SCHEMA, max_tokens=100)
+    outputs = _llm(tmp_path, mode="anthropic", client=client).complete_batch({"a": REQ, "b": other})
+    assert outputs == {"a": {"x": 1}, "b": {"x": 1}}
+    assert [r["params"]["max_tokens"] for r in client.messages.batches.created] == [100, 100]
+    assert [e["cost_usd"] for e in _ledger(tmp_path)] == [pytest.approx(0.001)] * 2

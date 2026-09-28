@@ -21,6 +21,7 @@ DEFAULT_MODEL = "claude-haiku-4-5"
 PRICES = {"claude-haiku-4-5": (1.00, 5.00), "claude-sonnet-5": (2.00, 10.00)}
 CACHE_WRITE, CACHE_READ, BATCH = 1.25, 0.10, 0.50  # multipliers on the input price / on the whole call
 CHARS_PER_TOKEN = 3  # conservative: overestimates input tokens for the budget guard
+REQUEST_TIMEOUT_S = 60.0  # per synchronous call; the SDK default is 10 minutes
 
 
 class LLMError(RuntimeError):
@@ -159,7 +160,6 @@ class LLM:
     def _params(self, request: Request) -> Json:
         return {
             "model": self.model,
-            "max_tokens": request.max_tokens,
             "system": [{"type": "text", "text": request.system, "cache_control": {"type": "ephemeral"}}],
             "messages": [{"role": "user", "content": request.user}],
             "output_config": {"format": {"type": "json_schema", "schema": request.schema}},
@@ -183,12 +183,18 @@ class LLM:
         return json.loads(text), usage
 
     def _call_api(self, request: Request) -> tuple[Json, Json]:
-        return self._parse(self._client().messages.create(**self._params(request)), request.task)
+        message = self._client().messages.create(
+            **self._params(request), max_tokens=request.max_tokens, timeout=REQUEST_TIMEOUT_S
+        )
+        return self._parse(message, request.task)
 
     def _call_batch(self, requests: dict[str, Request]) -> dict[str, Json]:
         client = self._client()
         batch = client.messages.batches.create(
-            requests=[{"custom_id": cid, "params": self._params(r)} for cid, r in requests.items()]
+            requests=[
+                {"custom_id": cid, "params": {**self._params(r), "max_tokens": r.max_tokens}}
+                for cid, r in requests.items()
+            ]
         )
         while (batch := client.messages.batches.retrieve(batch.id)).processing_status != "ended":
             time.sleep(30)
