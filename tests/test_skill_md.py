@@ -9,6 +9,8 @@ def test_frontmatter_names_the_skill() -> None:
     fm = yaml.safe_load(SKILL.read_text().split("---\n")[1])
     assert fm["name"] == SKILL.parent.name
     assert len(fm["description"]) > 100
+    for framework in ("SOC 2", "ISO/IEC 42001", "EU AI Act"):
+        assert framework in " ".join(fm["description"].split()), framework
 
 
 def test_states_the_grounding_rule() -> None:

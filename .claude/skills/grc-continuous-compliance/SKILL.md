@@ -2,11 +2,11 @@
 name: grc-continuous-compliance
 description: >
   Runs a layered DevSecOps scan (Semgrep, Trivy, Checkov, Conftest) against a
-  target app, maps each finding to a SOC 2 / NIST 800-53 control using the local
-  OKF knowledge bundle, emits OSCAL, and writes an auditor-facing report. Use
-  when the user asks to review security or compliance posture, produce an audit
-  evidence pass, or check a deploy against policy, in a repo that ships a
-  knowledge/ OKF bundle.
+  target app, maps each finding to a SOC 2 / NIST 800-53, ISO/IEC 42001, or EU
+  AI Act control using the local OKF knowledge bundle, emits OSCAL, and writes
+  an auditor-facing report. Use when the user asks to review security,
+  compliance, or AI-governance posture, produce an audit evidence pass, or check
+  a deploy against policy, in a repo that ships a knowledge/ OKF bundle.
 ---
 
 # GRC Continuous-Compliance Skill
@@ -14,7 +14,8 @@ description: >
 ## Grounding rule (non-negotiable)
 
 1. Read `knowledge/index.md`, then the concepts under `controls/`, `policies/`,
-   and `scanners/`, before doing anything else.
+   `scanners/`, and `crosswalk/`, and `knowledge/ai-inventory.md`, before doing
+   anything else.
 2. A finding maps to a control only through a `rule_ids` declaration in the
    bundle. The scripts enforce this; do not override them.
 3. A finding with no mapped control is a **coverage gap**. Report it as one.
@@ -33,7 +34,8 @@ description: >
    - `out/report.md`: the deterministic report
 3. **Review.** Read `out/report.md` and `out/mapping.json`. Summarize for the
    user: controls not satisfied, the highest-severity findings, coverage gaps,
-   and controls not assessed.
+   controls not assessed, and controls not applicable at the declared AI risk
+   tier (these are out of scope, never a pass).
 4. **Enrich (optional, on request).** Run `make narrate`. It writes
    `out/narratives.json` and re-renders `out/report.md` with a validated summary
    and auditor note per control; a rejected answer leaves the deterministic
