@@ -16,9 +16,10 @@ MAX_TOKENS = 1000
 GAPS_PER_CALL = 8  # ~100 output tokens per proposal keeps each call under MAX_TOKENS
 CONFIDENCE = ("low", "medium", "high")
 VARIANTS = ("baseline", "scoped")  # baseline: the first eval's input, byte for byte; scoped: issue #32
-# Default configuration, chosen by the pre-registered rule on the confirm holdout (issue #32):
-# Sonnet 5, scoped input, and `low` confidence proposals treated as `none`.
-TRIAGE_MODEL = "claude-sonnet-5"
+# Default configuration (issue #32): Haiku 4.5, scoped input, `low` and `medium` confidence treated as
+# `none`. A single confirm run first favoured Sonnet 5; three fresh runs each showed the two overlap on
+# accuracy while Haiku was steadier on AI cases at about a fifth of the cost.
+TRIAGE_MODEL = "claude-haiku-4-5"
 ABSTAIN = {"none": (), "low": ("low",), "low+medium": ("low", "medium")}
 
 SYSTEM = """You triage scanner rules that no control in a GRC knowledge bundle claims yet.
@@ -165,7 +166,9 @@ def main() -> None:
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--variant", choices=VARIANTS, default="scoped")
-    parser.add_argument("--abstain-on", choices=ABSTAIN, default="low", help="confidence levels treated as `none`")
+    parser.add_argument(
+        "--abstain-on", choices=ABSTAIN, default="low+medium", help="confidence levels treated as `none`"
+    )
     parser.add_argument(
         "--batch", action="store_true", help="send as one Message Batch: half price, results in minutes, not seconds"
     )

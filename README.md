@@ -53,9 +53,9 @@ An optional Claude API step adds words and proposals on top, never statuses:
   compliant, or passed, or uses a number that is not in the input.
 - **`make triage`** proposes an in-bundle control, or `none`, for each coverage
   gap, in `out/proposals.json`. Nothing is applied: a person adds `rule_ids`.
-  Default: Sonnet 5, each control's framework scope and each gap's files in the
-  input, and `low` confidence proposals turned into `none` (the model's guess is
-  kept in `cutoff_from`), chosen by the measurement below.
+  Default: Haiku 4.5, each control's framework scope and each gap's files in the
+  input, and `low` and `medium` confidence proposals turned into `none` (the
+  model's guess is kept in `cutoff_from`), chosen by the measurements below.
   `make triage TRIAGE_ARGS=--batch` sends it as one Message Batch instead:
   half price, results in minutes rather than seconds.
 - **`make eval-triage`** scores triage on 65 labeled gaps (accuracy, and
@@ -69,19 +69,19 @@ An optional Claude API step adds words and proposals on top, never statuses:
 `LLM_MODE` picks the provider: `replay` (default; recorded responses, $0, used
 by tests and CI), `record`, `anthropic` (the Claude API, key from the
 environment), or `claude-cli` (Claude Code headless on your plan; dev loop
-only, and not "the Claude API"). Defaults: Haiku 4.5 for narrate and the
-eval, Sonnet 5 for triage (`LLM_MODEL` overrides both), `LLM_BUDGET_USD=1`.
+only, and not "the Claude API"). Defaults: `LLM_MODEL=claude-haiku-4-5`,
+`LLM_BUDGET_USD=1`.
 
 Cost controls: a small model; digests instead of raw scanner output; structured
 JSON output with `max_tokens` bounds (narrate 2K, triage 1K per call of 8
 gaps); a response cache keyed on `sha256(model + prompt)`; batches for the eval;
 and a budget guard that stops before a call could pass `LLM_BUDGET_USD`. Every
 call is logged to `out/llm-usage.jsonl`, and the report footer shows the run's
-cost. Measured on the sample app's real scan (41 gap rules): narrate on Haiku
-4.5, 1 call, $0.014; triage on Sonnet 5, 6 calls, $0.097; **$0.111 per full
-run**, about twice the original spec's $0.05 target, almost all of it triage.
-`LLM_MODEL=claude-haiku-4-5 make triage` is the cheaper option, at lower
-accuracy (see the confirm results below).
+cost. Measured on the sample app's real scan (41 gap rules) while triage ran on
+Sonnet 5: narrate on Haiku 4.5, 1 call, $0.014; triage, 6 calls, $0.097. With
+triage now on Haiku 4.5 (about a fifth of Sonnet's price per token), a full run
+should come to roughly $0.03, within the original spec's $0.05 target; that
+figure is an estimate until the next measured run.
 
 **First eval baseline** (Haiku 4.5, one Message Batch, $0.009): accuracy 0.64,
 `none` precision 1.0, `none` recall 0.1, no invalid outputs. Every clear match
@@ -131,7 +131,7 @@ right answer is not an AI control:
 
 Both cleared the pre-registered bar (≥ 0.75 on `none` recall and on AI cases);
 Sonnet 5 led by three cases, more than the one-case margin that would have
-favoured the cheaper Haiku, so it became `make triage`'s default.
+favoured the cheaper Haiku, so it became `make triage`'s default at first.
 
 **Run-to-run variance** ([`triage-eval-variance-haiku.json`](examples/triage-eval-variance-haiku.json),
 [`triage-eval-variance-sonnet.json`](examples/triage-eval-variance-sonnet.json), $0.10):
@@ -145,7 +145,10 @@ three fresh runs of each candidate on the confirm split, cache off.
 The run that decided the default was Sonnet 5's best: every fresh run scored
 lower. Over repeats the two candidates overlap on accuracy, and Haiku is steadier
 on the AI cases, at about a fifth of the cost. A single run was not enough
-evidence to separate them.
+evidence to separate them, so the default moved back to Haiku 4.5 with the
+`low+medium` cutoff: equal within noise on accuracy, steadier on AI cases, and
+cheaper. `LLM_MODEL=claude-sonnet-5 make triage TRIAGE_ARGS="--abstain-on low"`
+runs the Sonnet configuration.
 
 Prompt caching is requested but does not take effect on Haiku 4.5 today: its
 minimum cacheable prefix is 4,096 tokens and the bundle digest is smaller. The
