@@ -923,7 +923,7 @@ diff --git a/tests/test_to_oscal.py b/tests/test_to_oscal.py
 index 976e514..5c355f9 100644
 --- a/tests/test_to_oscal.py
 +++ b/tests/test_to_oscal.py
-@@ -45,8 +45,8 @@ def test_findings_only_for_violated_controls(bundle: Bundle, mapping: dict) -> N
+@@ -45,7 +45,7 @@ def test_findings_only_for_violated_controls(bundle: Bundle, mapping: dict) -> N
  def test_clean_controls_are_never_attested(bundle: Bundle, mapping: dict) -> None:
      (result,) = assessment_results(bundle, mapping, NOW)["assessment-results"]["results"]
      assert "satisfied" not in {f["target"]["status"]["state"] for f in result["findings"]}
@@ -1570,18 +1570,6 @@ index 15bbb2a..7fcfbfd 100644
  def test_monitoring_control_is_not_assessed(mapping: dict) -> None:
 -    assert mapping["controls"]["cc7.2"]["status"] == "not-assessed"
 +    assert mapping["controls"]["soc2:cc7.2"]["status"] == "not-assessed"
-diff --git a/tests/test_seeded_ledger.py b/tests/test_seeded_ledger.py
-index efa767f..30a21ef 100644
---- a/tests/test_seeded_ledger.py
-+++ b/tests/test_seeded_ledger.py
-@@ -23,4 +23,6 @@ def test_entry_is_well_formed(seed: dict) -> None:
-     for detector in seed["detected_by"]:
-         tool, _, rule = detector.partition(":")
-         assert tool in TOOLS and rule
--    assert len(seed["expect"]) == 1 and set(seed["expect"]) <= {"control", "gap"}
-+    assert len(seed["expect"]) == 1 and set(seed["expect"]) <= {"controls", "gap"}
-+    for key in seed["expect"].get("controls", []):
-+        assert ":" in key, f"{seed['id']}: control {key!r} is not a framework:code key"
 ```
 
 In `tests/test_seeded_ledger.py`, replace the last line of `test_entry_is_well_formed`:

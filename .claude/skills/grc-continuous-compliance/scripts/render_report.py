@@ -69,9 +69,11 @@ def _title(bundle: Bundle, key: str) -> str:
     return control.title if control else key
 
 
-def _control_section(bundle: Bundle, key: str, entry: Json) -> list[str]:
+def _control_section(bundle: Bundle, key: str, entry: Json, narrative: Json | None = None) -> list[str]:
     evidence = [_link(bundle, cid) for cid in entry["evidenced_by"] + entry["satisfied_by"]]
     lines = [f"### {_title(bundle, key)}", "", f"**Status:** {entry['status']}", ""]
+    if narrative:
+        lines += [f"**Summary (LLM):** {narrative['summary']}", "", f"**Auditor note (LLM):** {narrative['auditor_note']}", ""]
     if entry["findings"]:
         lines += [f"**Findings:** {_breakdown(_counts(entry['findings']))}", ""]
     lines += [f"**Evidence:** {', '.join(evidence) if evidence else 'none in bundle'}", ""]
@@ -133,7 +135,28 @@ def _crosswalk(bundle: Bundle, mapping: Json) -> list[str]:
     return [*lines, ""]
 
 
-def render_report(bundle: Bundle, mapping: Json, now: str) -> str:
+def _llm_footer(usage: list[Json]) -> list[str]:
+    """One line on the LLM step's own cost, from this run's ledger entries."""
+    if not usage:
+        return []
+    total = {k: sum(e[k] for e in usage) for k in ("input_tokens", "output_tokens", "cache_read_input_tokens", "cost_usd")}
+    models = ", ".join(sorted({e["model"] for e in usage}))
+    modes = ", ".join(sorted({e["mode"] for e in usage}))
+    billed = sum(e["billed"] for e in usage)
+    return [
+        "",
+        "---",
+        "",
+        f"LLM step: {len(usage)} call(s), {billed} billed, model {models}, mode {modes}. "
+        f"Tokens: {total['input_tokens']} in, {total['output_tokens']} out, "
+        f"{total['cache_read_input_tokens']} cache read. Cost ${total['cost_usd']:.4f}. "
+        "The LLM wrote prose only; every status and count above is deterministic.",
+    ]
+
+
+def render_report(
+    bundle: Bundle, mapping: Json, now: str, narratives: Json | None = None, usage: list[Json] | None = None
+) -> str:
     """Markdown report: risk posture, summary, one section per framework, crosswalk, gaps, the rest."""
     controls = sorted(mapping["controls"].items(), key=lambda kv: _order(kv[0]))
     lines = [
@@ -162,7 +185,7 @@ def render_report(bundle: Bundle, mapping: Json, now: str) -> str:
         if shown:
             lines += [f"## {fw_title}", ""]
             for key, entry in shown:
-                lines += _control_section(bundle, key, entry)
+                lines += _control_section(bundle, key, entry, (narratives or {}).get(key))
     lines += _crosswalk(bundle, mapping)
     lines += ["## Coverage gaps", ""]
     if mapping["unmapped"]:
@@ -183,6 +206,7 @@ def render_report(bundle: Bundle, mapping: Json, now: str) -> str:
         for key, entry in not_applicable:
             lines.append(f"- {_title(bundle, key)}")
             lines += [f"  {_finding_line(f)}" for f in entry["findings"]]
+    lines += _llm_footer(usage or [])
     return "\n".join(lines) + "\n"
 
 
@@ -193,7 +217,11 @@ def main() -> None:
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
     args = parser.parse_args()
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
-    report = render_report(load_bundle(args.knowledge), mapping, args.now)
+    narratives_path, ledger = args.out / "narratives.json", args.out / "llm-usage.jsonl"
+    narratives = json.loads(narratives_path.read_text(encoding="utf-8")) if narratives_path.is_file() else {}
+    usage = [json.loads(ln) for ln in ledger.read_text(encoding="utf-8").splitlines()] if ledger.is_file() else []
+    last_run = [e for e in usage if usage and e["run_id"] == usage[-1]["run_id"]]
+    report = render_report(load_bundle(args.knowledge), mapping, args.now, narratives, last_run)
     (args.out / "report.md").write_text(report, encoding="utf-8")
 
 

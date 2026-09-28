@@ -830,9 +830,11 @@ if __name__ == "__main__":
 - [ ] **Step 5: Add the report hook.** Apply to `render_report.py` (the Spec A Task 2 version):
 
 ```diff
+diff --git a/.claude/skills/grc-continuous-compliance/scripts/render_report.py b/.claude/skills/grc-continuous-compliance/scripts/render_report.py
+index 834e744..18e8289 100644
 --- a/.claude/skills/grc-continuous-compliance/scripts/render_report.py
 +++ b/.claude/skills/grc-continuous-compliance/scripts/render_report.py
-@@ -69,9 +69,11 @@
+@@ -69,9 +69,11 @@ def _title(bundle: Bundle, key: str) -> str:
      return control.title if control else key
  
  
@@ -845,7 +847,7 @@ if __name__ == "__main__":
      if entry["findings"]:
          lines += [f"**Findings:** {_breakdown(_counts(entry['findings']))}", ""]
      lines += [f"**Evidence:** {', '.join(evidence) if evidence else 'none in bundle'}", ""]
-@@ -133,7 +135,28 @@
+@@ -133,7 +135,28 @@ def _crosswalk(bundle: Bundle, mapping: Json) -> list[str]:
      return [*lines, ""]
  
  
@@ -875,7 +877,7 @@ if __name__ == "__main__":
      """Markdown report: risk posture, summary, one section per framework, crosswalk, gaps, the rest."""
      controls = sorted(mapping["controls"].items(), key=lambda kv: _order(kv[0]))
      lines = [
-@@ -162,7 +185,7 @@
+@@ -162,7 +185,7 @@ def render_report(bundle: Bundle, mapping: Json, now: str) -> str:
          if shown:
              lines += [f"## {fw_title}", ""]
              for key, entry in shown:
@@ -884,7 +886,7 @@ if __name__ == "__main__":
      lines += _crosswalk(bundle, mapping)
      lines += ["## Coverage gaps", ""]
      if mapping["unmapped"]:
-@@ -183,6 +206,7 @@
+@@ -183,6 +206,7 @@ def render_report(bundle: Bundle, mapping: Json, now: str) -> str:
          for key, entry in not_applicable:
              lines.append(f"- {_title(bundle, key)}")
              lines += [f"  {_finding_line(f)}" for f in entry["findings"]]
@@ -892,7 +894,7 @@ if __name__ == "__main__":
      return "\n".join(lines) + "\n"
  
  
-@@ -193,7 +217,11 @@
+@@ -193,7 +217,11 @@ def main() -> None:
      parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
      args = parser.parse_args()
      mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
@@ -903,6 +905,8 @@ if __name__ == "__main__":
 +    last_run = [e for e in usage if usage and e["run_id"] == usage[-1]["run_id"]]
 +    report = render_report(load_bundle(args.knowledge), mapping, args.now, narratives, last_run)
      (args.out / "report.md").write_text(report, encoding="utf-8")
+ 
+ 
 ```
 
 - [ ] **Step 6: Add the Make target.** In the `Makefile`, add `narrate` to `.PHONY`, add under the `PY :=` line:

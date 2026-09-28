@@ -60,3 +60,30 @@ def test_not_applicable_is_counted_apart_and_keeps_its_findings() -> None:
     assert "1 control shows no violations. 0 not assessed. 1 not applicable. 1 coverage gap to triage." in report
     na = report.split("## Not applicable", 1)[1]
     assert "- Art. 12 — Record-keeping" in na and "`llm-prompt-logged`" in na
+
+
+def test_narrative_is_inserted_under_its_control_and_counts_stay_put() -> None:
+    bundle = load_bundle(FIXTURES / "bundle")
+    mapping = map_findings(bundle, json.loads((FIXTURES / "findings.json").read_text()))
+    narratives = {"soc2:cc7.1": {"summary": "One critical CVE.", "auditor_note": "Check the upgrade ticket."}}
+    base = render_report(bundle, mapping, "2026-09-25T12:00:00+00:00")
+    report = render_report(bundle, mapping, "2026-09-25T12:00:00+00:00", narratives)
+    section = report.split("### CC7.1", 1)[1].split("###", 1)[0]
+    assert "**Summary (LLM):** One critical CVE." in section
+    assert "**Auditor note (LLM):** Check the upgrade ticket." in section
+    stripped = [ln for ln in report.splitlines() if "(LLM)" not in ln]
+    assert [ln for ln in stripped if ln] == [ln for ln in base.splitlines() if ln]
+
+
+def test_footer_reports_the_llm_run_cost() -> None:
+    bundle = load_bundle(FIXTURES / "bundle")
+    mapping = map_findings(bundle, [])
+    usage = [
+        {"model": "claude-haiku-4-5", "mode": "anthropic", "billed": True, "input_tokens": 900,
+         "output_tokens": 400, "cache_read_input_tokens": 3000, "cost_usd": 0.0032},
+        {"model": "claude-haiku-4-5", "mode": "anthropic", "billed": False, "input_tokens": 900,
+         "output_tokens": 400, "cache_read_input_tokens": 0, "cost_usd": 0.0},
+    ]
+    footer = render_report(bundle, mapping, "2026-09-25T12:00:00+00:00", usage=usage).splitlines()[-1]
+    assert footer.startswith("LLM step: 2 call(s), 1 billed, model claude-haiku-4-5, mode anthropic.")
+    assert "Tokens: 1800 in, 800 out, 3000 cache read. Cost $0.0032." in footer
