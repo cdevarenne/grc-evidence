@@ -33,18 +33,50 @@ def _located(mapping: dict, tool: str, rule_id: str, file: str) -> set[str]:
         for u in mapping["unmapped"]
         if (u["finding"]["tool"], u["finding"]["rule_id"], u["finding"]["target"]) == (tool, rule_id, file)
     }
+    hits |= {
+        f"suppressed:{s['kind']}"
+        for s in mapping.get("suppressed", [])
+        if s["kind"] == "false-positive"
+        and (s["finding"]["tool"], s["finding"]["rule_id"], s["finding"]["target"]) == (tool, rule_id, file)
+    }
     return hits
 
 
 SEEDED = yaml.safe_load((ROOT / "app" / "SEEDED.yaml").read_text())
 
 
+def _expected(seed: dict, mapping: dict) -> set[str]:
+    """Where a seed's findings must land today; an expired suppression lands them as if it did not exist."""
+    expect = seed["expect"]
+    if "suppressed" in expect:
+        if expect["suppression"] in mapping.get("expired_suppressions", []):
+            expect = expect["unsuppressed"]
+        else:
+            return {f"suppressed:{expect['suppressed']}"}
+    return set(expect.get("controls", [])) or {f"gap:{expect['gap']}"}
+
+
 @pytest.mark.parametrize("seed", SEEDED, ids=lambda s: s["id"])
 def test_seeded_issue_lands_where_expected(mapping: dict, seed: dict) -> None:
-    expected = set(seed["expect"].get("controls", [])) or {f"gap:{seed['expect']['gap']}"}
     for detector in seed["detected_by"]:
         tool, rule_id = detector.split(":", 1)
-        assert _located(mapping, tool, rule_id, seed["file"]) == expected, f"{seed['id']} {detector}"
+        assert _located(mapping, tool, rule_id, seed["file"]) == _expected(seed, mapping), f"{seed['id']} {detector}"
+
+
+@pytest.mark.parametrize("seed", [s for s in SEEDED if "accepted" in s["expect"]], ids=lambda s: s["id"])
+def test_accepted_risk_is_marked_while_in_force(mapping: dict, seed: dict) -> None:
+    sid = seed["expect"]["accepted"]
+    marks = {
+        f.get("accepted")
+        for entry in mapping["controls"].values()
+        for f in entry["findings"]
+        if (f["tool"], f["rule_id"], f["target"]) == (*seed["detected_by"][0].split(":", 1), seed["file"])
+    }
+    assert marks == ({None} if sid in mapping.get("expired_suppressions", []) else {sid})
+
+
+def test_no_suppression_is_unused(mapping: dict) -> None:
+    assert mapping.get("unused_suppressions", []) == []
 
 
 def test_outputs_exist_and_oscal_validates(mapping: dict) -> None:

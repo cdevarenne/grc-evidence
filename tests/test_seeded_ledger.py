@@ -23,6 +23,12 @@ def test_entry_is_well_formed(seed: dict) -> None:
     for detector in seed["detected_by"]:
         tool, _, rule = detector.partition(":")
         assert tool in TOOLS and rule
-    assert len(seed["expect"]) == 1 and set(seed["expect"]) <= {"controls", "gap"}
+    outcome = set(seed["expect"]) & {"controls", "gap", "suppressed"}
+    assert len(outcome) == 1, f"{seed['id']}: exactly one of controls, gap, suppressed"
+    assert set(seed["expect"]) <= {"controls", "gap", "suppressed", "accepted", "unsuppressed", "suppression"}
+    if "suppressed" in seed["expect"]:
+        assert {"unsuppressed", "suppression"} <= set(seed["expect"]), f"{seed['id']}: say where it lands once expired"
+    if "accepted" in seed["expect"]:
+        assert "controls" in seed["expect"], f"{seed['id']}: an accepted risk stays on its controls"
     for key in seed["expect"].get("controls", []):
         assert ":" in key, f"{seed['id']}: control {key!r} is not a framework:code key"

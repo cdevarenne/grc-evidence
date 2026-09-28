@@ -1,6 +1,9 @@
 # INTENTIONALLY VULNERABLE SCAN TARGET — DO NOT DEPLOY.
 # Each seeded issue, the scanner rules observed to detect it, and the expected outcome:
-# `controls` lists every control key the finding must land on; `gap` names the coverage-gap reason.
+# `controls` lists every control key the finding must land on; `gap` names the coverage-gap reason;
+# `suppressed` names the suppression kind of a reviewed false positive; `accepted` names the suppression
+# id of an accepted risk, which stays on its controls. Suppressions expire: once expired, the finding
+# lands as it would without one (asserted by tests/test_integration.py).
 # Asserted by tests/test_integration.py (make test-integration).
 - id: S1
   file: app/Dockerfile
@@ -36,7 +39,7 @@
   file: app/requirements.txt
   issue: Django 4.2.0 has known CVEs
   detected_by: ["trivy:CVE-2023-31047"]
-  expect: {controls: [soc2:cc7.1]}
+  expect: {controls: [soc2:cc7.1], accepted: suppressions/django-cve-2023-31047}
 - id: AI-1
   file: app/assistant/views.py
   issue: the prompt (with user input) is written to the log in clear text
@@ -67,3 +70,8 @@
   issue: AI output is written to a record with no human-review flag (no rule declared)
   detected_by: ["semgrep:llm-output-unreviewed-write"]
   expect: {gap: no-rule-match}
+- id: SUP-1
+  file: app/k8s/deployment.yaml
+  issue: image from the project's own registry flagged as untrusted (a reviewed false positive)
+  detected_by: ["trivy:KSV-0125"]
+  expect: {suppressed: false-positive, unsuppressed: {gap: no-rule-match}, suppression: suppressions/trivy-trusted-registry}

@@ -15,5 +15,6 @@ invent a mapping.
 * [Stack](stack/) - the sample app and its infrastructure
 * [Policies](policies/) - guardrails (Rego, Semgrep) and the scanner rules that detect each
 * [Scanners](scanners/) - DevSecOps tools and the controls they evidence
+* [Suppressions](suppressions/) - reviewed, expiring false positives and accepted risks; never hidden
 * [AI system inventory](ai-inventory.md) - the declared AI risk tier that decides which controls apply
 * [OSCAL output](oscal/component-definition.md) - the machine-readable output target
