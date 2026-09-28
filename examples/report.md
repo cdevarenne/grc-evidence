@@ -1,6 +1,6 @@
 # Compliance Scan Report
 
-Generated 2026-09-28T18:09:34+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-09-28T21:58:35+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
@@ -39,6 +39,10 @@ it is evidence, not a control attestation.
 
 **Status:** not-satisfied
 
+**Summary (LLM):** Status is not-satisfied with 8 findings: 4 high-severity, 1 medium-severity, 1 low-severity, and 2 unknown-severity.
+
+**Auditor note (LLM):** Review logical access controls to ensure only authenticated, authorized identities reach protected functions and data, and verify least-privilege execution.
+
 **Findings:** 4 high, 1 medium, 1 low, 2 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Semgrep](../knowledge/scanners/semgrep.md), [Trivy](../knowledge/scanners/trivy.md), [DRF writes require authentication](../knowledge/policies/drf-authenticated-writes.md), [No hard-coded LLM API keys](../knowledge/policies/llm-hardcoded-key.md), [Require non-root containers](../knowledge/policies/require-non-root.md)
@@ -50,8 +54,8 @@ it is evidence, not a control attestation.
 - `trivy` `DS-0002` (high) — Image user should not be 'root': Specify at least 1 USER command in Dockerfile with non-root user as argument — `app/Dockerfile`
 - `trivy` `KSV-0012` (medium) — Runs as root user: Container 'api' of Deployment 'widgets-api' should set 'securityContext.runAsNonRoot' to true — `app/k8s/deployment.yaml`
 - `trivy` `KSV-0105` (low) — Containers must not set runAsUser to 0: securityContext.runAsUser should be set to a value greater than 0 — `app/k8s/deployment.yaml`
-- `checkov` `CKV_DOCKER_3` (unknown) — Ensure that a user for the container has been created (/Dockerfile.) — `app/Dockerfile`
 - `checkov` `CKV_K8S_23` (unknown) — Minimize the admission of root containers (Deployment.default.widgets-api) — `app/k8s/deployment.yaml`
+- `checkov` `CKV_DOCKER_3` (unknown) — Ensure that a user for the container has been created (/Dockerfile.) — `app/Dockerfile`
 - `conftest` `require_non_root` (high) — Deployment container "api" does not run as non-root (set runAsNonRoot: true) — `app/k8s/deployment.yaml`
 
 **Remediation:** Read the key from the environment (for example `os.environ["ANTHROPIC_API_KEY"]`)
@@ -62,6 +66,10 @@ or a secret manager, and rotate any key that was committed. Replace `AllowAny` w
 ### CC6.6 — System Boundary Protection
 
 **Status:** not-satisfied
+
+**Summary (LLM):** Status is not-satisfied with 4 findings: 2 high-severity and 2 unknown-severity.
+
+**Auditor note (LLM):** Examine boundary protection to ensure resources are not reachable anonymously from outside the system and data in transit is protected.
 
 **Findings:** 2 high, 2 unclassified
 
@@ -80,6 +88,10 @@ accounts only, and enforce public access prevention on the bucket.
 ### CC7.1 — Vulnerability Detection
 
 **Status:** not-satisfied
+
+**Summary (LLM):** Status is not-satisfied with 51 findings: 3 critical, 16 high-severity, 21 medium-severity, and 11 low-severity.
+
+**Auditor note (LLM):** Prioritize addressing the 3 critical and 16 high-severity vulnerabilities across source, dependencies, and container images immediately.
 
 **Findings:** 3 critical, 16 high, 21 medium, 11 low
 
@@ -146,6 +158,10 @@ advisories, then re-scan.
 
 **Status:** not-satisfied
 
+**Summary (LLM):** Status is not-satisfied with 3 findings: 1 high-severity, 1 medium-severity, and 1 unknown-severity.
+
+**Auditor note (LLM):** Confirm that deployment artifacts are pinned, changes undergo review, and automated policy gates prevent unapproved releases.
+
 **Findings:** 1 high, 1 medium, 1 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Trivy](../knowledge/scanners/trivy.md), [Deny :latest image tag](../knowledge/policies/deny-latest-tag.md)
@@ -165,6 +181,10 @@ and update it only through a reviewed change.
 
 **Status:** not-satisfied
 
+**Summary (LLM):** Status is not-satisfied with 1 high-severity finding.
+
+**Auditor note (LLM):** Verify that an inventory of AI systems exists with documented owners and dependencies (models, providers, data, tooling, people).
+
 **Findings:** 1 high
 
 **Evidence:** [Conftest](../knowledge/scanners/conftest.md), [AI inventory is complete](../knowledge/policies/ai-inventory-complete.md)
@@ -179,6 +199,10 @@ purpose, then review its risk tier.
 ### A.6 — AI system life cycle
 
 **Status:** not-satisfied
+
+**Summary (LLM):** Status is not-satisfied with 2 findings: 1 high-severity and 1 medium-severity.
+
+**Auditor note (LLM):** Review the design, build, deployment, and operation controls; address resource limits, security context, and namespace isolation gaps.
 
 **Findings:** 1 high, 1 medium
 
@@ -197,6 +221,10 @@ feature's latency and cost budget.
 
 **Status:** not-satisfied
 
+**Summary (LLM):** Status is not-satisfied with 1 high-severity finding.
+
+**Auditor note (LLM):** Determine how prompts, context, and model outputs are governed for quality, provenance, and protection; examine the unreviewed LLM output write issue.
+
 **Findings:** 1 high
 
 **Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Do not log prompts or completions](../knowledge/policies/llm-prompt-logged.md)
@@ -213,6 +241,10 @@ Keep full transcripts, if needed, in a store with its own access control and ret
 ### Art. 50 — Transparency obligations for certain AI systems
 
 **Status:** not-satisfied
+
+**Summary (LLM):** Status is not-satisfied with 1 medium-severity finding.
+
+**Auditor note (LLM):** Investigate whether users are informed when interacting with AI systems or receiving AI-generated content.
 
 **Findings:** 1 medium
 
@@ -268,27 +300,27 @@ Findings with no in-bundle control. These are gaps to close, not mappings to inv
 - `trivy` `KSV-0110` (low) — Workloads in the default namespace: deployment widgets-api in default namespace should set metadata.namespace to a non-default namespace — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `trivy` `KSV-0118` (high) — Default security context configured: deployment widgets-api in default namespace is using the default security context, which allows root privileges — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `trivy` `KSV-0125` (medium) — Restrict container images to trusted registries: Container api in deployment widgets-api (namespace: default) uses an image from an untrusted registry. — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_DOCKER_2` (unknown) — Ensure that HEALTHCHECK instructions have been added to container images (/Dockerfile.) — `app/Dockerfile` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_12` (unknown) — Memory requests should be set (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_9` (unknown) — Readiness Probe Should be Configured (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_10` (unknown) — CPU requests should be set (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_11` (unknown) — CPU limits should be set (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_43` (unknown) — Image should use digest (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_37` (unknown) — Minimize the admission of containers with capabilities assigned (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_28` (unknown) — Minimize the admission of containers with the NET_RAW capability (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_38` (unknown) — Ensure that Service Account Tokens are only mounted where necessary (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_40` (unknown) — Containers should run as a high UID to avoid host conflict (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_29` (unknown) — Apply security context to your pods and containers (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_20` (unknown) — Containers should not run with allowPrivilegeEscalation (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_21` (unknown) — The default namespace should not be used (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_13` (unknown) — Memory limits should be set (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_22` (unknown) — Use read-only filesystem for containers where possible (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_8` (unknown) — Liveness Probe Should be Configured (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_31` (unknown) — Ensure that the seccomp profile is set to docker/default or runtime/default (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_K8S_21` (unknown) — The default namespace should not be used (Service.default.widgets-api) — `app/k8s/service.yaml` — reason: `no-rule-match`
-- `checkov` `CKV2_K8S_6` (unknown) — Minimize the admission of pods which lack an associated NetworkPolicy (Pod.default.widgets-api.app-widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `checkov` `CKV_GCP_62` (unknown) — Bucket should log access (google_storage_bucket.widgets_assets) — `app/infra/main.tf` — reason: `no-rule-match`
 - `checkov` `CKV_GCP_78` (unknown) — Ensure Cloud storage has versioning enabled (google_storage_bucket.widgets_assets) — `app/infra/main.tf` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_37` (unknown) — Minimize the admission of containers with capabilities assigned (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_31` (unknown) — Ensure that the seccomp profile is set to docker/default or runtime/default (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_8` (unknown) — Liveness Probe Should be Configured (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_12` (unknown) — Memory requests should be set (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_20` (unknown) — Containers should not run with allowPrivilegeEscalation (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_13` (unknown) — Memory limits should be set (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_40` (unknown) — Containers should run as a high UID to avoid host conflict (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_10` (unknown) — CPU requests should be set (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_22` (unknown) — Use read-only filesystem for containers where possible (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_9` (unknown) — Readiness Probe Should be Configured (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_28` (unknown) — Minimize the admission of containers with the NET_RAW capability (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_29` (unknown) — Apply security context to your pods and containers (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_38` (unknown) — Ensure that Service Account Tokens are only mounted where necessary (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_21` (unknown) — The default namespace should not be used (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_43` (unknown) — Image should use digest (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_11` (unknown) — CPU limits should be set (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_K8S_21` (unknown) — The default namespace should not be used (Service.default.widgets-api) — `app/k8s/service.yaml` — reason: `no-rule-match`
+- `checkov` `CKV2_K8S_6` (unknown) — Minimize the admission of pods which lack an associated NetworkPolicy (Pod.default.widgets-api.app-widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
+- `checkov` `CKV_DOCKER_2` (unknown) — Ensure that HEALTHCHECK instructions have been added to container images (/Dockerfile.) — `app/Dockerfile` — reason: `no-rule-match`
 
 ## Not assessed
 
@@ -308,3 +340,7 @@ Out of scope at the declared AI risk tier. Findings stay listed; they do not cha
 - Art. 13 — Transparency and provision of information to deployers
 - Art. 14 — Human oversight
 - Art. 15 — Accuracy, robustness and cybersecurity
+
+---
+
+LLM step: 1 call(s), 1 billed, model claude-haiku-4-5, mode anthropic. Tokens: 8286 in, 1095 out, 0 cache read. Cost $0.0138. The LLM wrote prose only; every status and count above is deterministic.
