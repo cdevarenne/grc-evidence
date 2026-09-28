@@ -1,14 +1,14 @@
 # Compliance Scan Report
 
-Generated 2026-09-28T21:58:35+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-09-28T23:20:01+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
 
 ## Risk posture
 
-71 open findings across 8 of 12 controls: 3 critical, 26 high, 25 medium, 12 low, 5 unclassified.
-0 controls show no violations. 4 not assessed. 6 not applicable. 42 coverage gaps to triage.
+70 open findings across 8 of 12 controls: 2 critical, 26 high, 25 medium, 12 low, 5 unclassified.
+0 controls show no violations. 4 not assessed. 6 not applicable. 41 coverage gaps to triage. 1 accepted risk and 1 false positive suppressed after review.
 
 ## Summary
 
@@ -99,7 +99,7 @@ accounts only, and enforce public access prevention on the bucket.
 
 **Open findings:**
 
-- `trivy` `CVE-2023-31047` (critical) — Django 4.2.0: python-django: Potential bypass of validation when uploading multiple files using one form field — `app/requirements.txt`
+- `trivy` `CVE-2023-31047` (critical) — Django 4.2.0: python-django: Potential bypass of validation when uploading multiple files using one form field — `app/requirements.txt` — **accepted risk** (`suppressions/django-cve-2023-31047`)
 - `trivy` `CVE-2024-42005` (critical) — Django 4.2.0: python-django: Potential SQL injection in QuerySet.values() and values_list() — `app/requirements.txt`
 - `trivy` `CVE-2025-64459` (critical) — Django 4.2.0: django: Django SQL injection — `app/requirements.txt`
 - `trivy` `CVE-2023-36053` (high) — Django 4.2.0: python-django: Potential regular expression denial of service vulnerability in EmailValidator/URLValidator — `app/requirements.txt`
@@ -299,7 +299,6 @@ Findings with no in-bundle control. These are gaps to close, not mappings to inv
 - `trivy` `KSV-0106` (low) — Container capabilities must only include NET_BIND_SERVICE: container should drop all — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `trivy` `KSV-0110` (low) — Workloads in the default namespace: deployment widgets-api in default namespace should set metadata.namespace to a non-default namespace — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `trivy` `KSV-0118` (high) — Default security context configured: deployment widgets-api in default namespace is using the default security context, which allows root privileges — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `trivy` `KSV-0125` (medium) — Restrict container images to trusted registries: Container api in deployment widgets-api (namespace: default) uses an image from an untrusted registry. — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `checkov` `CKV_GCP_62` (unknown) — Bucket should log access (google_storage_bucket.widgets_assets) — `app/infra/main.tf` — reason: `no-rule-match`
 - `checkov` `CKV_GCP_78` (unknown) — Ensure Cloud storage has versioning enabled (google_storage_bucket.widgets_assets) — `app/infra/main.tf` — reason: `no-rule-match`
 - `checkov` `CKV_K8S_37` (unknown) — Minimize the admission of containers with capabilities assigned (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
@@ -322,6 +321,15 @@ Findings with no in-bundle control. These are gaps to close, not mappings to inv
 - `checkov` `CKV2_K8S_6` (unknown) — Minimize the admission of pods which lack an associated NetworkPolicy (Pod.default.widgets-api.app-widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `checkov` `CKV_DOCKER_2` (unknown) — Ensure that HEALTHCHECK instructions have been added to container images (/Dockerfile.) — `app/Dockerfile` — reason: `no-rule-match`
 
+## Suppressed
+
+Reviewed and time-limited. Shown here so nothing is hidden.
+
+| Kind | Finding | Owner | Expires | Reason |
+|---|---|---|---|---|
+| false-positive | `trivy` `KSV-0125` — `app/k8s/deployment.yaml` | human:cdevarenne | 2026-12-27 | The deployment pulls `ghcr.io/example/widgets-api`, the project's own registry. Trivy judges KSV-0125 against its built-in list of trusted registries, which does not include it, so the finding says nothing about this image's provenance. |
+| accepted-risk | `trivy` `CVE-2023-31047` — `app/requirements.txt` | human:cdevarenne | 2026-12-27 | CVE-2023-31047 lets a single form field upload several files and bypass the validation meant for one. The sample API exposes no file-upload field: widgets carry a name and a text description only. The vulnerability stays on CC7.1 — Vulnerability Detection as a known, accepted risk until the Django upgrade lands. |
+
 ## Not assessed
 
 - CC7.2 — Security Monitoring: no in-bundle scanner or policy evidences this control.
@@ -343,4 +351,4 @@ Out of scope at the declared AI risk tier. Findings stay listed; they do not cha
 
 ---
 
-LLM step: 1 call(s), 1 billed, model claude-haiku-4-5, mode anthropic. Tokens: 8286 in, 1095 out, 0 cache read. Cost $0.0138. The LLM wrote prose only; every status and count above is deterministic.
+LLM step: 12 call(s), 12 billed, model claude-sonnet-5, mode anthropic. Tokens: 6843 in, 6600 out, 22311 cache read. Cost $0.0698. The LLM wrote prose only; every status and count above is deterministic.
