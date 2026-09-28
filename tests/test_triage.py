@@ -60,3 +60,13 @@ def test_triage_schema_enumerates_only_bundle_controls() -> None:
     triage(llm, DIGEST, _gaps())
     enum = llm.requests[0].schema["properties"]["proposals"]["items"]["properties"]["proposal"]["enum"]
     assert enum == ["none", "soc2:cc6.1", "soc2:cc7.1", "soc2:cc7.2", "soc2:cc8.1"]
+
+
+def test_each_gap_is_sent_with_the_exact_rule_the_proposal_must_echo() -> None:
+    llm = StubLLM({})
+    triage(llm, DIGEST, _gaps())
+    (req,) = llm.requests
+    sent = json.loads(req.user.split("\n", 1)[1])
+    assert [g["rule"] for g in sent] == ["checkov:CKV_TEST_99", "conftest:orphan_rule"]
+    rule_schema = req.schema["properties"]["proposals"]["items"]["properties"]["rule"]
+    assert rule_schema == {"type": "string", "enum": ["checkov:CKV_TEST_99", "conftest:orphan_rule"]}

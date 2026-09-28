@@ -20,7 +20,7 @@ class StubLLM:
         if request.task == "narrate":
             return self.outputs["narrate"]
         gaps = json.loads(request.user.split("\n", 1)[1])
-        rules = [f"{g['tool']}:{g['rule_id']}" for g in gaps]
+        rules = [g["rule"] for g in gaps]
         return {"proposals": [self.outputs[r] for r in rules if r in self.outputs]}
 
     def complete_batch(self, requests: dict[str, Request]) -> dict[str, Any]:

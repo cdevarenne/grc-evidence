@@ -34,12 +34,15 @@ def rule_name(gap: Json) -> str:
     return f"{gap['tool']}:{gap['rule_id']}"
 
 
-def schema(keys: list[str]) -> Json:
-    """The proposal is an enum of in-bundle keys plus `none`, so an off-bundle control cannot be emitted."""
+def schema(keys: list[str], rules: list[str]) -> Json:
+    """`rule` is an enum of this call's gap rules; `proposal` an enum of in-bundle keys plus `none`.
+
+    So the model can neither misspell a rule nor name a control that is not in the bundle.
+    """
     proposal = {
         "type": "object",
         "properties": {
-            "rule": {"type": "string"},
+            "rule": {"type": "string", "enum": rules},
             "proposal": {"type": "string", "enum": ["none", *keys]},
             "rationale": {"type": "string"},
             "confidence": {"type": "string", "enum": list(CONFIDENCE)},
@@ -56,12 +59,16 @@ def schema(keys: list[str]) -> Json:
 
 
 def request(bundle_doc: Json, gaps: list[Json]) -> Request:
-    """Up to GAPS_PER_CALL gap rules per call; the bundle digest is the stable system block."""
+    """Up to GAPS_PER_CALL gap rules per call; the bundle digest is the stable system block.
+
+    Each gap is sent with its exact `rule` string (`tool:rule_id`), the key its proposal must echo.
+    """
+    payload = [{"rule": rule_name(g), "message": g["message"], "count": g["count"]} for g in gaps]
     return Request(
         task="triage",
         system=SYSTEM + dumps(bundle_doc),
-        user="Coverage-gap rules:\n" + json.dumps(gaps, sort_keys=True, indent=1, ensure_ascii=False),
-        schema=schema(sorted(bundle_doc)),
+        user="Coverage-gap rules:\n" + json.dumps(payload, sort_keys=True, indent=1, ensure_ascii=False),
+        schema=schema(sorted(bundle_doc), [g["rule"] for g in payload]),
         max_tokens=MAX_TOKENS,
     )
 
