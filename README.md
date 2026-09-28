@@ -64,6 +64,26 @@ optionally a message substring; there are no wildcards, and an accepted risk on
 a coverage gap is rejected when the bundle loads. `map_findings.py --today`
 sets the date used for expiry.
 
+## OSCAL output
+
+`make scan` writes three OSCAL 1.2.3 documents to `out/oscal/`, each validated
+against the NIST schema in the tests:
+
+- **`component-definition.json`**: the stack components and the controls each
+  one implements, one source per framework.
+- **`assessment-plan.json`**: what the scan intends to assess. Every control
+  applicable at the declared AI risk tier (including controls no scanner
+  evidences), one activity per scanner run with its exact command and pinned
+  version, the stack components as subjects, and the suppression policy and
+  grounding rule as terms and conditions.
+- **`assessment-results.json`**: what the scan found. It imports the plan, so a
+  control the plan names and the results mark `not-assessed` reads as a gap
+  in coverage, not a pass.
+
+The plan's required link to a system security plan is a placeholder
+(`#system-security-plan-not-modeled`); no SSP is modeled. See
+[`docs/oscal-subset.md`](docs/oscal-subset.md).
+
 ## LLM step and cost
 
 The scan, the mapping, OSCAL, and every number in the report are deterministic.

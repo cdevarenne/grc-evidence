@@ -30,7 +30,8 @@ description: >
 2. **Scan and map.** Run `make scan`. It writes:
    - `out/findings.json`: normalized findings `{tool, rule_id, severity, target, message, tags}`
    - `out/mapping.json`: per-control status plus unmapped findings with a reason
-   - `out/oscal/component-definition.json`, `out/oscal/assessment-results.json`
+   - `out/oscal/component-definition.json`, `out/oscal/assessment-plan.json`,
+     `out/oscal/assessment-results.json` (the results import the plan)
    - `out/report.md`: the deterministic report
 3. **Review.** Read `out/report.md` and `out/mapping.json`. Summarize for the
    user: controls not satisfied, the highest-severity findings, coverage gaps,
