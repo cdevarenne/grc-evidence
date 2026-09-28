@@ -37,3 +37,33 @@
   issue: Django 4.2.0 has known CVEs
   detected_by: ["trivy:CVE-2023-31047"]
   expect: {controls: [soc2:cc7.1]}
+- id: AI-1
+  file: app/assistant/views.py
+  issue: the prompt (with user input) is written to the log in clear text
+  detected_by: ["semgrep:llm-prompt-logged"]
+  expect: {controls: [iso42001:a.7, eu-ai-act:art-12]}
+- id: AI-2
+  file: app/assistant/settings.py
+  issue: the LLM API key is hard-coded
+  detected_by: ["semgrep:llm-hardcoded-key"]
+  expect: {controls: [soc2:cc6.1, iso42001:a.6]}
+- id: AI-3
+  file: app/assistant/views.py
+  issue: an LLM call has no timeout and no max_tokens bound
+  detected_by: ["semgrep:llm-unbounded-call"]
+  expect: {controls: [iso42001:a.6]}
+- id: AI-4
+  file: app/assistant/views.py
+  issue: the response does not tell the user that AI wrote it
+  detected_by: ["semgrep:llm-no-ai-disclosure"]
+  expect: {controls: [eu-ai-act:art-50]}
+- id: AI-5
+  file: app/ai-inventory.yaml
+  issue: the assistant component has no AI inventory entry
+  detected_by: ["conftest:ai_inventory_complete"]
+  expect: {controls: [iso42001:a.4]}
+- id: AI-6
+  file: app/assistant/views.py
+  issue: AI output is written to a record with no human-review flag (no rule declared)
+  detected_by: ["semgrep:llm-output-unreviewed-write"]
+  expect: {gap: no-rule-match}

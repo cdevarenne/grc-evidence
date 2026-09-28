@@ -121,7 +121,7 @@ def scan(repo: Path, target_dir: str) -> list[Finding]:
     target = repo / target_dir
     conftest_inputs = sorted(
         p.relative_to(repo).as_posix()
-        for pattern in ("k8s/**/*.yaml", "k8s/**/*.yml", "infra/**/*.tf")
+        for pattern in ("k8s/**/*.yaml", "k8s/**/*.yml", "infra/**/*.tf", "ai-inventory.yaml")
         for p in target.glob(pattern)
     )
     runs: list[tuple[str, list[str], Path, Callable[[Any, str], list[Finding]]]] = [

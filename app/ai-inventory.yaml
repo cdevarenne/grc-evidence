@@ -1,0 +1,7 @@
+# INTENTIONALLY INCOMPLETE — seed AI-5: the assistant component has no system entry.
+# risk_tier drives `applies_when` in the knowledge bundle (EU AI Act risk classes).
+risk_tier: limited
+components:
+  - {path: app/widgets, kind: api}
+  - {path: app/assistant, kind: assistant}
+systems: []
