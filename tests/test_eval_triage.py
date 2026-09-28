@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from eval_triage import CUTOFFS, apply_cutoff, evaluate, gap, score, select_cutoff
+from eval_triage import CUTOFFS, apply_cutoff, evaluate, gap, score, select_cutoff, spread
 from llm_stub import StubLLM
 from okf_lib import load_bundle
 
@@ -82,3 +82,20 @@ def test_ai_accuracy_counts_only_ai_labelled_cases() -> None:
     proposals = [{"proposal": "iso42001:a.6"}, {"proposal": "iso42001:a.8"}, {"proposal": "none"}]
     assert score(cases, proposals)["ai_accuracy"] == 0.5
     assert score(cases[2:], proposals[2:])["ai_accuracy"] is None
+
+
+def test_repeats_send_distinct_ids_and_score_every_run() -> None:
+    cases = [{"rule": "t:a", "message": "m", "target": "app/x", "split": "confirm", "expected": "none"}]
+    outputs = {"t:a": {"rule": "t:a", "proposal": "none", "rationale": "r", "confidence": "high"}}
+    llm = StubLLM(outputs)
+    results = evaluate(llm, load_bundle(Path(__file__).parent / "fixtures" / "bundle"), cases, ["scoped"],
+                       ("confirm",), repeats=3)
+    assert len(llm.requests) == 3
+    assert len(results["scoped"]["confirm"]["runs"]) == 3
+    assert "selected_cutoff" not in results["scoped"]  # no tune split, nothing to select on
+
+
+def test_spread_reports_mean_and_range() -> None:
+    assert spread([0.8, 0.92, 0.88]) == "0.867 [0.8-0.92]"
+    assert spread([0.9]) == "0.9"
+    assert spread([None, None]) == "None"

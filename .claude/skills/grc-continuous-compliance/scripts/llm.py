@@ -85,6 +85,7 @@ class LLM:
     run_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     client: Any = None  # an anthropic.Anthropic; built lazily so replay never imports the SDK
     runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run
+    use_cache: bool = True  # False: always call the API (e.g. to measure run-to-run variance); cache untouched
 
     def __post_init__(self) -> None:
         if self.mode not in MODES:
@@ -101,6 +102,7 @@ class LLM:
             cache=out / "llm-cache",
             ledger=out / "llm-usage.jsonl",
             budget_usd=float(os.environ.get("LLM_BUDGET_USD", "1.0")),
+            use_cache=os.environ.get("LLM_NO_CACHE", "") != "1",
         )
 
     def spent_usd(self) -> float:
@@ -115,14 +117,15 @@ class LLM:
         key = request.key(self.model)
         if self.mode == "replay":
             return self._replay(request, key)
-        if (hit := self.cache / f"{key}.json").is_file():
+        if self.use_cache and (hit := self.cache / f"{key}.json").is_file():
             recorded = json.loads(hit.read_text(encoding="utf-8"))
             self._log(request, key, recorded["usage"], billed=False)
             return recorded["output"]
         self._guard(request)
         output, usage = self._call_cli(request) if self.mode == "claude-cli" else self._call_api(request)
         recorded = {"task": request.task, "model": self.model, "output": output, "usage": usage}
-        self._save(self.cache / f"{key}.json", recorded)
+        if self.use_cache:
+            self._save(self.cache / f"{key}.json", recorded)
         if self.mode == "record":
             self._save(self.fixtures / f"{key}.json", recorded)
         self._log(request, key, usage, billed=True, cost=usage.pop("cost_usd", None))
@@ -140,13 +143,12 @@ class LLM:
         results: dict[str, Json] = {}
         misses: dict[str, Request] = {}
         for cid, r in requests.items():
-            if (self.cache / f"{r.key(self.model)}.json").is_file():
+            if self.use_cache and (self.cache / f"{r.key(self.model)}.json").is_file():
                 results[cid] = self.complete(r)
             else:
                 misses[cid] = r
         if misses:
-            for r in misses.values():
-                self._guard(r, batch=True)
+            self._guard_total(list(misses.values()), batch=True)
             results |= self._call_batch(misses)
         return results
 
@@ -159,6 +161,15 @@ class LLM:
         recorded = json.loads(path.read_text(encoding="utf-8"))
         self._log(request, key, recorded["usage"], billed=False)
         return recorded["output"]
+
+    def _guard_total(self, requests: list[Request], batch: bool = False) -> None:
+        """Budget check for a whole batch: the sum of every request's worst case, not each one alone."""
+        estimate = sum(worst_case_usd(self.model, r) for r in requests) * (BATCH if batch else 1)
+        if self.spent_usd() + estimate > self.budget_usd:
+            raise BudgetExceeded(
+                f"batch of {len(requests)}: spent ${self.spent_usd():.4f} + up to ${estimate:.4f} would pass "
+                f"LLM_BUDGET_USD=${self.budget_usd:.2f}; no call made"
+            )
 
     def _guard(self, request: Request, batch: bool = False) -> None:
         estimate = worst_case_usd(self.model, request) * (BATCH if batch else 1)
@@ -221,7 +232,8 @@ class LLM:
             output, usage = self._parse(result.result.message, r.task)
             key = r.key(self.model)
             recorded = {"task": r.task, "model": self.model, "output": output, "usage": usage}
-            self._save(self.cache / f"{key}.json", recorded)
+            if self.use_cache:
+                self._save(self.cache / f"{key}.json", recorded)
             if self.mode == "record":
                 self._save(self.fixtures / f"{key}.json", recorded)
             self._log(r, key, usage, billed=True, batch=True)

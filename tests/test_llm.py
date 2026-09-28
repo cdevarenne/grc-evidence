@@ -188,3 +188,23 @@ def test_from_env_default_model_yields_to_llm_model(monkeypatch: pytest.MonkeyPa
     assert LLM.from_env(tmp_path).model == "claude-haiku-4-5"
     monkeypatch.setenv("LLM_MODEL", "claude-haiku-4-5")
     assert LLM.from_env(tmp_path, default_model="claude-sonnet-5").model == "claude-haiku-4-5"
+
+
+def test_batch_budget_guard_sums_the_whole_batch(tmp_path: Path) -> None:
+    client = FakeClient()
+    client.messages.batches = FakeBatches(client.message)
+    one = worst_case_usd("claude-haiku-4-5", REQ) * 0.5  # batch price
+    reqs = {f"r{i}": Request("t", "s", f"user {i}", SCHEMA, 100) for i in range(4)}
+    llm = _llm(tmp_path, mode="anthropic", client=client, budget_usd=one * 2.5)  # each fits alone; four do not
+    with pytest.raises(BudgetExceeded, match="batch of 4"):
+        llm.complete_batch(reqs)
+    assert client.messages.batches.created == []
+
+
+def test_no_cache_always_calls_and_leaves_the_cache_alone(tmp_path: Path) -> None:
+    client = FakeClient()
+    llm = _llm(tmp_path, mode="anthropic", client=client, use_cache=False)
+    llm.complete(REQ)
+    llm.complete(REQ)
+    assert len(client.calls) == 2
+    assert not (tmp_path / "cache").exists()
