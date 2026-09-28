@@ -90,6 +90,25 @@ controls ruled out, those gaps land on SOC 2 controls instead. The tune split
 improved (0.64 to 0.84), but it shaped the diagnosis, so it is not evidence.
 This is why triage only proposes: a person decides.
 
+**Confidence cutoffs and a stronger model** (issue #32;
+[`triage-eval-cutoffs-haiku.json`](examples/triage-eval-cutoffs-haiku.json), $0 from
+the response cache; [`triage-eval-cutoffs-sonnet.json`](examples/triage-eval-cutoffs-sonnet.json),
+$0.092). The eval also scores treating `low` (or `low` and `medium`) confidence
+proposals as `none`; the cutoff is chosen on `tune` and reported on `holdout`:
+
+| Model | Input | Cutoff (chosen on tune) | Holdout accuracy | Holdout `none` recall | Holdout AI cases |
+|---|---|---|---|---|---|
+| Haiku 4.5 | baseline | as-is | 0.667 | 0.2 | 5/5 |
+| Haiku 4.5 | scoped | low+medium → none | 0.867 | 0.8 | 4/5 |
+| Sonnet 5 | baseline | as-is | 0.800 | 0.8 | 5/5 |
+| Sonnet 5 | scoped | low → none | 0.933 | 1.0 | 5/5 |
+
+Haiku never answers with `low` confidence here, so only the `medium` cutoff
+moves it. Sonnet 5 with the scoped input and a `low` cutoff misses one of 15
+holdout cases. Caveat: twelve configurations were compared on 15 holdout cases
+(one case is about 7 points), so the winner needs confirming on a fresh holdout
+before it becomes the default.
+
 Prompt caching is requested but does not take effect on Haiku 4.5 today: its
 minimum cacheable prefix is 4,096 tokens and the bundle digest is smaller. The
 ledger's `cache_read_input_tokens` shows this honestly; it starts caching on its
