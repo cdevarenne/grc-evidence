@@ -62,3 +62,46 @@
 - {rule: "checkov:CKV_K8S_13", message: "Memory limits should be set", target: app/k8s/deployment.yaml, split: holdout, expected: "none"}
 - {rule: "trivy:DS-0005", message: "Use COPY instead of ADD in the Dockerfile", target: app/Dockerfile, split: holdout, expected: "none"}
 - {rule: "checkov:CKV_GCP_81", message: "Ensure Cloud SQL instances are deployed in multiple zones for high availability", target: app/infra/main.tf, split: holdout, expected: "none"}
+
+# ---------------------------------------------------------------------------------------------
+# Confirm: a second, fresh holdout (issue #32), written after the first holdout was measured and
+# labeled before any run on it. Used once, to choose the default triage configuration.
+#
+# Pre-registered decision (written before the run):
+#   Candidates: Haiku 4.5 scoped + the cutoff chosen on `tune`; Sonnet 5 scoped + the cutoff chosen
+#   on `tune`. Each must reach confirm `none` recall >= 0.75 and confirm AI-case accuracy >= 0.75.
+#   Among those that do, pick the higher confirm accuracy; if the two are within one case (0.04),
+#   pick Haiku (about 5x cheaper). If neither qualifies, keep the current default and say so.
+
+# AI components -> AI-governance controls
+- {rule: "conftest:ai_inventory_model_missing", message: "AI system entry for app/assistant does not record which model provider it uses", target: app/ai-inventory.yaml, split: confirm, expected: "iso42001:a.4"}
+- {rule: "conftest:ai_impact_assessment_missing", message: "AI system app/assistant has no recorded impact assessment", target: app/ai-inventory.yaml, split: confirm, expected: "iso42001:a.5"}
+- {rule: "semgrep:llm-stream-no-max-tokens", message: "Streaming LLM call sets no max_tokens bound", target: app/assistant/views.py, split: confirm, expected: "iso42001:a.6"}
+- {rule: "semgrep:llm-completion-stored-plaintext", message: "Model completions are stored in plaintext alongside user records", target: app/assistant/models.py, split: confirm, expected: "iso42001:a.7"}
+- {rule: "semgrep:llm-no-feedback-channel", message: "Assistant UI offers no way to report a wrong or harmful answer", target: app/assistant/templates/chat.html, split: confirm, expected: "iso42001:a.8"}
+- {rule: "semgrep:llm-auto-apply-without-approval", message: "AI-suggested change is applied to production data with no approval step", target: app/assistant/tasks.py, split: confirm, expected: "iso42001:a.9"}
+- {rule: "semgrep:llm-image-no-ai-label", message: "Generated image is returned without marking it as AI-generated", target: app/assistant/views.py, split: confirm, expected: "eu-ai-act:art-50"}
+
+# Traps: findings in AI-component files whose right answer is not an AI-governance control
+- {rule: "semgrep:drf-view-no-auth-class", message: "Assistant API view sets no authentication class", target: app/assistant/views.py, split: confirm, expected: "soc2:cc6.1"}
+- {rule: "semgrep:python-print-debug", message: "print() debugging statement left in view code", target: app/assistant/views.py, split: confirm, expected: "none"}
+
+# Ordinary matches
+- {rule: "checkov:CKV_K8S_22", message: "Use read-only filesystem for containers where possible", target: app/k8s/deployment.yaml, split: confirm, expected: "soc2:cc6.1"}
+- {rule: "checkov:CKV_K8S_38", message: "Ensure that Service Account Tokens are only mounted where necessary", target: app/k8s/deployment.yaml, split: confirm, expected: "soc2:cc6.1"}
+- {rule: "checkov:CKV_AWS_25", message: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389", target: app/infra/main.tf, split: confirm, expected: "soc2:cc6.6"}
+- {rule: "checkov:CKV_AWS_260", message: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 80", target: app/infra/main.tf, split: confirm, expected: "soc2:cc6.6"}
+- {rule: "semgrep:python-yaml-load-request", message: "yaml.load on request data can construct arbitrary objects", target: app/widgets/views.py, split: confirm, expected: "soc2:cc7.1"}
+- {rule: "checkov:CKV_AWS_48", message: "Ensure MQ Broker logging is enabled", target: app/infra/main.tf, split: confirm, expected: "soc2:cc7.2"}
+- {rule: "semgrep:django-admin-no-audit-log", message: "Admin changes to widgets are not written to an audit log", target: app/widgets/views.py, split: confirm, expected: "soc2:cc7.2"}
+- {rule: "semgrep:dockerfile-apt-install-unpinned", message: "apt-get install without pinned package versions makes builds non-reproducible", target: app/Dockerfile, split: confirm, expected: "soc2:cc8.1"}
+- {rule: "semgrep:workflow-action-unpinned", message: "Deploy workflow uses a third-party action by tag instead of a commit SHA", target: app/.github/workflows/deploy.yml, split: confirm, expected: "soc2:cc8.1"}
+
+# `none`: availability, capacity, cost, hygiene
+- {rule: "checkov:CKV_AWS_28", message: "Ensure DynamoDB point in time recovery (backup) is enabled", target: app/infra/main.tf, split: confirm, expected: "none"}
+- {rule: "checkov:CKV_AWS_157", message: "Ensure that RDS instances have Multi-AZ enabled", target: app/infra/main.tf, split: confirm, expected: "none"}
+- {rule: "checkov:CKV_AWS_144", message: "Ensure that S3 bucket has cross-region replication enabled", target: app/infra/main.tf, split: confirm, expected: "none"}
+- {rule: "checkov:CKV_AWS_23", message: "Ensure every security group and rule has a description", target: app/infra/main.tf, split: confirm, expected: "none"}
+- {rule: "semgrep:k8s-no-pod-disruption-budget", message: "Deployment has no PodDisruptionBudget", target: app/k8s/deployment.yaml, split: confirm, expected: "none"}
+- {rule: "trivy:DS-0013", message: "RUN cd ... is used; use WORKDIR to change directory", target: app/Dockerfile, split: confirm, expected: "none"}
+- {rule: "checkov:CKV_DOCKER_5", message: "Ensure update instructions are not used alone in the Dockerfile", target: app/Dockerfile, split: confirm, expected: "none"}

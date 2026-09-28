@@ -28,7 +28,7 @@ triage:
 	$(PY_LLM) $(SCRIPTS)/triage.py --knowledge knowledge --out out
 
 eval-triage:
-	$(PY_LLM) $(SCRIPTS)/eval_triage.py --knowledge knowledge --out out
+	$(PY_LLM) $(SCRIPTS)/eval_triage.py --knowledge knowledge --out out $(EVAL_ARGS)
 
 render:
 	mkdir -p out

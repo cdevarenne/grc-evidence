@@ -1,7 +1,8 @@
 """Score triage proposals against a labeled set: accuracy, abstention (`none`) quality, invalid rate, cost.
 
-Cases carry a `split`: `tune` (seen while diagnosing, issue #32) or `holdout` (labeled before any run;
-the headline). Each requested variant runs on each split, all in one Message Batch.
+Cases carry a `split`: `tune` (seen while diagnosing, issue #32), `holdout` (labeled before its first
+run), or `confirm` (a second, fresh holdout for choosing the default). Each requested variant runs on
+each split, all in one Message Batch; confidence cutoffs are selected on `tune` only.
 """
 
 from __future__ import annotations
@@ -20,7 +21,7 @@ from okf_lib import Bundle, load_bundle
 from triage import VARIANTS, chunk_requests, parse
 
 Json = dict[str, Any]
-SPLITS = ("tune", "holdout")
+SPLITS = ("tune", "holdout", "confirm")  # confirm: a fresh holdout for the default decision
 AI_PREFIXES = ("iso42001:", "eu-ai-act:")
 # Confidence cutoffs (issue #32): treat proposals at these confidence levels as `none`. The cutoff is
 # selected on `tune` and only reported on `holdout`, so the holdout number stays honest.
@@ -141,15 +142,17 @@ def main() -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
     print(f"eval-triage ({llm.model}, {llm.mode}, ${doc['cost_usd']}) -> {path}")
-    print("  * = cutoff selected on tune; read the holdout columns for that row")
-    print(f"  {'variant':<9} {'cutoff':<17} {'tune acc':>8} {'tune noneR':>10} "
-          f"{'hold acc':>8} {'hold noneR':>10} {'hold AI acc':>11} {'invalid':>7}")
+    print("  * = cutoff selected on tune; read the other splits for that row")
+    header = "".join(f" | {split + ' acc':>11} {'noneR':>5} {'AI':>4}" for split in SPLITS)
+    print(f"  {'variant':<9} {'cutoff':<17}{header}")
     for variant, r in results.items():
         for name in CUTOFFS:
-            t, h = r["tune"]["cutoffs"][name], r["holdout"]["cutoffs"][name]
             mark = "*" if name == r["selected_cutoff"] else " "
-            print(f"{mark} {variant:<9} {name:<17} {t['accuracy']:>8} {t['none_recall']!s:>10} "
-                  f"{h['accuracy']:>8} {h['none_recall']!s:>10} {h['ai_accuracy']!s:>11} {h['invalid_rate']:>7}")
+            cells = "".join(
+                f" | {c['accuracy']!s:>11} {c['none_recall']!s:>5} {c['ai_accuracy']!s:>4}"
+                for c in (r[split]["cutoffs"][name] for split in SPLITS)
+            )
+            print(f"{mark} {variant:<9} {name:<17}{cells}")
 
 if __name__ == "__main__":
     main()
