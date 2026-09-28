@@ -1,0 +1,26 @@
+{
+  "model": "claude-haiku-4-5",
+  "output": {
+    "proposals": [
+      {
+        "confidence": "medium",
+        "proposal": "soc2:cc7.2",
+        "rationale": "Missing HEALTHCHECK instructions indicate inadequate monitoring of container health status.",
+        "rule": "CKV_TEST_99"
+      },
+      {
+        "confidence": "high",
+        "proposal": "none",
+        "rationale": "Insufficient information to map this rule to any control in the bundle.",
+        "rule": "orphan_rule"
+      }
+    ]
+  },
+  "task": "triage",
+  "usage": {
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "input_tokens": 880,
+    "output_tokens": 86
+  }
+}

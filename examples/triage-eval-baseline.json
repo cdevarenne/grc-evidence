@@ -1,0 +1,138 @@
+{
+  "cases": 25,
+  "accuracy": 0.0,
+  "none_precision": null,
+  "none_recall": 0.0,
+  "invalid_rate": 1.0,
+  "misses": [
+    {
+      "rule": "checkov:CKV_K8S_16",
+      "expected": "soc2:cc6.1",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_K8S_20",
+      "expected": "soc2:cc6.1",
+      "got": "invalid"
+    },
+    {
+      "rule": "trivy:KSV-0001",
+      "expected": "soc2:cc6.1",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_K8S_37",
+      "expected": "soc2:cc6.1",
+      "got": "invalid"
+    },
+    {
+      "rule": "semgrep:django-no-csrf-exempt",
+      "expected": "soc2:cc6.1",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_GCP_2",
+      "expected": "soc2:cc6.6",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_GCP_3",
+      "expected": "soc2:cc6.6",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_AWS_20",
+      "expected": "soc2:cc6.6",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_GCP_26",
+      "expected": "soc2:cc7.2",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_AWS_18",
+      "expected": "soc2:cc7.2",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_AWS_67",
+      "expected": "soc2:cc7.2",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_K8S_43",
+      "expected": "soc2:cc8.1",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_DOCKER_7",
+      "expected": "soc2:cc8.1",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_TF_1",
+      "expected": "soc2:cc8.1",
+      "got": "invalid"
+    },
+    {
+      "rule": "semgrep:python-eval-user-input",
+      "expected": "soc2:cc7.1",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_GCP_6",
+      "expected": "none",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_GCP_14",
+      "expected": "none",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_GCP_78",
+      "expected": "none",
+      "got": "invalid"
+    },
+    {
+      "rule": "trivy:AVD-GCP-0066",
+      "expected": "none",
+      "got": "invalid"
+    },
+    {
+      "rule": "trivy:DS-0026",
+      "expected": "none",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_DOCKER_2",
+      "expected": "none",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_K8S_8",
+      "expected": "none",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_K8S_9",
+      "expected": "none",
+      "got": "invalid"
+    },
+    {
+      "rule": "checkov:CKV_K8S_11",
+      "expected": "none",
+      "got": "invalid"
+    },
+    {
+      "rule": "trivy:DS-0017",
+      "expected": "none",
+      "got": "invalid"
+    }
+  ],
+  "model": "claude-haiku-4-5",
+  "mode": "anthropic",
+  "cost_usd": 0.009305,
+  "cost_per_case_usd": 0.000372
+}
