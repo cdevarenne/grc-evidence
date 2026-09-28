@@ -1,7 +1,7 @@
 # Mini Spec D — OSCAL Assessment Plan
 
 - **Date:** 2026-09-28
-- **Status:** draft, for review
+- **Status:** reviewed 2026-09-28 (all three §8 recommendations accepted)
 - **Depends on:** v1, Spec A (frameworks, applicability), Spec C (suppression policy).
 - **LLM cost:** none.
 
