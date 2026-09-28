@@ -25,9 +25,9 @@ finding is counted, never whether the finding is shown.
    and from the coverage-gap list, and the report lists it under **Suppressed**
    with owner, reason, and expiry.
 2. An `accepted-risk` suppression keeps its finding on the control, marked
-   accepted. A control whose remaining findings are all accepted gets the new
-   status `risk-accepted`; one open finding keeps it `not-satisfied`. OSCAL
-   records each accepted finding as a risk with status `deviation-approved`.
+   accepted, and leaves the control's status unchanged (`not-satisfied`: an
+   accepted risk is still a violation). OSCAL records each accepted finding as a
+   risk with status `deviation-approved`.
 3. An expired suppression no longer applies: the finding is counted again and
    the report lists the suppression under **Expired suppressions**.
 4. A suppression that matches no finding is listed under **Unused
@@ -93,23 +93,18 @@ Body sections: `# Reason` (required), `# Compensating control` (optional; for
   - `expired_suppressions`, `unused_suppressions`: suppression ids.
   - `false-positive` findings leave `controls[*].findings` and `unmapped`.
   - `accepted-risk` findings stay in `controls[*].findings` with
-    `"accepted": "<suppression id>"`.
-  - Status precedence: any open finding → `not-satisfied`; otherwise any
-    accepted finding → `risk-accepted`; otherwise as before
-    (`no-violations-detected` / `not-assessed`); `not-applicable` is unchanged.
+    `"accepted": "<suppression id>"`; the status is unchanged. No new status.
   - `--today` (default: the current UTC date).
 - `to_oscal.py`: accepted risks become `risks` with status
-  `deviation-approved`, linked to the finding's observation. A `risk-accepted`
-  control is still a finding with state `not-satisfied` (OSCAL allows only
-  `satisfied` / `not-satisfied`), and is named in `remarks` as risk-accepted.
-  False positives keep their observation and are named in `remarks`, never as
-  findings. `docs/oscal-subset.md` documents both.
+  `deviation-approved`, linked to the finding's observation; the control's
+  finding stays `not-satisfied`. False positives keep their observation and are
+  named in `remarks`, never as findings. `docs/oscal-subset.md` documents both.
 - `render_report.py`: sections **Suppressed**, **Expired suppressions**,
   **Unused suppressions**; accepted findings marked inline; the risk-posture
   line counts suppressed findings separately.
-- `digest.py` and `narrate.py` (Spec B): the scan digest counts open findings
-  only, with suppressed and accepted findings as separate counts, so narrate
-  never describes them as open; `risk-accepted` joins narrate's status list.
+- `digest.py` (Spec B): the scan digest counts open findings only, with
+  suppressed and accepted findings as separate counts, so narrate never
+  describes them as open.
 
 ## 6. Sample data
 
@@ -124,8 +119,7 @@ Body sections: `# Reason` (required), `# Compensating control` (optional; for
 ## 7. Tests
 
 - Unit: exact matching and `message_contains`; expiry at the boundary day;
-  unused detection; `accepted-risk` on a gap rejected; status precedence
-  (open + accepted → `not-satisfied`, accepted only → `risk-accepted`);
+  unused detection; `accepted-risk` on a gap rejected; statuses for both kinds;
   OSCAL `deviation-approved` risk validates; report sections (golden file).
 - Conformance: every suppression has owner, reason, window ≤ 90 days, and a
   human `verified` entry.
@@ -133,21 +127,21 @@ Body sections: `# Reason` (required), `# Compensating control` (optional; for
 
 ## 8. Review decisions (2026-09-28)
 
-1. **Accepted risk gets its own status, `risk-accepted`.** It sits between
-   `not-satisfied` and `no-violations-detected`: an open finding still wins, and
-   an accepted risk is never reported as clean. In OSCAL it stays a
-   `not-satisfied` finding plus a `deviation-approved` risk, since OSCAL has no
-   third finding state.
+1. **Accepted risk keeps the status `not-satisfied`; no new status.** The
+   acceptance is recorded on the finding, in the report, and in OSCAL as a
+   `deviation-approved` risk. (A separate `risk-accepted` status was considered
+   and dropped: OSCAL findings have only `satisfied` and `not-satisfied`, so it
+   would not survive into the machine-readable output.)
 2. **90-day maximum window.**
 3. **Suppressions live in `knowledge/`** as reviewed concepts.
 
 ## 9. Tasks (estimate: 2 focused days)
 
 1. `okf_lib`: `Suppression` concept, validation, conformance rules.
-2. `map_findings`: matching, expiry, unused, `risk-accepted` precedence; `mapping.json` keys; `--today`.
+2. `map_findings`: matching, expiry, unused; `mapping.json` keys; `--today`.
 3. `to_oscal`: `deviation-approved` risks; false-positive remarks; schema tests.
 4. `render_report`: the three sections and inline markers; golden file.
-5. `digest.py` / `narrate.py`: open-only counts; `risk-accepted` status.
+5. `digest.py`: open-only counts for narrate.
 6. Sample suppressions (human gate: review and `verified`), `SEEDED.yaml`,
    integration test.
 7. README: "Suppressions" section; remove the "No suppression workflow" limit.
