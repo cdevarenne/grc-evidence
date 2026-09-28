@@ -41,10 +41,10 @@ SEEDED = yaml.safe_load((ROOT / "app" / "SEEDED.yaml").read_text())
 
 @pytest.mark.parametrize("seed", SEEDED, ids=lambda s: s["id"])
 def test_seeded_issue_lands_where_expected(mapping: dict, seed: dict) -> None:
-    expected = seed["expect"].get("control") or f"gap:{seed['expect']['gap']}"
+    expected = set(seed["expect"].get("controls", [])) or {f"gap:{seed['expect']['gap']}"}
     for detector in seed["detected_by"]:
         tool, rule_id = detector.split(":", 1)
-        assert _located(mapping, tool, rule_id, seed["file"]) == {expected}, f"{seed['id']} {detector}"
+        assert _located(mapping, tool, rule_id, seed["file"]) == expected, f"{seed['id']} {detector}"
 
 
 def test_outputs_exist_and_oscal_validates(mapping: dict) -> None:
@@ -54,4 +54,4 @@ def test_outputs_exist_and_oscal_validates(mapping: dict) -> None:
 
 
 def test_monitoring_control_is_not_assessed(mapping: dict) -> None:
-    assert mapping["controls"]["cc7.2"]["status"] == "not-assessed"
+    assert mapping["controls"]["soc2:cc7.2"]["status"] == "not-assessed"

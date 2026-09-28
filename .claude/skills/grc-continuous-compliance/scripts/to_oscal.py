@@ -9,15 +9,30 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from okf_lib import COMPONENT_TYPE, Bundle, load_bundle
+from okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, Bundle, Concept, load_bundle
 
 OSCAL_VERSION = "1.2.3"
 DOC_VERSION = "0.1.0"
+Json = dict[str, Any]
 NAMESPACE = uuid.UUID("6f1c3a52-2d0e-5b8e-9c61-0b8f4a7d2e10")
 TSC_RESOURCE = "tsc-2017"
+# One back-matter resource per framework: the `source` of its control-implementations.
+# ISO/IEC 42001 has no official OSCAL catalog, so its resource is a clean-room placeholder.
+SOURCES: dict[str, Json] = {
+    "soc2": {"id": TSC_RESOURCE, "title": "AICPA Trust Services Criteria (SOC 2)", "label": "SOC 2 criteria"},
+    "iso42001": {
+        "id": "iso42001-annex-a",
+        "title": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+        "label": "ISO/IEC 42001 Annex A controls",
+    },
+    "eu-ai-act": {
+        "id": "eu-ai-act-2024-1689",
+        "title": "Regulation (EU) 2024/1689 (EU AI Act)",
+        "label": "EU AI Act articles",
+        "href": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+    },
+}
 NO_AP_HREF = "#assessment-plan-not-modeled"
-
-Json = dict[str, Any]
 
 
 def _uuid(*parts: str) -> str:
@@ -33,11 +48,35 @@ def _finding_key(f: Json) -> str:
     return f"{f['tool']}:{f['rule_id']}:{f['target']}:{f['message']}"
 
 
+def _resource(framework: str) -> Json:
+    source = SOURCES[framework]
+    resource: Json = {"uuid": _uuid("resource", source["id"]), "title": source["title"]}
+    if "href" in source:
+        resource["rlinks"] = [{"href": source["href"]}]
+    return resource
+
+
+def _control_implementation(comp: Concept, framework: str, controls: list[Concept]) -> Json:
+    """The controls of one framework that apply to a component; control-ids are codes within that source."""
+    return {
+        "uuid": _uuid("control-implementation", comp.id, framework),
+        "source": f"#{_resource(framework)['uuid']}",
+        "description": f"{SOURCES[framework]['label']} that apply to {comp.title}.",
+        "implemented-requirements": [
+            {"uuid": _uuid("req", comp.id, c.key), "control-id": c.code, "description": c.title}
+            for c in controls
+        ],
+    }
+
+
 def component_definition(bundle: Bundle, now: str) -> Json:
-    """Stack components × the in-bundle controls each one links to that some concept declares rules for."""
-    tsc_uuid = _uuid("resource", TSC_RESOURCE)
-    grounded = [c for c in bundle.controls() if bundle.declaring(c.code)]
+    """Stack components × the in-bundle controls each one links to that some concept declares rules for.
+
+    Each component gets one control-implementation per framework, each pointing at that framework's source.
+    """
+    grounded = [c for c in bundle.controls() if bundle.declaring(c.key)]
     components = []
+    used: set[str] = set()
     for comp in bundle.of_type(COMPONENT_TYPE):
         controls = [c for cid in comp.links if (c := bundle.concepts.get(cid)) and c in grounded]
         entry: Json = {
@@ -46,27 +85,20 @@ def component_definition(bundle: Bundle, now: str) -> Json:
             "title": comp.title,
             "description": comp.description or comp.title,
         }
-        if controls:
+        frameworks = [fw for fw in FRAMEWORK_TYPES if any(c.framework == fw for c in controls)]
+        if frameworks:
             entry["control-implementations"] = [
-                {
-                    "uuid": _uuid("control-implementation", comp.id),
-                    "source": f"#{tsc_uuid}",
-                    "description": f"SOC 2 criteria that apply to {comp.title}.",
-                    "implemented-requirements": [
-                        {"uuid": _uuid("req", comp.id, c.code), "control-id": c.code, "description": c.title}
-                        for c in controls
-                    ],
-                }
+                _control_implementation(comp, fw, [c for c in controls if c.framework == fw]) for fw in frameworks
             ]
+        used.update(frameworks)
         components.append(entry)
+    resources = [_resource(fw) for fw in FRAMEWORK_TYPES if fw in used] or [_resource("soc2")]
     return {
         "component-definition": {
             "uuid": _uuid("component-definition"),
             "metadata": _metadata("okf-grc-skill sample app components", now),
             "components": components,
-            "back-matter": {
-                "resources": [{"uuid": tsc_uuid, "title": "AICPA Trust Services Criteria (SOC 2)"}]
-            },
+            "back-matter": {"resources": resources},
         }
     }
 
@@ -83,43 +115,58 @@ def _observation(f: Json, now: str) -> Json:
 
 def _remarks(mapping: Json) -> str:
     """Controls without an OSCAL finding, stated so their absence is not read as a pass."""
-    by_status = {
-        status: sorted(code for code, c in mapping["controls"].items() if c["status"] == status)
-        for status in ("no-violations-detected", "not-assessed")
+    labels = {
+        "no-violations-detected": "No violations detected by automated checks (not a control attestation)",
+        "not-assessed": "Not assessed (no in-bundle scanner or policy)",
+        "not-applicable": "Not applicable at the declared AI risk tier",
     }
     parts = []
-    if by_status["no-violations-detected"]:
-        parts.append(
-            "No violations detected by automated checks (not a control attestation): "
-            + ", ".join(by_status["no-violations-detected"])
-        )
-    if by_status["not-assessed"]:
-        parts.append("Not assessed (no in-bundle scanner or policy): " + ", ".join(by_status["not-assessed"]))
+    for status, label in labels.items():
+        if keys := sorted(key for key, c in mapping["controls"].items() if c["status"] == status):
+            parts.append(f"{label}: {', '.join(keys)}")
     return ". ".join(parts)
+
+
+def _control_selections(bundle: Bundle, assessed: list[str]) -> list[Json]:
+    """One control selection per framework; control-ids are codes within that framework's source."""
+    selections = []
+    for fw in FRAMEWORK_TYPES:
+        codes = [key.partition(":")[2] for key in assessed if key.partition(":")[0] == fw]
+        if codes:
+            selections.append(
+                {"description": SOURCES[fw]["title"], "include-controls": [{"control-id": c} for c in codes]}
+            )
+    return selections
 
 
 def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
     """Findings only for controls with violations; unmapped findings become open risks, never findings.
 
     A clean automated scan never produces a `satisfied` finding: automation evidences a
-    control but does not attest it.
+    control but does not attest it. A `not-applicable` control is neither reviewed nor a finding.
     """
     all_findings = [f for c in mapping["controls"].values() for f in c["findings"]]
     all_findings += [u["finding"] for u in mapping["unmapped"]]
     observations = {_finding_key(f): _observation(f, now) for f in all_findings}
-    assessed = sorted(code for code, c in mapping["controls"].items() if c["status"] != "not-assessed")
+    assessed = sorted(
+        key for key, c in mapping["controls"].items() if c["status"] not in ("not-assessed", "not-applicable")
+    )
     findings = []
-    for code in assessed:
-        entry = mapping["controls"][code]
+    for key in assessed:
+        entry = mapping["controls"][key]
         if entry["status"] != "not-satisfied":
             continue
-        control = bundle.control(code)
+        control = bundle.control(key)
         findings.append(
             {
-                "uuid": _uuid("finding", code),
-                "title": control.title if control else code,
+                "uuid": _uuid("finding", key),
+                "title": control.title if control else key,
                 "description": f"{len(entry['findings'])} open finding(s).",
-                "target": {"type": "objective-id", "target-id": code, "status": {"state": "not-satisfied"}},
+                "target": {
+                    "type": "objective-id",
+                    "target-id": key.partition(":")[2],
+                    "status": {"state": "not-satisfied"},
+                },
                 "related-observations": [
                     {"observation-uuid": observations[_finding_key(f)]["uuid"]} for f in entry["findings"]
                 ],
@@ -139,11 +186,9 @@ def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
     result: Json = {
         "uuid": _uuid("result"),
         "title": "Automated compliance scan",
-        "description": "Scanner findings mapped to SOC 2 criteria through the OKF knowledge bundle.",
+        "description": "Scanner findings mapped to in-bundle controls through the OKF knowledge bundle.",
         "start": now,
-        "reviewed-controls": {
-            "control-selections": [{"include-controls": [{"control-id": code} for code in assessed]}]
-        },
+        "reviewed-controls": {"control-selections": _control_selections(bundle, assessed)},
     }
     if observations:
         result["observations"] = list(observations.values())

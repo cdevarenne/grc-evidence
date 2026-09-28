@@ -14,12 +14,12 @@ it is evidence, not a control attestation.
 
 | Control | Status | Critical | High | Medium | Low | Uncl. | Total |
 |---|---|---|---|---|---|---|---|
-| cc6.1 | not-satisfied | 0 | 1 | 1 | 0 | 0 | 2 |
-| cc7.1 | not-satisfied | 1 | 0 | 0 | 0 | 0 | 1 |
-| cc7.2 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |
-| cc8.1 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |
+| soc2:cc6.1 | not-satisfied | 0 | 1 | 1 | 0 | 0 | 2 |
+| soc2:cc7.1 | not-satisfied | 1 | 0 | 0 | 0 | 0 | 1 |
+| soc2:cc7.2 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |
+| soc2:cc8.1 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |
 
-## Controls
+## SOC 2
 
 ### CC6.1 — Logical Access
 

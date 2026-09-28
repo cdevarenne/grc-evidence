@@ -1,9 +1,11 @@
 """Controls from several frameworks, keyed `framework:code`, under the same grounding rule."""
 
+import json
 from pathlib import Path
 
 import pytest
 
+from map_findings import map_findings
 from okf_lib import BundleError, control_key, load_bundle
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -73,3 +75,10 @@ def test_crosswalk_pairs_are_lines_linking_two_controls() -> None:
     assert AI.crosswalk_pairs() == [
         ("crosswalk/iso42001-ai-act", "controls/iso42001/a.7", "controls/eu-ai-act/art-12"),
     ]
+
+
+def test_a_finding_maps_to_each_declared_framework() -> None:
+    findings = json.loads((FIXTURES / "ai_findings.json").read_text())
+    controls = map_findings(AI, findings)["controls"]
+    for key in ("soc2:cc6.1", "iso42001:a.6"):
+        assert [f["rule_id"] for f in controls[key]["findings"]] == ["llm-hardcoded-key"]

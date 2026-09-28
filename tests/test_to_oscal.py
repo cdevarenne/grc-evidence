@@ -45,8 +45,8 @@ def test_findings_only_for_violated_controls(bundle: Bundle, mapping: dict) -> N
 def test_clean_controls_are_never_attested(bundle: Bundle, mapping: dict) -> None:
     (result,) = assessment_results(bundle, mapping, NOW)["assessment-results"]["results"]
     assert "satisfied" not in {f["target"]["status"]["state"] for f in result["findings"]}
-    assert "not a control attestation): cc8.1" in result["remarks"]
-    assert "Not assessed (no in-bundle scanner or policy): cc7.2" in result["remarks"]
+    assert "not a control attestation): soc2:cc8.1" in result["remarks"]
+    assert "Not assessed (no in-bundle scanner or policy): soc2:cc7.2" in result["remarks"]
     reviewed = result["reviewed-controls"]["control-selections"][0]["include-controls"]
     assert [c["control-id"] for c in reviewed] == ["cc6.1", "cc7.1", "cc8.1"]
 
@@ -120,3 +120,54 @@ def test_assessment_results_uuid_changes_per_run(bundle: Bundle, mapping: dict) 
 
     assert doc_uuid(NOW) == doc_uuid(NOW)
     assert doc_uuid(NOW) != doc_uuid("2026-09-26T12:00:00+00:00")
+
+
+AI_BUNDLE = FIXTURES / "ai_bundle"
+
+
+def _ai() -> tuple[Bundle, dict]:
+    ai = load_bundle(AI_BUNDLE)
+    findings = json.loads((FIXTURES / "ai_findings.json").read_text())
+    return ai, map_findings(ai, findings, {"risk_tier": "limited"})
+
+
+def test_one_control_implementation_per_framework_source() -> None:
+    ai, _ = _ai()
+    doc = component_definition(ai, NOW)
+    validate(doc, "oscal_component_schema.json")
+    (comp,) = doc["component-definition"]["components"]
+    resources = {f"#{r['uuid']}": r["title"] for r in doc["component-definition"]["back-matter"]["resources"]}
+    by_source = {
+        resources[ci["source"]].split(" ")[0]: [r["control-id"] for r in ci["implemented-requirements"]]
+        for ci in comp["control-implementations"]
+    }
+    assert by_source == {"AICPA": ["cc6.1"], "ISO/IEC": ["a.6", "a.7"], "Regulation": ["art-50"]}
+
+
+def test_iso42001_source_is_a_declared_placeholder() -> None:
+    ai, _ = _ai()
+    resources = component_definition(ai, NOW)["component-definition"]["back-matter"]["resources"]
+    (iso,) = [r for r in resources if r["title"].startswith("ISO/IEC 42001")]
+    assert "placeholder" in iso["title"] and "rlinks" not in iso
+    (act,) = [r for r in resources if r["title"].startswith("Regulation (EU) 2024/1689")]
+    assert act["rlinks"] == [{"href": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"}]
+
+
+def test_not_applicable_controls_are_neither_reviewed_nor_findings() -> None:
+    ai, mapping = _ai()
+    doc = assessment_results(ai, mapping, NOW)
+    validate(doc, "oscal_assessment-results_schema.json")
+    (result,) = doc["assessment-results"]["results"]
+    reviewed = [
+        c["control-id"] for s in result["reviewed-controls"]["control-selections"] for c in s["include-controls"]
+    ]
+    assert "art-12" not in reviewed
+    assert "art-12" not in {f["target"]["target-id"] for f in result["findings"]}
+    assert "Not applicable at the declared AI risk tier: eu-ai-act:art-12" in result["remarks"]
+
+
+def test_reviewed_controls_are_grouped_by_framework() -> None:
+    ai, mapping = _ai()
+    (result,) = assessment_results(ai, mapping, NOW)["assessment-results"]["results"]
+    selections = result["reviewed-controls"]["control-selections"]
+    assert [s["description"].split(" ")[0] for s in selections] == ["AICPA", "ISO/IEC", "Regulation"]

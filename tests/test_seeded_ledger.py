@@ -23,4 +23,6 @@ def test_entry_is_well_formed(seed: dict) -> None:
     for detector in seed["detected_by"]:
         tool, _, rule = detector.partition(":")
         assert tool in TOOLS and rule
-    assert len(seed["expect"]) == 1 and set(seed["expect"]) <= {"control", "gap"}
+    assert len(seed["expect"]) == 1 and set(seed["expect"]) <= {"controls", "gap"}
+    for key in seed["expect"].get("controls", []):
+        assert ":" in key, f"{seed['id']}: control {key!r} is not a framework:code key"

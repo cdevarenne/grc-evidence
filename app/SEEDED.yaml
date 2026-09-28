@@ -1,11 +1,12 @@
 # INTENTIONALLY VULNERABLE SCAN TARGET — DO NOT DEPLOY.
-# Each seeded issue, the scanner rules observed to detect it, and the expected outcome.
+# Each seeded issue, the scanner rules observed to detect it, and the expected outcome:
+# `controls` lists every control key the finding must land on; `gap` names the coverage-gap reason.
 # Asserted by tests/test_integration.py (make test-integration).
 - id: S1
   file: app/Dockerfile
   issue: image runs as root (no USER instruction)
   detected_by: ["trivy:DS-0002", "checkov:CKV_DOCKER_3"]
-  expect: {control: cc6.1}
+  expect: {controls: [soc2:cc6.1]}
 - id: S2
   file: app/Dockerfile
   issue: no HEALTHCHECK (availability, SOC 2 A1 — not in the bundle)
@@ -15,24 +16,24 @@
   file: app/k8s/deployment.yaml
   issue: image uses the :latest tag
   detected_by: ["conftest:deny_latest_tag", "checkov:CKV_K8S_14", "trivy:KSV-0013"]
-  expect: {control: cc8.1}
+  expect: {controls: [soc2:cc8.1]}
 - id: S4
   file: app/k8s/deployment.yaml
   issue: container runs as root (runAsUser 0, runAsNonRoot false)
   detected_by: ["conftest:require_non_root", "checkov:CKV_K8S_23", "trivy:KSV-0012", "trivy:KSV-0105"]
-  expect: {control: cc6.1}
+  expect: {controls: [soc2:cc6.1]}
 - id: S5
   file: app/infra/main.tf
   issue: bucket readable by allUsers
   detected_by: ["conftest:no_public_bucket", "checkov:CKV_GCP_28", "trivy:GCP-0001"]
-  expect: {control: cc6.6}
+  expect: {controls: [soc2:cc6.6]}
 - id: S6
   file: app/widgets/views.py
   issue: DRF viewset uses AllowAny
   detected_by: ["semgrep:drf-allowany"]
-  expect: {control: cc6.1}
+  expect: {controls: [soc2:cc6.1]}
 - id: S7
   file: app/requirements.txt
   issue: Django 4.2.0 has known CVEs
   detected_by: ["trivy:CVE-2023-31047"]
-  expect: {control: cc7.1}
+  expect: {controls: [soc2:cc7.1]}

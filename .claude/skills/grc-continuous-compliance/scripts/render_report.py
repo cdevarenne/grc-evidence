@@ -4,16 +4,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from okf_lib import Bundle, load_bundle
+from okf_lib import FRAMEWORK_TITLES, Bundle, load_bundle
 
 Json = dict[str, Any]
 
 SEVERITIES = ("critical", "high", "medium", "low")  # known severities, ordered high-to-low
 UNCLASSIFIED = "unclassified"  # a finding the scanner did not severity-rank
+SKIPPED = ("not-assessed", "not-applicable")  # statuses listed at the end, not in the framework sections
 
 
 def _bucket(severity: str) -> str:
@@ -45,27 +47,37 @@ def _finding_line(f: Json) -> str:
     return f"- `{f['tool']}` `{f['rule_id']}` ({f['severity']}) — {f['message']} — `{f['target']}`"
 
 
-def _remediation(bundle: Bundle, code: str, findings: list[Json]) -> str:
+def _remediation(bundle: Bundle, key: str, findings: list[Json]) -> str:
     """Join the `# Remediation` sections of concepts that declare these findings' rules for this control."""
     paragraphs: dict[str, None] = {}
     for f in findings:
         for concept in bundle.by_rule(f["tool"], f["rule_id"]):
             text = bundle.section(concept, "Remediation")
-            if code in concept.control_tags and text:
+            if key in concept.control_keys and text:
                 paragraphs[text] = None
     return " ".join(paragraphs)
 
 
-def _control_section(bundle: Bundle, code: str, entry: Json) -> list[str]:
-    control = bundle.control(code)
+def _order(key: str) -> tuple[int, list[int | str]]:
+    """Sort key: framework order (SOC 2 first), then the code in natural order (art-9 before art-10)."""
+    framework, _, code = key.partition(":")
+    return list(FRAMEWORK_TITLES).index(framework), [int(p) if p.isdigit() else p for p in re.split(r"(\d+)", code)]
+
+
+def _title(bundle: Bundle, key: str) -> str:
+    control = bundle.control(key)
+    return control.title if control else key
+
+
+def _control_section(bundle: Bundle, key: str, entry: Json) -> list[str]:
     evidence = [_link(bundle, cid) for cid in entry["evidenced_by"] + entry["satisfied_by"]]
-    lines = [f"### {control.title if control else code}", "", f"**Status:** {entry['status']}", ""]
+    lines = [f"### {_title(bundle, key)}", "", f"**Status:** {entry['status']}", ""]
     if entry["findings"]:
         lines += [f"**Findings:** {_breakdown(_counts(entry['findings']))}", ""]
     lines += [f"**Evidence:** {', '.join(evidence) if evidence else 'none in bundle'}", ""]
     if entry["findings"]:
         lines += ["**Open findings:**", "", *map(_finding_line, entry["findings"]), ""]
-        if remediation := _remediation(bundle, code, entry["findings"]):
+        if remediation := _remediation(bundle, key, entry["findings"]):
             lines += [f"**Remediation:** {remediation}", ""]
     return lines
 
@@ -73,9 +85,12 @@ def _control_section(bundle: Bundle, code: str, entry: Json) -> list[str]:
 def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json]) -> list[str]:
     """A one-glance summary: open findings by severity, control status counts, and coverage gaps."""
     total = dict.fromkeys((*SEVERITIES, UNCLASSIFIED), 0)
-    open_findings = not_satisfied = not_assessed = clean = 0
-    for _code, entry in controls:
+    open_findings = not_satisfied = not_assessed = not_applicable = clean = 0
+    for _key, entry in controls:
         status = entry["status"]
+        if status == "not-applicable":
+            not_applicable += 1
+            continue
         if status == "not-assessed":
             not_assessed += 1
         elif status == "not-satisfied":
@@ -86,23 +101,41 @@ def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json]) -> lis
             total[_bucket(f["severity"])] += 1
             open_findings += 1
     findings_word = "finding" if open_findings == 1 else "findings"
-    controls_word = "control" if len(controls) == 1 else "controls"
     clean_clause = "control shows" if clean == 1 else "controls show"
     gaps_word = "coverage gap" if len(unmapped) == 1 else "coverage gaps"
+    applicable = len(controls) - not_applicable
+    controls_word = "control" if applicable == 1 else "controls"
+    na_clause = f" {not_applicable} not applicable." if not_applicable else ""
     return [
         "## Risk posture",
         "",
-        f"{open_findings} open {findings_word} across {not_satisfied} of {len(controls)} {controls_word}: "
+        f"{open_findings} open {findings_word} across {not_satisfied} of {applicable} {controls_word}: "
         f"{_breakdown(total)}.",
-        f"{clean} {clean_clause} no violations. {not_assessed} not assessed. "
+        f"{clean} {clean_clause} no violations. {not_assessed} not assessed.{na_clause} "
         f"{len(unmapped)} {gaps_word} to triage.",
         "",
     ]
 
 
+def _crosswalk(bundle: Bundle, mapping: Json) -> list[str]:
+    """Crosswalk table: linked control pairs from Crosswalk concepts, each side with its own status."""
+    pairs = bundle.crosswalk_pairs()
+    if not pairs:
+        return []
+    lines = ["## Crosswalk", "", "Links between frameworks. A link is navigation, never a mapping: each status", "comes only from that control's own rule declarations.", ""]
+    lines += ["| Control | Status | Linked control | Status | Source |", "|---|---|---|---|---|"]
+    for cw_id, left_id, right_id in pairs:
+        left, right = bundle.concepts[left_id], bundle.concepts[right_id]
+        lines.append(
+            f"| {left.key} | {mapping['controls'][left.key]['status']} | {right.key} | "
+            f"{mapping['controls'][right.key]['status']} | {_link(bundle, cw_id)} |"
+        )
+    return [*lines, ""]
+
+
 def render_report(bundle: Bundle, mapping: Json, now: str) -> str:
-    """Markdown report: risk posture, summary, per-control detail, coverage gaps, not-assessed controls."""
-    controls = sorted(mapping["controls"].items())
+    """Markdown report: risk posture, summary, one section per framework, crosswalk, gaps, the rest."""
+    controls = sorted(mapping["controls"].items(), key=lambda kv: _order(kv[0]))
     lines = [
         "# Compliance Scan Report",
         "",
@@ -117,16 +150,20 @@ def render_report(bundle: Bundle, mapping: Json, now: str) -> str:
         "| Control | Status | Critical | High | Medium | Low | Uncl. | Total |",
         "|---|---|---|---|---|---|---|---|",
     ]
-    for code, entry in controls:
+    for key, entry in controls:
         c = _counts(entry["findings"])
         lines.append(
-            f"| {code} | {entry['status']} | {c['critical']} | {c['high']} | "
+            f"| {key} | {entry['status']} | {c['critical']} | {c['high']} | "
             f"{c['medium']} | {c['low']} | {c['unclassified']} | {len(entry['findings'])} |"
         )
-    lines += ["", "## Controls", ""]
-    for code, entry in controls:
-        if entry["status"] != "not-assessed":
-            lines += _control_section(bundle, code, entry)
+    lines.append("")
+    for fw, fw_title in FRAMEWORK_TITLES.items():
+        shown = [(k, e) for k, e in controls if k.partition(":")[0] == fw and e["status"] not in SKIPPED]
+        if shown:
+            lines += [f"## {fw_title}", ""]
+            for key, entry in shown:
+                lines += _control_section(bundle, key, entry)
+    lines += _crosswalk(bundle, mapping)
     lines += ["## Coverage gaps", ""]
     if mapping["unmapped"]:
         lines += ["Findings with no in-bundle control. These are gaps to close, not mappings to invent.", ""]
@@ -134,12 +171,18 @@ def render_report(bundle: Bundle, mapping: Json, now: str) -> str:
     else:
         lines.append("None.")
     lines += ["", "## Not assessed", ""]
-    not_assessed = [code for code, entry in controls if entry["status"] == "not-assessed"]
-    for code in not_assessed:
-        control = bundle.control(code)
-        lines.append(f"- {control.title if control else code}: no in-bundle scanner or policy evidences this control.")
+    not_assessed = [key for key, entry in controls if entry["status"] == "not-assessed"]
+    for key in not_assessed:
+        lines.append(f"- {_title(bundle, key)}: no in-bundle scanner or policy evidences this control.")
     if not not_assessed:
         lines.append("None.")
+    not_applicable = [(key, entry) for key, entry in controls if entry["status"] == "not-applicable"]
+    if not_applicable:
+        lines += ["", "## Not applicable", ""]
+        lines += ["Out of scope at the declared AI risk tier. Findings stay listed; they do not change the status.", ""]
+        for key, entry in not_applicable:
+            lines.append(f"- {_title(bundle, key)}")
+            lines += [f"  {_finding_line(f)}" for f in entry["findings"]]
     return "\n".join(lines) + "\n"
 
 
