@@ -155,7 +155,7 @@ class FakeBatches:
         return [SimpleNamespace(custom_id=r["custom_id"], result=ok) for r in reversed(self.created)]
 
 
-def test_batch_bounds_each_request_and_bills_half(tmp_path: Path) -> None:
+def test_batch_bounds_each_request_and_bills_half(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     client = FakeClient()
     client.messages.batches = FakeBatches(client.message)
     other = Request(task="t", system="stable bundle digest", user="another digest", schema=SCHEMA, max_tokens=100)
@@ -163,3 +163,4 @@ def test_batch_bounds_each_request_and_bills_half(tmp_path: Path) -> None:
     assert outputs == {"a": {"x": 1}, "b": {"x": 1}}
     assert [r["params"]["max_tokens"] for r in client.messages.batches.created] == [100, 100]
     assert [e["cost_usd"] for e in _ledger(tmp_path)] == [pytest.approx(0.001)] * 2
+    assert "llm: batch batch_1 submitted (2 requests)" in capsys.readouterr().err

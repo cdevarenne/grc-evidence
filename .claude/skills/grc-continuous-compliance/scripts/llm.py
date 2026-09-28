@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 import time
 import uuid
 from collections.abc import Callable
@@ -196,8 +197,11 @@ class LLM:
                 for cid, r in requests.items()
             ]
         )
+        print(f"llm: batch {batch.id} submitted ({len(requests)} requests); polling every 30 s", file=sys.stderr)
         while (batch := client.messages.batches.retrieve(batch.id)).processing_status != "ended":
+            print(f"llm: batch {batch.id} {batch.processing_status}: {batch.request_counts}", file=sys.stderr)
             time.sleep(30)
+        print(f"llm: batch {batch.id} ended", file=sys.stderr)
         outputs: dict[str, Json] = {}
         for result in client.messages.batches.results(batch.id):  # any order: key by custom_id
             r = requests[result.custom_id]
