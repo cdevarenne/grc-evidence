@@ -69,11 +69,11 @@ def evaluate(llm: LLM, bundle: Bundle, cases: list[Json], variants: list[str]) -
             split_cases = [c for c in cases if c["split"] == split]
             chunks = chunk_requests(bundle_doc, [gap(c) for c in split_cases], variant)
             groups[variant, split] = (split_cases, chunks, set(bundle_doc))
-            requests |= {f"{variant}/{split}/{cid}": req for cid, (req, _) in chunks.items()}
+            requests |= {f"{variant}-{split}-{cid}": req for cid, (req, _) in chunks.items()}
     outputs = llm.complete_batch(requests)
     results: dict[str, dict[str, Json]] = {v: {} for v in variants}
     for (variant, split), (split_cases, chunks, keys) in groups.items():
-        mine = {cid: outputs[f"{variant}/{split}/{cid}"] for cid in chunks}
+        mine = {cid: outputs[f"{variant}-{split}-{cid}"] for cid in chunks}
         results[variant][split] = score(split_cases, parse(mine, chunks, keys))
     return results
 

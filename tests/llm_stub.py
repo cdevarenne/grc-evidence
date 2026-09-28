@@ -3,7 +3,7 @@
 import json
 from typing import Any
 
-from llm import Request
+from llm import CUSTOM_ID, LLMError, Request
 
 
 class StubLLM:
@@ -24,4 +24,6 @@ class StubLLM:
         return {"proposals": [self.outputs[r] for r in rules if r in self.outputs]}
 
     def complete_batch(self, requests: dict[str, Request]) -> dict[str, Any]:
+        if bad := [cid for cid in requests if not CUSTOM_ID.match(cid)]:  # same rule as the real API
+            raise LLMError(f"batch custom_id must match {CUSTOM_ID.pattern}: {bad[:3]}")
         return {cid: self.complete(r) for cid, r in requests.items()}

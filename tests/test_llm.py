@@ -164,3 +164,11 @@ def test_batch_bounds_each_request_and_bills_half(tmp_path: Path, capsys: pytest
     assert [r["params"]["max_tokens"] for r in client.messages.batches.created] == [100, 100]
     assert [e["cost_usd"] for e in _ledger(tmp_path)] == [pytest.approx(0.001)] * 2
     assert "llm: batch batch_1 submitted (2 requests)" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("custom_id", ["baseline/tune/chunk-0", "", "x" * 65, "a b"])
+def test_batch_custom_ids_are_checked_before_any_call(tmp_path: Path, custom_id: str) -> None:
+    client = FakeClient()
+    with pytest.raises(LLMError, match="custom_id"):
+        _llm(tmp_path, mode="anthropic", client=client).complete_batch({custom_id: REQ})
+    assert client.calls == []

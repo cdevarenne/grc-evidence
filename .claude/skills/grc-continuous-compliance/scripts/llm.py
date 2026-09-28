@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -22,6 +23,7 @@ DEFAULT_MODEL = "claude-haiku-4-5"
 PRICES = {"claude-haiku-4-5": (1.00, 5.00), "claude-sonnet-5": (2.00, 10.00)}
 CACHE_WRITE, CACHE_READ, BATCH = 1.25, 0.10, 0.50  # multipliers on the input price / on the whole call
 CHARS_PER_TOKEN = 3  # conservative: overestimates input tokens for the budget guard
+CUSTOM_ID = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")  # Message Batches API rule for custom_id
 REQUEST_TIMEOUT_S = 60.0  # per synchronous call; the SDK default is 10 minutes
 
 
@@ -124,7 +126,12 @@ class LLM:
         return output
 
     def complete_batch(self, requests: dict[str, Request]) -> dict[str, Json]:
-        """Outputs keyed by custom id. In anthropic/record mode, cache misses go out as one Message Batch."""
+        """Outputs keyed by custom id. In anthropic/record mode, cache misses go out as one Message Batch.
+
+        Custom ids are checked against the API's pattern in every mode, so a bad id fails offline, not at the API.
+        """
+        if bad := [cid for cid in requests if not CUSTOM_ID.match(cid)]:
+            raise LLMError(f"batch custom_id must match {CUSTOM_ID.pattern}: {bad[:3]}")
         if self.mode in ("replay", "claude-cli"):
             return {cid: self.complete(r) for cid, r in requests.items()}
         results: dict[str, Json] = {}
