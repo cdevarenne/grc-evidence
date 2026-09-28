@@ -6,6 +6,9 @@ tags: [crosswalk, iso42001, eu-ai-act]
 generated:
   by: claude-code/claude-opus-5-5
   at: "2026-09-28T00:00:00+00:00"
+verified:
+  - by: "human:cdevarenne"
+    at: "2026-09-28T11:45:59-07:00"
 ---
 # Links
 
