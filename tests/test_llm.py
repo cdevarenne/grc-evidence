@@ -180,3 +180,11 @@ def test_sonnet_runs_without_thinking_and_haiku_is_unchanged(tmp_path: Path) -> 
     _llm(tmp_path / "h", mode="anthropic", client=haiku).complete(REQ)
     assert sonnet.calls[0]["thinking"] == {"type": "disabled"}
     assert "thinking" not in haiku.calls[0]
+
+
+def test_from_env_default_model_yields_to_llm_model(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+    assert LLM.from_env(tmp_path, default_model="claude-sonnet-5").model == "claude-sonnet-5"
+    assert LLM.from_env(tmp_path).model == "claude-haiku-4-5"
+    monkeypatch.setenv("LLM_MODEL", "claude-haiku-4-5")
+    assert LLM.from_env(tmp_path, default_model="claude-sonnet-5").model == "claude-haiku-4-5"

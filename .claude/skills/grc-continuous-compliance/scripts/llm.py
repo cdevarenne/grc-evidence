@@ -93,11 +93,11 @@ class LLM:
             raise LLMError(f"no price for model {self.model!r}; add it to PRICES from the pricing page")
 
     @classmethod
-    def from_env(cls, out: Path = Path("out")) -> LLM:
-        """Build from LLM_MODE, LLM_MODEL, LLM_BUDGET_USD (defaults: replay, Haiku, $1)."""
+    def from_env(cls, out: Path = Path("out"), default_model: str = DEFAULT_MODEL) -> LLM:
+        """Build from LLM_MODE, LLM_MODEL, LLM_BUDGET_USD (defaults: replay, `default_model`, $1)."""
         return cls(
             mode=os.environ.get("LLM_MODE", "replay"),
-            model=os.environ.get("LLM_MODEL", DEFAULT_MODEL),
+            model=os.environ.get("LLM_MODEL", default_model),
             cache=out / "llm-cache",
             ledger=out / "llm-usage.jsonl",
             budget_usd=float(os.environ.get("LLM_BUDGET_USD", "1.0")),

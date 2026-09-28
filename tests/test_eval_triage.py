@@ -58,9 +58,9 @@ def _p(proposal: str, confidence: str) -> dict:
 
 def test_cutoff_turns_low_confidence_proposals_into_none() -> None:
     proposals = [_p("soc2:cc6.1", "low"), _p("soc2:cc6.1", "medium"), _p("soc2:cc6.1", "high"), _p("none", "low")]
-    assert [p["proposal"] for p in apply_cutoff(proposals, CUTOFFS["low->none"])] == [
-        "none", "soc2:cc6.1", "soc2:cc6.1", "none"
-    ]
+    cut = apply_cutoff(proposals, CUTOFFS["low->none"])
+    assert [p["proposal"] for p in cut] == ["none", "soc2:cc6.1", "soc2:cc6.1", "none"]
+    assert cut[0]["cutoff_from"] == "soc2:cc6.1" and "cutoff_from" not in cut[3]
     assert [p["proposal"] for p in apply_cutoff(proposals, CUTOFFS["low+medium->none"])] == [
         "none", "none", "soc2:cc6.1", "none"
     ]

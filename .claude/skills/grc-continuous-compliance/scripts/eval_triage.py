@@ -18,7 +18,7 @@ import yaml
 from digest import bundle_digest
 from llm import LLM, LLMError
 from okf_lib import Bundle, load_bundle
-from triage import VARIANTS, chunk_requests, parse
+from triage import VARIANTS, apply_cutoff, chunk_requests, parse
 
 Json = dict[str, Any]
 SPLITS = ("tune", "holdout", "confirm")  # confirm: a fresh holdout for the default decision
@@ -44,14 +44,6 @@ def gap(case: Json) -> Json:
 
 def _accuracy(pairs: list[tuple[Json, Json]]) -> float | None:
     return round(sum(p["proposal"] == c["expected"] for c, p in pairs) / len(pairs), 3) if pairs else None
-
-
-def apply_cutoff(proposals: list[Json], abstain_on: tuple[str, ...]) -> list[Json]:
-    """Proposals whose confidence is in `abstain_on` become `none`; `none` and `invalid` stay as they are."""
-    return [
-        p | {"proposal": "none"} if p["proposal"] not in ("none", "invalid") and p.get("confidence") in abstain_on else p
-        for p in proposals
-    ]
 
 
 def select_cutoff(tune_scores: dict[str, Json]) -> str:

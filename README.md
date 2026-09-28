@@ -53,25 +53,33 @@ An optional Claude API step adds words and proposals on top, never statuses:
   compliant, or passed, or uses a number that is not in the input.
 - **`make triage`** proposes an in-bundle control, or `none`, for each coverage
   gap, in `out/proposals.json`. Nothing is applied: a person adds `rule_ids`.
-- **`make eval-triage`** scores triage on 40 labeled gaps (accuracy, and
+  Default: Sonnet 5, each control's framework scope and each gap's files in the
+  input, and `low` confidence proposals turned into `none` (the model's guess is
+  kept in `cutoff_from`), chosen by the measurement below.
+- **`make eval-triage`** scores triage on 65 labeled gaps (accuracy, and
   precision and recall of `none`) through the Message Batches API. Cases are
-  split into `tune` (seen while diagnosing a problem) and `holdout` (labeled
-  before any run; the number that counts), and each input variant
-  (`baseline`, `scoped`) runs on both. The first baseline is in
+  split into `tune` (seen while diagnosing a problem), `holdout`, and
+  `confirm` (each labeled before its first run), and each input variant
+  (`baseline`, `scoped`) runs on all three; confidence cutoffs are chosen on
+  `tune` only. The first baseline is in
   [`examples/triage-eval-baseline.json`](examples/triage-eval-baseline.json).
 
 `LLM_MODE` picks the provider: `replay` (default; recorded responses, $0, used
 by tests and CI), `record`, `anthropic` (the Claude API, key from the
 environment), or `claude-cli` (Claude Code headless on your plan; dev loop
-only, and not "the Claude API"). Defaults: `LLM_MODEL=claude-haiku-4-5`,
-`LLM_BUDGET_USD=1`.
+only, and not "the Claude API"). Defaults: Haiku 4.5 for narrate and the
+eval, Sonnet 5 for triage (`LLM_MODEL` overrides both), `LLM_BUDGET_USD=1`.
 
 Cost controls: a small model; digests instead of raw scanner output; structured
 JSON output with `max_tokens` bounds (narrate 2K, triage 1K per call of 8
 gaps); a response cache keyed on `sha256(model + prompt)`; batches for the eval;
 and a budget guard that stops before a call could pass `LLM_BUDGET_USD`. Every
 call is logged to `out/llm-usage.jsonl`, and the report footer shows the run's
-cost. A full run on the sample app costs about $0.04 on Haiku.
+cost. Narrate on Haiku costs about a cent. Triage on Sonnet 5 is estimated at
+$0.05–0.10 for the sample app's ~40 gap rules, above the $0.05-per-run target
+of the original spec; `LLM_MODEL=claude-haiku-4-5 make triage` is the cheaper
+option (see the confirm results below). The full-run cost on the real scan has
+not been measured yet.
 
 **First eval baseline** (Haiku 4.5, one Message Batch, $0.009): accuracy 0.64,
 `none` precision 1.0, `none` recall 0.1, no invalid outputs. Every clear match
@@ -106,8 +114,22 @@ proposals as `none`; the cutoff is chosen on `tune` and reported on `holdout`:
 Haiku never answers with `low` confidence here, so only the `medium` cutoff
 moves it. Sonnet 5 with the scoped input and a `low` cutoff misses one of 15
 holdout cases. Caveat: twelve configurations were compared on 15 holdout cases
-(one case is about 7 points), so the winner needs confirming on a fresh holdout
-before it becomes the default.
+(one case is about 7 points), so the winner needed confirming on fresh cases.
+
+**Confirm holdout and the default** (issue #32; decision rule written before the
+run; [`triage-eval-confirm-haiku.json`](examples/triage-eval-confirm-haiku.json),
+[`triage-eval-confirm-sonnet.json`](examples/triage-eval-confirm-sonnet.json),
+$0.043 together). 25 new cases, including traps in AI-component files whose
+right answer is not an AI control:
+
+| Candidate (cutoff chosen on tune) | Confirm accuracy | Confirm `none` recall | Confirm AI cases |
+|---|---|---|---|
+| Haiku 4.5, scoped, low+medium → none | 0.80 | 0.875 | 6/7 |
+| Sonnet 5, scoped, low → none | **0.92** | **1.0** | **7/7** |
+
+Both cleared the pre-registered bar (≥ 0.75 on `none` recall and on AI cases);
+Sonnet 5 led by three cases, more than the one-case margin that would have
+favoured the cheaper Haiku, so it became `make triage`'s default.
 
 Prompt caching is requested but does not take effect on Haiku 4.5 today: its
 minimum cacheable prefix is 4,096 tokens and the bundle digest is smaller. The

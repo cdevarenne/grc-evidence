@@ -16,6 +16,10 @@ MAX_TOKENS = 1000
 GAPS_PER_CALL = 8  # ~100 output tokens per proposal keeps each call under MAX_TOKENS
 CONFIDENCE = ("low", "medium", "high")
 VARIANTS = ("baseline", "scoped")  # baseline: the first eval's input, byte for byte; scoped: issue #32
+# Default configuration, chosen by the pre-registered rule on the confirm holdout (issue #32):
+# Sonnet 5, scoped input, and `low` confidence proposals treated as `none`.
+TRIAGE_MODEL = "claude-sonnet-5"
+ABSTAIN = {"none": (), "low": ("low",), "low+medium": ("low", "medium")}
 
 SYSTEM = """You triage scanner rules that no control in a GRC knowledge bundle claims yet.
 
@@ -103,6 +107,19 @@ def _invalid(gap: Json, errors: list[str]) -> Json:
     return {"rule": rule_name(gap), "proposal": "invalid", "errors": errors}
 
 
+def apply_cutoff(proposals: list[Json], abstain_on: tuple[str, ...]) -> list[Json]:
+    """Proposals whose confidence is in `abstain_on` become `none`; `none` and `invalid` stay as they are.
+
+    The model's original proposal is kept in `cutoff_from`, so a reviewer still sees what it leaned toward.
+    """
+    return [
+        p | {"proposal": "none", "cutoff_from": p["proposal"]}
+        if p["proposal"] not in ("none", "invalid") and p.get("confidence") in abstain_on
+        else p
+        for p in proposals
+    ]
+
+
 def chunk_requests(bundle_doc: Json, gaps: list[Json], variant: str = "baseline") -> dict[str, tuple[Request, list[Json]]]:
     """{chunk id: (request, its gaps)}: GAPS_PER_CALL gaps per request, in input order."""
     chunks = [gaps[i : i + GAPS_PER_CALL] for i in range(0, len(gaps), GAPS_PER_CALL)]
@@ -148,14 +165,17 @@ def main() -> None:
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--variant", choices=VARIANTS, default="scoped")
+    parser.add_argument("--abstain-on", choices=ABSTAIN, default="low", help="confidence levels treated as `none`")
     args = parser.parse_args()
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
     scoped = args.variant == "scoped"
     gaps = scan_digest(mapping, targets=scoped)["gaps"]
     bundle_doc = bundle_digest(load_bundle(args.knowledge), scoped=scoped)
-    proposals = triage(LLM.from_env(args.out), bundle_doc, gaps, variant=args.variant)
+    llm = LLM.from_env(args.out, default_model=TRIAGE_MODEL)
+    proposals = apply_cutoff(triage(llm, bundle_doc, gaps, variant=args.variant), ABSTAIN[args.abstain_on])
     (args.out / "proposals.json").write_text(json.dumps(proposals, indent=2) + "\n", encoding="utf-8")
-    print(f"triage: {len(proposals)} proposal(s) in {args.out / 'proposals.json'}; nothing applied to knowledge/")
+    print(f"triage ({llm.model}, {args.variant}, abstain on {args.abstain_on}): {len(proposals)} proposal(s) in "
+          f"{args.out / 'proposals.json'}; nothing applied to knowledge/")
 
 
 if __name__ == "__main__":
