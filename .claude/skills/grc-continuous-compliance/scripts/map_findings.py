@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-from okf_lib import GUARDRAIL_TYPES, SCANNER_TYPE, Bundle, applies, load_bundle
+from okf_lib import GUARDRAIL_TYPES, SCANNER_TYPE, Bundle, Suppression, applies, load_bundle
 
 Finding = dict[str, Any]
 CONTEXT_FIELDS = ("risk_tier",)  # inventory fields that `applies_when` may name
@@ -41,8 +42,30 @@ def load_context(inventory: Path) -> dict[str, Any]:
     return {field: doc[field] for field in CONTEXT_FIELDS if field in doc}
 
 
-def map_findings(bundle: Bundle, findings: list[Finding], context: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Build the mapping document (spec §5.4) from a bundle, findings, and an applicability context."""
+def _suppression_entry(finding: Finding, s: Suppression, keys: list[str]) -> dict[str, Any]:
+    return {
+        "finding": finding,
+        "suppression": s.id,
+        "kind": s.kind,
+        "controls": keys,
+        "owner": s.owner,
+        "expires": s.expires.isoformat(),
+        "reason": s.reason,
+    }
+
+
+def map_findings(
+    bundle: Bundle, findings: list[Finding], context: dict[str, Any] | None = None, today: date | None = None
+) -> dict[str, Any]:
+    """Build the mapping document (spec §5.4) from a bundle, findings, an applicability context, and a date.
+
+    Active suppressions (Spec C) change how a matching finding is counted, never whether it is shown:
+    a false positive leaves its control or the gap list; an accepted risk stays on its control, marked.
+    """
+    today = today or datetime.now(UTC).date()
+    suppressions = bundle.suppressions()
+    active = [s for s in suppressions if s.active(today)]
+    used: set[str] = set()
     controls: dict[str, dict[str, Any]] = {}
     for c in bundle.controls():
         evidenced_by, satisfied_by = _evidence(bundle, c.key)
@@ -55,8 +78,16 @@ def map_findings(bundle: Bundle, findings: list[Finding], context: dict[str, Any
         if not applies(c, context or {}):
             controls[c.key] |= {"status": "not-applicable", "reason": "control-not-applicable"}
     unmapped: list[dict[str, Any]] = []
+    suppressed: list[dict[str, Any]] = []
     for finding in findings:
         keys, reason = _controls_for(bundle, finding)
+        match = next((s for s in active if s.matches(finding)), None)
+        if match:
+            used.add(match.id)
+            suppressed.append(_suppression_entry(finding, match, keys))
+            if match.kind == "false-positive":
+                continue
+            finding = finding | {"accepted": match.id}
         if reason:
             unmapped.append({"finding": finding, "reason": reason})
         for key in keys:
@@ -70,7 +101,14 @@ def map_findings(bundle: Bundle, findings: list[Finding], context: dict[str, Any
             entry["status"] = "no-violations-detected"
         else:
             entry["status"] = "not-assessed"
-    return {"controls": controls, "unmapped": unmapped}
+    mapping: dict[str, Any] = {"controls": controls, "unmapped": unmapped}
+    if suppressions:
+        mapping |= {
+            "suppressed": suppressed,
+            "expired_suppressions": [s.id for s in suppressions if today > s.expires],
+            "unused_suppressions": [s.id for s in active if s.id not in used],
+        }
+    return mapping
 
 
 def main() -> None:
@@ -78,9 +116,10 @@ def main() -> None:
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
     parser.add_argument("--inventory", type=Path, default=Path("app/ai-inventory.yaml"))
     parser.add_argument("--out", type=Path, default=Path("out"))
+    parser.add_argument("--today", type=date.fromisoformat, default=None, help="date for suppression expiry")
     args = parser.parse_args()
     findings = json.loads((args.out / "findings.json").read_text(encoding="utf-8"))
-    mapping = map_findings(load_bundle(args.knowledge), findings, load_context(args.inventory))
+    mapping = map_findings(load_bundle(args.knowledge), findings, load_context(args.inventory), args.today)
     (args.out / "mapping.json").write_text(json.dumps(mapping, indent=2) + "\n", encoding="utf-8")
 
 
