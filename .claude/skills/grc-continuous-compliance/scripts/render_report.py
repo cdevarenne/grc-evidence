@@ -141,7 +141,7 @@ def _table_text(text: str) -> str:
 
 
 def _suppression_sections(mapping: Json) -> list[str]:
-    """Suppressed, expired, and unused suppressions; each section appears only when it has entries."""
+    """Suppressed, expiring, expired, and unused suppressions; each section appears only when it has entries."""
     lines: list[str] = []
     if suppressed := mapping.get("suppressed"):
         lines += ["", "## Suppressed", "", "Reviewed and time-limited. Shown here so nothing is hidden.", ""]
@@ -152,6 +152,9 @@ def _suppression_sections(mapping: Json) -> list[str]:
             lines.append(
                 f"| {s['kind']} | `{f['tool']}` `{f['rule_id']}` — `{f['target']}` | {s['owner']} | {s['expires']} | {reason} |"
             )
+    if expiring := mapping.get("expiring_suppressions"):
+        lines += ["", "## Expiring soon", "", "Renew after a fresh review, or remove.", ""]
+        lines += [f"- `{e['id']}` expires {e['expires']}" for e in expiring]
     if expired := mapping.get("expired_suppressions"):
         lines += ["", "## Expired suppressions", "", "No longer applied; their findings count again. Renew or remove.", ""]
         lines += [f"- `{sid}`" for sid in expired]

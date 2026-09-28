@@ -51,8 +51,8 @@ description: >
 6. **Suppressions are a person's decision.** If a finding looks like a false
    positive or a risk to accept, say so and draft the suppression for review
    (one exact finding, owner, reason, expiry within 90 days). Never add, renew,
-   or extend a suppression unasked, and always report the Suppressed, Expired,
-   and Unused sections of `out/report.md`.
+   or extend a suppression unasked, and always report the Suppressed, Expiring
+   soon, Expired, and Unused sections of `out/report.md`.
 
 ## Scope
 

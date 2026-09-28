@@ -57,8 +57,9 @@ counts, never whether it is shown:
   a risk with status `deviation-approved`.
 
 An expired suppression stops applying (the finding counts again and the report
-lists it under **Expired suppressions**); one that matches no finding is listed
-under **Unused suppressions**. Suppressions match on tool, rule id, target, and
+lists it under **Expired suppressions**); one within 14 days of expiry is listed
+under **Expiring soon**; one that matches no finding is listed under **Unused
+suppressions**. Suppressions match on tool, rule id, target, and
 optionally a message substring; there are no wildcards, and an accepted risk on
 a coverage gap is rejected when the bundle loads. `map_findings.py --today`
 sets the date used for expiry.

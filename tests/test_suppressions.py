@@ -179,3 +179,20 @@ def test_digest_counts_accepted_and_false_positives_apart(tmp_path: Path) -> Non
                                            "accepted_risks": 1}
     assert d["suppressed_false_positives"] == 1
     assert "accepted_risks" not in d["controls"]["soc2:cc6.1"]
+
+
+@pytest.mark.parametrize(
+    ("today", "expiring"),
+    [(date(2026, 12, 12), False), (date(2026, 12, 13), True), (date(2026, 12, 27), True), (date(2026, 12, 28), False)],
+)
+def test_suppressions_near_expiry_are_flagged(tmp_path: Path, today: date, expiring: bool) -> None:
+    m = _mapping(tmp_path, today=today, fp=FALSE_POSITIVE)
+    assert (m["expiring_suppressions"] == [{"id": "suppressions/fp", "expires": "2026-12-27"}]) is expiring
+
+
+def test_report_lists_suppressions_expiring_soon(tmp_path: Path) -> None:
+    bundle = _bundle(tmp_path, fp=FALSE_POSITIVE)
+    report = render_report(bundle, map_findings(bundle, FINDINGS, today=date(2026, 12, 20)), NOW)
+    assert "## Expiring soon" in report and "- `suppressions/fp` expires 2026-12-27" in report
+    quiet = render_report(bundle, map_findings(bundle, FINDINGS, today=IN_FORCE), NOW)
+    assert "## Expiring soon" not in quiet

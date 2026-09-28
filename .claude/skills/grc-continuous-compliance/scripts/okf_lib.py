@@ -17,6 +17,7 @@ RESERVED = frozenset({"index.md", "log.md"})
 SUPPRESSION_TYPE = "Suppression"
 SUPPRESSION_KINDS = ("false-positive", "accepted-risk")
 MAX_SUPPRESSION_DAYS = 90
+EXPIRY_WARNING_DAYS = 14  # an active suppression this close to expiry is flagged for renewal or removal
 CONTROL_TYPE = "SOC 2 Control"
 FRAMEWORK_TYPES = {"soc2": CONTROL_TYPE, "iso42001": "ISO/IEC 42001 Control", "eu-ai-act": "EU AI Act Article"}
 FRAMEWORK_TITLES = {"soc2": "SOC 2", "iso42001": "ISO/IEC 42001", "eu-ai-act": "EU AI Act"}

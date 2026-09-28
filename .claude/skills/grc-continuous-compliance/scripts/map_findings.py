@@ -10,7 +10,7 @@ from typing import Any
 
 import yaml
 
-from okf_lib import GUARDRAIL_TYPES, SCANNER_TYPE, Bundle, Suppression, applies, load_bundle
+from okf_lib import EXPIRY_WARNING_DAYS, GUARDRAIL_TYPES, SCANNER_TYPE, Bundle, Suppression, applies, load_bundle
 
 Finding = dict[str, Any]
 CONTEXT_FIELDS = ("risk_tier",)  # inventory fields that `applies_when` may name
@@ -107,6 +107,11 @@ def map_findings(
             "suppressed": suppressed,
             "expired_suppressions": [s.id for s in suppressions if today > s.expires],
             "unused_suppressions": [s.id for s in active if s.id not in used],
+            "expiring_suppressions": [
+                {"id": s.id, "expires": s.expires.isoformat()}
+                for s in active
+                if (s.expires - today).days <= EXPIRY_WARNING_DAYS
+            ],
         }
     return mapping
 
