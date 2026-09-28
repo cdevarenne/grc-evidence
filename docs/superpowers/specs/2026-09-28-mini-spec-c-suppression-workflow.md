@@ -1,7 +1,7 @@
 # Mini Spec C — Suppression Workflow (reviewed, expiring, never silent)
 
 - **Date:** 2026-09-28
-- **Status:** draft, for review
+- **Status:** reviewed 2026-09-28 (decisions in §8)
 - **Depends on:** v1, Spec A (framework keys). Spec B is untouched except where noted.
 - **LLM cost:** none. The workflow is deterministic.
 
@@ -24,15 +24,16 @@ finding is counted, never whether the finding is shown.
 1. A `false-positive` suppression removes its finding from the control's status
    and from the coverage-gap list, and the report lists it under **Suppressed**
    with owner, reason, and expiry.
-2. An `accepted-risk` suppression leaves the control's status unchanged; the
-   finding is labelled accepted in the report, and OSCAL records it as a risk
-   with status `deviation-approved`.
+2. An `accepted-risk` suppression keeps its finding on the control, marked
+   accepted. A control whose remaining findings are all accepted gets the new
+   status `risk-accepted`; one open finding keeps it `not-satisfied`. OSCAL
+   records each accepted finding as a risk with status `deviation-approved`.
 3. An expired suppression no longer applies: the finding is counted again and
    the report lists the suppression under **Expired suppressions**.
 4. A suppression that matches no finding is listed under **Unused
    suppressions**, so stale records get removed.
 5. The bundle conformance test rejects a suppression without an owner, a
-   reason, an expiry within 180 days of approval, or a human `verified` entry.
+   reason, an expiry within 90 days of approval, or a human `verified` entry.
 6. OSCAL output still validates. `make test` and `make test-integration` pass.
 
 **Out of scope:** scanner-native inline skips (still honored by the scanners
@@ -48,7 +49,7 @@ themselves), bulk or wildcard suppressions, approval workflows outside git.
 - **Accepted risk needs a control.** `accepted-risk` applies only to a finding
   that maps to a control; on a coverage gap it is rejected at load time
   (there is no control whose risk is being accepted).
-- **Expiry is mandatory.** At most 180 days after approval. The date used for
+- **Expiry is mandatory.** At most 90 days after approval. The date used for
   expiry is injectable (`--today`) so tests are deterministic.
 - **Review is the gate.** A suppression is a concept like any other: it needs a
   human `verified` entry, and the conformance test fails without one.
@@ -74,7 +75,7 @@ finding:
   message_contains: "Service.default.widgets-api"   # optional
 owner: human:cdevarenne
 approved: "2026-09-28"
-expires: "2026-12-31"         # <= approved + 180 days
+expires: "2026-12-27"         # <= approved + 90 days
 tags: [suppression]
 verified: [...]
 ```
@@ -85,23 +86,30 @@ Body sections: `# Reason` (required), `# Compensating control` (optional; for
 ## 5. Code changes
 
 - `okf_lib.py`: parse `Suppression` concepts; validate `kind`, `finding`,
-  `owner`, dates, the 180-day window. `Bundle.suppressions()`.
+  `owner`, dates, the 90-day window. `MAX_SUPPRESSION_DAYS = 90`. `Bundle.suppressions()`.
 - `map_findings.py`: match each finding against active suppressions (after
   mapping, before status). New top-level keys in `mapping.json`:
   - `suppressed`: `[{finding, suppression, kind, controls}]`;
   - `expired_suppressions`, `unused_suppressions`: suppression ids.
   - `false-positive` findings leave `controls[*].findings` and `unmapped`.
   - `accepted-risk` findings stay in `controls[*].findings` with
-    `"accepted": "<suppression id>"`; the status is unchanged.
+    `"accepted": "<suppression id>"`.
+  - Status precedence: any open finding → `not-satisfied`; otherwise any
+    accepted finding → `risk-accepted`; otherwise as before
+    (`no-violations-detected` / `not-assessed`); `not-applicable` is unchanged.
   - `--today` (default: the current UTC date).
 - `to_oscal.py`: accepted risks become `risks` with status
-  `deviation-approved`, linked to the finding's observation; false positives
-  keep their observation and are named in `remarks`, never as findings.
+  `deviation-approved`, linked to the finding's observation. A `risk-accepted`
+  control is still a finding with state `not-satisfied` (OSCAL allows only
+  `satisfied` / `not-satisfied`), and is named in `remarks` as risk-accepted.
+  False positives keep their observation and are named in `remarks`, never as
+  findings. `docs/oscal-subset.md` documents both.
 - `render_report.py`: sections **Suppressed**, **Expired suppressions**,
   **Unused suppressions**; accepted findings marked inline; the risk-posture
   line counts suppressed findings separately.
-- `digest.py` (Spec B): the scan digest counts open findings only; suppressed
-  findings are summarized as a count, so narrate never describes them as open.
+- `digest.py` and `narrate.py` (Spec B): the scan digest counts open findings
+  only, with suppressed and accepted findings as separate counts, so narrate
+  never describes them as open; `risk-accepted` joins narrate's status list.
 
 ## 6. Sample data
 
@@ -116,30 +124,30 @@ Body sections: `# Reason` (required), `# Compensating control` (optional; for
 ## 7. Tests
 
 - Unit: exact matching and `message_contains`; expiry at the boundary day;
-  unused detection; `accepted-risk` on a gap rejected; statuses for both kinds;
+  unused detection; `accepted-risk` on a gap rejected; status precedence
+  (open + accepted → `not-satisfied`, accepted only → `risk-accepted`);
   OSCAL `deviation-approved` risk validates; report sections (golden file).
-- Conformance: every suppression has owner, reason, window ≤ 180 days, and a
+- Conformance: every suppression has owner, reason, window ≤ 90 days, and a
   human `verified` entry.
 - Integration: the two sample suppressions land as expected; OSCAL validates.
 
-## 8. Design choices to confirm in review
+## 8. Review decisions (2026-09-28)
 
-1. **Accepted risk keeps the status `not-satisfied`** (recommended: an
-   accepted risk is still a violation). Alternative: a new `risk-accepted`
-   status.
-2. **180-day maximum window** (recommended; matches common exception
-   policies). Alternative: 90 days, or configurable.
-3. **Suppressions live in `knowledge/`** as reviewed concepts (recommended:
-   same review gate and graph as everything else). Alternative: a separate
-   `suppressions.yaml` outside the bundle.
+1. **Accepted risk gets its own status, `risk-accepted`.** It sits between
+   `not-satisfied` and `no-violations-detected`: an open finding still wins, and
+   an accepted risk is never reported as clean. In OSCAL it stays a
+   `not-satisfied` finding plus a `deviation-approved` risk, since OSCAL has no
+   third finding state.
+2. **90-day maximum window.**
+3. **Suppressions live in `knowledge/`** as reviewed concepts.
 
 ## 9. Tasks (estimate: 2 focused days)
 
 1. `okf_lib`: `Suppression` concept, validation, conformance rules.
-2. `map_findings`: matching, expiry, unused; `mapping.json` keys; `--today`.
+2. `map_findings`: matching, expiry, unused, `risk-accepted` precedence; `mapping.json` keys; `--today`.
 3. `to_oscal`: `deviation-approved` risks; false-positive remarks; schema tests.
 4. `render_report`: the three sections and inline markers; golden file.
-5. `digest.py`: open-only counts for narrate.
+5. `digest.py` / `narrate.py`: open-only counts; `risk-accepted` status.
 6. Sample suppressions (human gate: review and `verified`), `SEEDED.yaml`,
    integration test.
 7. README: "Suppressions" section; remove the "No suppression workflow" limit.
