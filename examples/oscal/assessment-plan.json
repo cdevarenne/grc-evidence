@@ -1,0 +1,715 @@
+{
+  "assessment-plan": {
+    "uuid": "51637f0b-33ec-50d7-8c8f-9fd8294ae643",
+    "metadata": {
+      "title": "okf-grc-skill automated assessment plan",
+      "last-modified": "2026-09-28T23:55:46+00:00",
+      "version": "0.1.0",
+      "oscal-version": "1.2.3"
+    },
+    "import-ssp": {
+      "href": "#system-security-plan-not-modeled",
+      "remarks": "System security plan not modeled; see docs/oscal-subset.md."
+    },
+    "local-definitions": {
+      "activities": [
+        {
+          "uuid": "cbe546dd-4c55-5522-84ea-b55ea7e81677",
+          "title": "Semgrep code scan",
+          "description": "Run semgrep 1.178.0 over `app` and normalize its JSON output to findings.",
+          "props": [
+            {
+              "name": "method",
+              "value": "TEST"
+            },
+            {
+              "name": "tool-version",
+              "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+              "value": "1.178.0"
+            }
+          ],
+          "steps": [
+            {
+              "uuid": "2c1299fd-33ed-521c-add3-5bd8ea5ff5e8",
+              "title": "Run the scanner",
+              "description": "`semgrep scan --config policies/semgrep --metrics=off --json --quiet app` (working directory: the repository root)"
+            }
+          ],
+          "related-controls": {
+            "control-selections": [
+              {
+                "description": "AICPA Trust Services Criteria (SOC 2)",
+                "include-controls": [
+                  {
+                    "control-id": "cc6.1"
+                  }
+                ]
+              },
+              {
+                "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+                "include-controls": [
+                  {
+                    "control-id": "a.6"
+                  },
+                  {
+                    "control-id": "a.7"
+                  }
+                ]
+              },
+              {
+                "description": "Regulation (EU) 2024/1689 (EU AI Act)",
+                "include-controls": [
+                  {
+                    "control-id": "art-50"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "uuid": "cc9fa0d7-22f7-5a0a-a77e-8152ca7ccee2",
+          "title": "Trivy misconfiguration scan",
+          "description": "Run trivy 0.74.0 over `app` and normalize its JSON output to findings.",
+          "props": [
+            {
+              "name": "method",
+              "value": "TEST"
+            },
+            {
+              "name": "tool-version",
+              "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+              "value": "0.74.0"
+            }
+          ],
+          "steps": [
+            {
+              "uuid": "567cb254-d95d-5753-b55e-0337281737b5",
+              "title": "Run the scanner",
+              "description": "`trivy config --quiet --format json app` (working directory: the repository root)"
+            }
+          ],
+          "related-controls": {
+            "control-selections": [
+              {
+                "description": "AICPA Trust Services Criteria (SOC 2)",
+                "include-controls": [
+                  {
+                    "control-id": "cc6.1"
+                  },
+                  {
+                    "control-id": "cc6.6"
+                  },
+                  {
+                    "control-id": "cc7.1"
+                  },
+                  {
+                    "control-id": "cc8.1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "uuid": "0f11cb85-98de-59c6-90f0-5fde66dc1643",
+          "title": "Trivy dependency vulnerability scan",
+          "description": "Run trivy 0.74.0 over `app` and normalize its JSON output to findings.",
+          "props": [
+            {
+              "name": "method",
+              "value": "TEST"
+            },
+            {
+              "name": "tool-version",
+              "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+              "value": "0.74.0"
+            }
+          ],
+          "steps": [
+            {
+              "uuid": "e3fd82c6-fafa-5298-927f-7bb0305e0557",
+              "title": "Run the scanner",
+              "description": "`trivy fs --quiet --scanners vuln --format json app` (working directory: the repository root)"
+            }
+          ],
+          "related-controls": {
+            "control-selections": [
+              {
+                "description": "AICPA Trust Services Criteria (SOC 2)",
+                "include-controls": [
+                  {
+                    "control-id": "cc6.1"
+                  },
+                  {
+                    "control-id": "cc6.6"
+                  },
+                  {
+                    "control-id": "cc7.1"
+                  },
+                  {
+                    "control-id": "cc8.1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "uuid": "2c14e28a-2eb5-5f5d-bb8b-b8c90ea4cbc7",
+          "title": "Checkov infrastructure-as-code scan",
+          "description": "Run checkov 3.3.19 over `app` and normalize its JSON output to findings.",
+          "props": [
+            {
+              "name": "method",
+              "value": "TEST"
+            },
+            {
+              "name": "tool-version",
+              "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+              "value": "3.3.19"
+            }
+          ],
+          "steps": [
+            {
+              "uuid": "60996b1a-9eaf-501a-9bff-8f214889f938",
+              "title": "Run the scanner",
+              "description": "`checkov -d . --framework terraform kubernetes dockerfile -o json --quiet --compact` (working directory: the scan target)"
+            }
+          ],
+          "related-controls": {
+            "control-selections": [
+              {
+                "description": "AICPA Trust Services Criteria (SOC 2)",
+                "include-controls": [
+                  {
+                    "control-id": "cc6.1"
+                  },
+                  {
+                    "control-id": "cc6.6"
+                  },
+                  {
+                    "control-id": "cc8.1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "uuid": "453cdade-8092-56fc-9e7b-38ff558acad2",
+          "title": "Conftest policy check",
+          "description": "Run conftest 0.70.1 over `app` and normalize its JSON output to findings.",
+          "props": [
+            {
+              "name": "method",
+              "value": "TEST"
+            },
+            {
+              "name": "tool-version",
+              "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+              "value": "0.70.1"
+            }
+          ],
+          "steps": [
+            {
+              "uuid": "d9b184fa-8ebd-559d-ae70-5b69c1947dd7",
+              "title": "Run the scanner",
+              "description": "`conftest test --all-namespaces --no-color -o json -p policies/rego app/k8s/**/*.yaml app/k8s/**/*.yml app/infra/**/*.tf app/ai-inventory.yaml` (working directory: the repository root)"
+            }
+          ],
+          "related-controls": {
+            "control-selections": [
+              {
+                "description": "AICPA Trust Services Criteria (SOC 2)",
+                "include-controls": [
+                  {
+                    "control-id": "cc6.1"
+                  },
+                  {
+                    "control-id": "cc6.6"
+                  },
+                  {
+                    "control-id": "cc8.1"
+                  }
+                ]
+              },
+              {
+                "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+                "include-controls": [
+                  {
+                    "control-id": "a.4"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "components": [
+        {
+          "uuid": "4d6160c4-6335-5cd7-84a5-e1f85a40419a",
+          "type": "software",
+          "title": "AI assistant feature",
+          "description": "DRF views that send widget text to an LLM and return or store the result; never run.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "d380f93a-9858-54bf-ba19-79328b8a2f94",
+          "type": "software",
+          "title": "Container image",
+          "description": "The API's Dockerfile.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "4af752a4-8dad-5374-96b7-5d4cd9d1ff54",
+          "type": "software",
+          "title": "Sample Django / DRF API",
+          "description": "Minimal widgets REST API; the application code under scan.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "7f4c6fd6-d1c7-54c6-8f3f-e09124be460f",
+          "type": "software",
+          "title": "GRC agent LLM step",
+          "description": "The optional Claude API step of this tool (narrate, triage, eval) and its usage ledger.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "70d1f6d6-232e-57ba-85da-ee4afbebdcbe",
+          "type": "software",
+          "title": "Kubernetes manifests",
+          "description": "Deployment and Service for the API.",
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "20400eba-7490-514f-ba0a-820ac55c3454",
+          "type": "software",
+          "title": "Terraform module",
+          "description": "Storage bucket and service account for the API.",
+          "status": {
+            "state": "operational"
+          }
+        }
+      ]
+    },
+    "terms-and-conditions": {
+      "parts": [
+        {
+          "name": "rules-of-engagement",
+          "title": "Suppression policy",
+          "prose": "A finding may be suppressed only by a suppression concept in the knowledge bundle that matches it exactly (tool, rule id, target, and optionally a message fragment; no wildcards), names a human owner and a reason, carries a human `verified` entry, and expires at most 90 days after approval. A false positive leaves the control's status and is named in the results' remarks; an accepted risk keeps the control not-satisfied and is recorded as a deviation-approved risk. An expired suppression no longer applies."
+        },
+        {
+          "name": "methodology",
+          "title": "Grounding rule",
+          "prose": "A finding maps to a control only through a `rule_ids` declaration in the knowledge bundle. A finding no declaration covers is a coverage gap, recorded as an open risk, never as a control finding. A clean automated scan evidences a control but never attests it."
+        }
+      ]
+    },
+    "reviewed-controls": {
+      "description": "Every control applicable at the declared AI risk tier, including controls no scanner evidences.",
+      "control-selections": [
+        {
+          "description": "AICPA Trust Services Criteria (SOC 2)",
+          "include-controls": [
+            {
+              "control-id": "cc6.1"
+            },
+            {
+              "control-id": "cc6.6"
+            },
+            {
+              "control-id": "cc7.1"
+            },
+            {
+              "control-id": "cc7.2"
+            },
+            {
+              "control-id": "cc8.1"
+            }
+          ]
+        },
+        {
+          "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+          "include-controls": [
+            {
+              "control-id": "a.4"
+            },
+            {
+              "control-id": "a.5"
+            },
+            {
+              "control-id": "a.6"
+            },
+            {
+              "control-id": "a.7"
+            },
+            {
+              "control-id": "a.8"
+            },
+            {
+              "control-id": "a.9"
+            }
+          ]
+        },
+        {
+          "description": "Regulation (EU) 2024/1689 (EU AI Act)",
+          "include-controls": [
+            {
+              "control-id": "art-50"
+            }
+          ]
+        }
+      ],
+      "remarks": "Not applicable at the declared AI risk tier: eu-ai-act:art-10, eu-ai-act:art-12, eu-ai-act:art-13, eu-ai-act:art-14, eu-ai-act:art-15, eu-ai-act:art-9"
+    },
+    "assessment-subjects": [
+      {
+        "type": "component",
+        "description": "The stack components described in the knowledge bundle.",
+        "include-subjects": [
+          {
+            "subject-uuid": "4d6160c4-6335-5cd7-84a5-e1f85a40419a",
+            "type": "component"
+          },
+          {
+            "subject-uuid": "d380f93a-9858-54bf-ba19-79328b8a2f94",
+            "type": "component"
+          },
+          {
+            "subject-uuid": "4af752a4-8dad-5374-96b7-5d4cd9d1ff54",
+            "type": "component"
+          },
+          {
+            "subject-uuid": "7f4c6fd6-d1c7-54c6-8f3f-e09124be460f",
+            "type": "component"
+          },
+          {
+            "subject-uuid": "70d1f6d6-232e-57ba-85da-ee4afbebdcbe",
+            "type": "component"
+          },
+          {
+            "subject-uuid": "20400eba-7490-514f-ba0a-820ac55c3454",
+            "type": "component"
+          }
+        ]
+      }
+    ],
+    "assessment-assets": {
+      "components": [
+        {
+          "uuid": "9973a0ba-84c3-5aa9-8f98-5682ab4219a7",
+          "type": "software",
+          "title": "semgrep 1.178.0",
+          "description": "semgrep, pinned to 1.178.0 in tools.lock.",
+          "props": [
+            {
+              "name": "tool-version",
+              "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+              "value": "1.178.0"
+            }
+          ],
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "ab928d82-e984-5efd-adee-3ea01f477778",
+          "type": "software",
+          "title": "trivy 0.74.0",
+          "description": "trivy, pinned to 0.74.0 in tools.lock.",
+          "props": [
+            {
+              "name": "tool-version",
+              "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+              "value": "0.74.0"
+            }
+          ],
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "3cf5fb95-a701-51c4-9611-f4b4ad7d14ed",
+          "type": "software",
+          "title": "checkov 3.3.19",
+          "description": "checkov, pinned to 3.3.19 in tools.lock.",
+          "props": [
+            {
+              "name": "tool-version",
+              "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+              "value": "3.3.19"
+            }
+          ],
+          "status": {
+            "state": "operational"
+          }
+        },
+        {
+          "uuid": "8d9470c0-e417-50c7-9d8c-2a9b201cf756",
+          "type": "software",
+          "title": "conftest 0.70.1",
+          "description": "conftest, pinned to 0.70.1 in tools.lock.",
+          "props": [
+            {
+              "name": "tool-version",
+              "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+              "value": "0.70.1"
+            }
+          ],
+          "status": {
+            "state": "operational"
+          }
+        }
+      ],
+      "assessment-platforms": [
+        {
+          "uuid": "430afc62-f8e0-5143-9628-5265957ab4b0",
+          "title": "`make scan` pipeline, scanners pinned in tools.lock",
+          "uses-components": [
+            {
+              "component-uuid": "9973a0ba-84c3-5aa9-8f98-5682ab4219a7"
+            },
+            {
+              "component-uuid": "ab928d82-e984-5efd-adee-3ea01f477778"
+            },
+            {
+              "component-uuid": "3cf5fb95-a701-51c4-9611-f4b4ad7d14ed"
+            },
+            {
+              "component-uuid": "8d9470c0-e417-50c7-9d8c-2a9b201cf756"
+            }
+          ]
+        }
+      ]
+    },
+    "tasks": [
+      {
+        "uuid": "15b366bd-8029-529e-8b1e-8694d9cd05f8",
+        "type": "action",
+        "title": "Automated compliance scan",
+        "description": "Run every scanner activity, then map findings to controls through the knowledge bundle.",
+        "associated-activities": [
+          {
+            "activity-uuid": "cbe546dd-4c55-5522-84ea-b55ea7e81677",
+            "subjects": [
+              {
+                "type": "component",
+                "description": "The stack components described in the knowledge bundle.",
+                "include-subjects": [
+                  {
+                    "subject-uuid": "4d6160c4-6335-5cd7-84a5-e1f85a40419a",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "d380f93a-9858-54bf-ba19-79328b8a2f94",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "4af752a4-8dad-5374-96b7-5d4cd9d1ff54",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "7f4c6fd6-d1c7-54c6-8f3f-e09124be460f",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "70d1f6d6-232e-57ba-85da-ee4afbebdcbe",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "20400eba-7490-514f-ba0a-820ac55c3454",
+                    "type": "component"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "activity-uuid": "cc9fa0d7-22f7-5a0a-a77e-8152ca7ccee2",
+            "subjects": [
+              {
+                "type": "component",
+                "description": "The stack components described in the knowledge bundle.",
+                "include-subjects": [
+                  {
+                    "subject-uuid": "4d6160c4-6335-5cd7-84a5-e1f85a40419a",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "d380f93a-9858-54bf-ba19-79328b8a2f94",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "4af752a4-8dad-5374-96b7-5d4cd9d1ff54",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "7f4c6fd6-d1c7-54c6-8f3f-e09124be460f",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "70d1f6d6-232e-57ba-85da-ee4afbebdcbe",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "20400eba-7490-514f-ba0a-820ac55c3454",
+                    "type": "component"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "activity-uuid": "0f11cb85-98de-59c6-90f0-5fde66dc1643",
+            "subjects": [
+              {
+                "type": "component",
+                "description": "The stack components described in the knowledge bundle.",
+                "include-subjects": [
+                  {
+                    "subject-uuid": "4d6160c4-6335-5cd7-84a5-e1f85a40419a",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "d380f93a-9858-54bf-ba19-79328b8a2f94",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "4af752a4-8dad-5374-96b7-5d4cd9d1ff54",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "7f4c6fd6-d1c7-54c6-8f3f-e09124be460f",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "70d1f6d6-232e-57ba-85da-ee4afbebdcbe",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "20400eba-7490-514f-ba0a-820ac55c3454",
+                    "type": "component"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "activity-uuid": "2c14e28a-2eb5-5f5d-bb8b-b8c90ea4cbc7",
+            "subjects": [
+              {
+                "type": "component",
+                "description": "The stack components described in the knowledge bundle.",
+                "include-subjects": [
+                  {
+                    "subject-uuid": "4d6160c4-6335-5cd7-84a5-e1f85a40419a",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "d380f93a-9858-54bf-ba19-79328b8a2f94",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "4af752a4-8dad-5374-96b7-5d4cd9d1ff54",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "7f4c6fd6-d1c7-54c6-8f3f-e09124be460f",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "70d1f6d6-232e-57ba-85da-ee4afbebdcbe",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "20400eba-7490-514f-ba0a-820ac55c3454",
+                    "type": "component"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "activity-uuid": "453cdade-8092-56fc-9e7b-38ff558acad2",
+            "subjects": [
+              {
+                "type": "component",
+                "description": "The stack components described in the knowledge bundle.",
+                "include-subjects": [
+                  {
+                    "subject-uuid": "4d6160c4-6335-5cd7-84a5-e1f85a40419a",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "d380f93a-9858-54bf-ba19-79328b8a2f94",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "4af752a4-8dad-5374-96b7-5d4cd9d1ff54",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "7f4c6fd6-d1c7-54c6-8f3f-e09124be460f",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "70d1f6d6-232e-57ba-85da-ee4afbebdcbe",
+                    "type": "component"
+                  },
+                  {
+                    "subject-uuid": "20400eba-7490-514f-ba0a-820ac55c3454",
+                    "type": "component"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "subjects": [
+          {
+            "type": "component",
+            "description": "The stack components described in the knowledge bundle.",
+            "include-subjects": [
+              {
+                "subject-uuid": "4d6160c4-6335-5cd7-84a5-e1f85a40419a",
+                "type": "component"
+              },
+              {
+                "subject-uuid": "d380f93a-9858-54bf-ba19-79328b8a2f94",
+                "type": "component"
+              },
+              {
+                "subject-uuid": "4af752a4-8dad-5374-96b7-5d4cd9d1ff54",
+                "type": "component"
+              },
+              {
+                "subject-uuid": "7f4c6fd6-d1c7-54c6-8f3f-e09124be460f",
+                "type": "component"
+              },
+              {
+                "subject-uuid": "70d1f6d6-232e-57ba-85da-ee4afbebdcbe",
+                "type": "component"
+              },
+              {
+                "subject-uuid": "20400eba-7490-514f-ba0a-820ac55c3454",
+                "type": "component"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

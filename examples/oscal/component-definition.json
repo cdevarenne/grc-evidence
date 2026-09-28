@@ -1,0 +1,220 @@
+{
+  "component-definition": {
+    "uuid": "d0481237-5a87-55cf-a1ba-bc45aacd04b3",
+    "metadata": {
+      "title": "okf-grc-skill sample app components",
+      "last-modified": "2026-09-28T23:55:46+00:00",
+      "version": "0.1.0",
+      "oscal-version": "1.2.3"
+    },
+    "components": [
+      {
+        "uuid": "4d6160c4-6335-5cd7-84a5-e1f85a40419a",
+        "type": "software",
+        "title": "AI assistant feature",
+        "description": "DRF views that send widget text to an LLM and return or store the result; never run.",
+        "control-implementations": [
+          {
+            "uuid": "6aea610b-67be-5be7-bbfc-ffcd8df8c2f3",
+            "source": "#dd9916b0-021b-592c-b2a4-b1c2f75d21ec",
+            "description": "SOC 2 criteria that apply to AI assistant feature.",
+            "implemented-requirements": [
+              {
+                "uuid": "f1d85a70-6bf0-5b69-976b-e9a326f23aff",
+                "control-id": "cc6.1",
+                "description": "CC6.1 \u2014 Logical Access"
+              }
+            ]
+          },
+          {
+            "uuid": "865ae129-c7f9-5e7d-830d-36192f7ac563",
+            "source": "#a3812d82-81f6-5c16-a146-17d8525d71cf",
+            "description": "ISO/IEC 42001 Annex A controls that apply to AI assistant feature.",
+            "implemented-requirements": [
+              {
+                "uuid": "73931ce7-90e8-565f-bd9f-b1b1118b12f4",
+                "control-id": "a.4",
+                "description": "A.4 \u2014 Resources for AI systems"
+              },
+              {
+                "uuid": "014b726d-2e53-520b-98e1-ad711a9c941d",
+                "control-id": "a.6",
+                "description": "A.6 \u2014 AI system life cycle"
+              },
+              {
+                "uuid": "12e4e282-564a-5943-b780-88b44643dc68",
+                "control-id": "a.7",
+                "description": "A.7 \u2014 Data for AI systems"
+              }
+            ]
+          },
+          {
+            "uuid": "cb7015a9-3dfb-5d70-8165-e5fbd216c89f",
+            "source": "#8c61b511-9aff-59dc-b4d8-c8f12ee13fa6",
+            "description": "EU AI Act articles that apply to AI assistant feature.",
+            "implemented-requirements": [
+              {
+                "uuid": "9560c896-cea3-560f-a9e9-3858e09823f9",
+                "control-id": "art-50",
+                "description": "Art. 50 \u2014 Transparency obligations for certain AI systems"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "d380f93a-9858-54bf-ba19-79328b8a2f94",
+        "type": "software",
+        "title": "Container image",
+        "description": "The API's Dockerfile.",
+        "control-implementations": [
+          {
+            "uuid": "7c95d55b-21a4-5844-854e-16fed694aec4",
+            "source": "#dd9916b0-021b-592c-b2a4-b1c2f75d21ec",
+            "description": "SOC 2 criteria that apply to Container image.",
+            "implemented-requirements": [
+              {
+                "uuid": "a3ff0758-b8d2-5402-aa03-1cdfce0a31b2",
+                "control-id": "cc6.1",
+                "description": "CC6.1 \u2014 Logical Access"
+              },
+              {
+                "uuid": "7ee24482-ada6-58b3-82ff-f464f3d06830",
+                "control-id": "cc7.1",
+                "description": "CC7.1 \u2014 Vulnerability Detection"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "4af752a4-8dad-5374-96b7-5d4cd9d1ff54",
+        "type": "software",
+        "title": "Sample Django / DRF API",
+        "description": "Minimal widgets REST API; the application code under scan.",
+        "control-implementations": [
+          {
+            "uuid": "b48b030c-d7c2-50b4-8484-7608dd6f9b80",
+            "source": "#dd9916b0-021b-592c-b2a4-b1c2f75d21ec",
+            "description": "SOC 2 criteria that apply to Sample Django / DRF API.",
+            "implemented-requirements": [
+              {
+                "uuid": "24aa42f2-1f64-51b7-b0d3-9aca75de0da4",
+                "control-id": "cc6.1",
+                "description": "CC6.1 \u2014 Logical Access"
+              },
+              {
+                "uuid": "cde6baca-ef56-5440-afd7-eb9f76bec0e1",
+                "control-id": "cc7.1",
+                "description": "CC7.1 \u2014 Vulnerability Detection"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "7f4c6fd6-d1c7-54c6-8f3f-e09124be460f",
+        "type": "software",
+        "title": "GRC agent LLM step",
+        "description": "The optional Claude API step of this tool (narrate, triage, eval) and its usage ledger.",
+        "control-implementations": [
+          {
+            "uuid": "63339e8a-8df0-5cdf-9da9-88987e8a7170",
+            "source": "#a3812d82-81f6-5c16-a146-17d8525d71cf",
+            "description": "ISO/IEC 42001 Annex A controls that apply to GRC agent LLM step.",
+            "implemented-requirements": [
+              {
+                "uuid": "17eb0c17-ec90-5b7a-a121-dabb41700ae7",
+                "control-id": "a.6",
+                "description": "A.6 \u2014 AI system life cycle"
+              },
+              {
+                "uuid": "92bd22b7-9ef5-5190-a39e-518d20f43e97",
+                "control-id": "a.7",
+                "description": "A.7 \u2014 Data for AI systems"
+              }
+            ]
+          },
+          {
+            "uuid": "ccfd6535-586d-5e43-92b9-b0f0a23ddfe3",
+            "source": "#8c61b511-9aff-59dc-b4d8-c8f12ee13fa6",
+            "description": "EU AI Act articles that apply to GRC agent LLM step.",
+            "implemented-requirements": [
+              {
+                "uuid": "c5323be0-2cc9-5bc9-98e9-1046687e3cf7",
+                "control-id": "art-12",
+                "description": "Art. 12 \u2014 Record-keeping"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "70d1f6d6-232e-57ba-85da-ee4afbebdcbe",
+        "type": "software",
+        "title": "Kubernetes manifests",
+        "description": "Deployment and Service for the API.",
+        "control-implementations": [
+          {
+            "uuid": "9f396200-2805-550b-8e2b-5517acc3e45f",
+            "source": "#dd9916b0-021b-592c-b2a4-b1c2f75d21ec",
+            "description": "SOC 2 criteria that apply to Kubernetes manifests.",
+            "implemented-requirements": [
+              {
+                "uuid": "1e6d511a-2787-55b0-b938-b5bc609d2fa6",
+                "control-id": "cc6.1",
+                "description": "CC6.1 \u2014 Logical Access"
+              },
+              {
+                "uuid": "0e24d4d4-b636-556b-b8a0-d130d6957b8c",
+                "control-id": "cc8.1",
+                "description": "CC8.1 \u2014 Change Management"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "uuid": "20400eba-7490-514f-ba0a-820ac55c3454",
+        "type": "software",
+        "title": "Terraform module",
+        "description": "Storage bucket and service account for the API.",
+        "control-implementations": [
+          {
+            "uuid": "a2c1d708-7c6f-5a4a-b96f-d98dbda0f89a",
+            "source": "#dd9916b0-021b-592c-b2a4-b1c2f75d21ec",
+            "description": "SOC 2 criteria that apply to Terraform module.",
+            "implemented-requirements": [
+              {
+                "uuid": "1c5bc638-fd50-5a8b-b3e8-a6c9487bfbca",
+                "control-id": "cc6.6",
+                "description": "CC6.6 \u2014 System Boundary Protection"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "dd9916b0-021b-592c-b2a4-b1c2f75d21ec",
+          "title": "AICPA Trust Services Criteria (SOC 2)"
+        },
+        {
+          "uuid": "a3812d82-81f6-5c16-a146-17d8525d71cf",
+          "title": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)"
+        },
+        {
+          "uuid": "8c61b511-9aff-59dc-b4d8-c8f12ee13fa6",
+          "title": "Regulation (EU) 2024/1689 (EU AI Act)",
+          "rlinks": [
+            {
+              "href": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

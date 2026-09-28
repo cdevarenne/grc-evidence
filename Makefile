@@ -44,6 +44,8 @@ test-integration:
 
 examples: scan
 	cp out/report.md examples/report.md
+	mkdir -p examples/oscal
+	cp out/oscal/*.json examples/oscal/
 
 clean:
 	rm -rf out
