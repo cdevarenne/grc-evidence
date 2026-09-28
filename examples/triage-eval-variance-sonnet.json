@@ -1,0 +1,655 @@
+{
+  "model": "claude-sonnet-5",
+  "mode": "anthropic",
+  "repeats": 3,
+  "cost_usd": 0.069769,
+  "cost_per_case_usd": 0.00093,
+  "results": {
+    "scoped": {
+      "confirm": {
+        "cutoffs": {
+          "as-is": {
+            "cases": 25,
+            "accuracy": 0.76,
+            "none_precision": 0.7,
+            "none_recall": 0.875,
+            "invalid_rate": 0.0,
+            "ai_accuracy": 0.714,
+            "misses": [
+              {
+                "rule": "semgrep:llm-no-feedback-channel",
+                "expected": "iso42001:a.8",
+                "got": "iso42001:a.9"
+              },
+              {
+                "rule": "semgrep:llm-auto-apply-without-approval",
+                "expected": "iso42001:a.9",
+                "got": "eu-ai-act:art-14"
+              },
+              {
+                "rule": "checkov:CKV_K8S_22",
+                "expected": "soc2:cc6.1",
+                "got": "none"
+              },
+              {
+                "rule": "checkov:CKV_AWS_48",
+                "expected": "soc2:cc7.2",
+                "got": "none"
+              },
+              {
+                "rule": "semgrep:django-admin-no-audit-log",
+                "expected": "soc2:cc7.2",
+                "got": "none"
+              },
+              {
+                "rule": "checkov:CKV_AWS_23",
+                "expected": "none",
+                "got": "soc2:cc6.1"
+              }
+            ]
+          },
+          "low->none": {
+            "cases": 25,
+            "accuracy": 0.8,
+            "none_precision": 0.727,
+            "none_recall": 1.0,
+            "invalid_rate": 0.0,
+            "ai_accuracy": 0.714,
+            "misses": [
+              {
+                "rule": "semgrep:llm-no-feedback-channel",
+                "expected": "iso42001:a.8",
+                "got": "iso42001:a.9"
+              },
+              {
+                "rule": "semgrep:llm-auto-apply-without-approval",
+                "expected": "iso42001:a.9",
+                "got": "eu-ai-act:art-14"
+              },
+              {
+                "rule": "checkov:CKV_K8S_22",
+                "expected": "soc2:cc6.1",
+                "got": "none"
+              },
+              {
+                "rule": "checkov:CKV_AWS_48",
+                "expected": "soc2:cc7.2",
+                "got": "none"
+              },
+              {
+                "rule": "semgrep:django-admin-no-audit-log",
+                "expected": "soc2:cc7.2",
+                "got": "none"
+              }
+            ]
+          },
+          "low+medium->none": {
+            "cases": 25,
+            "accuracy": 0.6,
+            "none_precision": 0.471,
+            "none_recall": 1.0,
+            "invalid_rate": 0.0,
+            "ai_accuracy": 0.571,
+            "misses": [
+              {
+                "rule": "semgrep:llm-stream-no-max-tokens",
+                "expected": "iso42001:a.6",
+                "got": "none"
+              },
+              {
+                "rule": "semgrep:llm-no-feedback-channel",
+                "expected": "iso42001:a.8",
+                "got": "none"
+              },
+              {
+                "rule": "semgrep:llm-auto-apply-without-approval",
+                "expected": "iso42001:a.9",
+                "got": "eu-ai-act:art-14"
+              },
+              {
+                "rule": "semgrep:drf-view-no-auth-class",
+                "expected": "soc2:cc6.1",
+                "got": "none"
+              },
+              {
+                "rule": "checkov:CKV_K8S_22",
+                "expected": "soc2:cc6.1",
+                "got": "none"
+              },
+              {
+                "rule": "checkov:CKV_K8S_38",
+                "expected": "soc2:cc6.1",
+                "got": "none"
+              },
+              {
+                "rule": "semgrep:python-yaml-load-request",
+                "expected": "soc2:cc7.1",
+                "got": "none"
+              },
+              {
+                "rule": "checkov:CKV_AWS_48",
+                "expected": "soc2:cc7.2",
+                "got": "none"
+              },
+              {
+                "rule": "semgrep:django-admin-no-audit-log",
+                "expected": "soc2:cc7.2",
+                "got": "none"
+              },
+              {
+                "rule": "semgrep:dockerfile-apt-install-unpinned",
+                "expected": "soc2:cc8.1",
+                "got": "none"
+              }
+            ]
+          }
+        },
+        "answers": [
+          {
+            "rule": "conftest:ai_inventory_model_missing",
+            "expected": "iso42001:a.4",
+            "proposal": "iso42001:a.4",
+            "confidence": "high"
+          },
+          {
+            "rule": "conftest:ai_impact_assessment_missing",
+            "expected": "iso42001:a.5",
+            "proposal": "iso42001:a.5",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:llm-stream-no-max-tokens",
+            "expected": "iso42001:a.6",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "semgrep:llm-completion-stored-plaintext",
+            "expected": "iso42001:a.7",
+            "proposal": "iso42001:a.7",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:llm-no-feedback-channel",
+            "expected": "iso42001:a.8",
+            "proposal": "iso42001:a.9",
+            "confidence": "medium"
+          },
+          {
+            "rule": "semgrep:llm-auto-apply-without-approval",
+            "expected": "iso42001:a.9",
+            "proposal": "eu-ai-act:art-14",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:llm-image-no-ai-label",
+            "expected": "eu-ai-act:art-50",
+            "proposal": "eu-ai-act:art-50",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:drf-view-no-auth-class",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "medium"
+          },
+          {
+            "rule": "semgrep:python-print-debug",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_22",
+            "expected": "soc2:cc6.1",
+            "proposal": "none",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_38",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_AWS_25",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_260",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:python-yaml-load-request",
+            "expected": "soc2:cc7.1",
+            "proposal": "soc2:cc7.1",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_AWS_48",
+            "expected": "soc2:cc7.2",
+            "proposal": "none",
+            "confidence": "low"
+          },
+          {
+            "rule": "semgrep:django-admin-no-audit-log",
+            "expected": "soc2:cc7.2",
+            "proposal": "none",
+            "confidence": "low"
+          },
+          {
+            "rule": "semgrep:dockerfile-apt-install-unpinned",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "medium"
+          },
+          {
+            "rule": "semgrep:workflow-action-unpinned",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_28",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_AWS_157",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_AWS_144",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_AWS_23",
+            "expected": "none",
+            "proposal": "soc2:cc6.1",
+            "confidence": "low"
+          },
+          {
+            "rule": "semgrep:k8s-no-pod-disruption-budget",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "medium"
+          },
+          {
+            "rule": "trivy:DS-0013",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_DOCKER_5",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "medium"
+          }
+        ],
+        "runs": [
+          {
+            "as-is": {
+              "cases": 25,
+              "accuracy": 0.76,
+              "none_precision": 0.7,
+              "none_recall": 0.875,
+              "invalid_rate": 0.0,
+              "ai_accuracy": 0.714,
+              "misses": [
+                {
+                  "rule": "semgrep:llm-no-feedback-channel",
+                  "expected": "iso42001:a.8",
+                  "got": "iso42001:a.9"
+                },
+                {
+                  "rule": "semgrep:llm-auto-apply-without-approval",
+                  "expected": "iso42001:a.9",
+                  "got": "eu-ai-act:art-14"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_22",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_AWS_48",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:django-admin-no-audit-log",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_AWS_23",
+                  "expected": "none",
+                  "got": "soc2:cc6.1"
+                }
+              ]
+            },
+            "low->none": {
+              "cases": 25,
+              "accuracy": 0.8,
+              "none_precision": 0.727,
+              "none_recall": 1.0,
+              "invalid_rate": 0.0,
+              "ai_accuracy": 0.714,
+              "misses": [
+                {
+                  "rule": "semgrep:llm-no-feedback-channel",
+                  "expected": "iso42001:a.8",
+                  "got": "iso42001:a.9"
+                },
+                {
+                  "rule": "semgrep:llm-auto-apply-without-approval",
+                  "expected": "iso42001:a.9",
+                  "got": "eu-ai-act:art-14"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_22",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_AWS_48",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:django-admin-no-audit-log",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                }
+              ]
+            },
+            "low+medium->none": {
+              "cases": 25,
+              "accuracy": 0.6,
+              "none_precision": 0.471,
+              "none_recall": 1.0,
+              "invalid_rate": 0.0,
+              "ai_accuracy": 0.571,
+              "misses": [
+                {
+                  "rule": "semgrep:llm-stream-no-max-tokens",
+                  "expected": "iso42001:a.6",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:llm-no-feedback-channel",
+                  "expected": "iso42001:a.8",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:llm-auto-apply-without-approval",
+                  "expected": "iso42001:a.9",
+                  "got": "eu-ai-act:art-14"
+                },
+                {
+                  "rule": "semgrep:drf-view-no-auth-class",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_22",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_38",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:python-yaml-load-request",
+                  "expected": "soc2:cc7.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_AWS_48",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:django-admin-no-audit-log",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:dockerfile-apt-install-unpinned",
+                  "expected": "soc2:cc8.1",
+                  "got": "none"
+                }
+              ]
+            }
+          },
+          {
+            "as-is": {
+              "cases": 25,
+              "accuracy": 0.88,
+              "none_precision": 1.0,
+              "none_recall": 1.0,
+              "invalid_rate": 0.0,
+              "ai_accuracy": 0.857,
+              "misses": [
+                {
+                  "rule": "semgrep:llm-auto-apply-without-approval",
+                  "expected": "iso42001:a.9",
+                  "got": "eu-ai-act:art-14"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_22",
+                  "expected": "soc2:cc6.1",
+                  "got": "iso42001:a.6"
+                },
+                {
+                  "rule": "semgrep:django-admin-no-audit-log",
+                  "expected": "soc2:cc7.2",
+                  "got": "soc2:cc8.1"
+                }
+              ]
+            },
+            "low->none": {
+              "cases": 25,
+              "accuracy": 0.88,
+              "none_precision": 0.8,
+              "none_recall": 1.0,
+              "invalid_rate": 0.0,
+              "ai_accuracy": 0.857,
+              "misses": [
+                {
+                  "rule": "semgrep:llm-auto-apply-without-approval",
+                  "expected": "iso42001:a.9",
+                  "got": "eu-ai-act:art-14"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_22",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:django-admin-no-audit-log",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                }
+              ]
+            },
+            "low+medium->none": {
+              "cases": 25,
+              "accuracy": 0.64,
+              "none_precision": 0.5,
+              "none_recall": 1.0,
+              "invalid_rate": 0.0,
+              "ai_accuracy": 0.571,
+              "misses": [
+                {
+                  "rule": "semgrep:llm-stream-no-max-tokens",
+                  "expected": "iso42001:a.6",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:llm-no-feedback-channel",
+                  "expected": "iso42001:a.8",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:llm-auto-apply-without-approval",
+                  "expected": "iso42001:a.9",
+                  "got": "eu-ai-act:art-14"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_22",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_38",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:python-yaml-load-request",
+                  "expected": "soc2:cc7.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_AWS_48",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:django-admin-no-audit-log",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:dockerfile-apt-install-unpinned",
+                  "expected": "soc2:cc8.1",
+                  "got": "none"
+                }
+              ]
+            }
+          },
+          {
+            "as-is": {
+              "cases": 25,
+              "accuracy": 0.88,
+              "none_precision": 1.0,
+              "none_recall": 0.875,
+              "invalid_rate": 0.0,
+              "ai_accuracy": 0.857,
+              "misses": [
+                {
+                  "rule": "semgrep:llm-auto-apply-without-approval",
+                  "expected": "iso42001:a.9",
+                  "got": "eu-ai-act:art-14"
+                },
+                {
+                  "rule": "semgrep:django-admin-no-audit-log",
+                  "expected": "soc2:cc7.2",
+                  "got": "soc2:cc8.1"
+                },
+                {
+                  "rule": "checkov:CKV_AWS_23",
+                  "expected": "none",
+                  "got": "soc2:cc6.1"
+                }
+              ]
+            },
+            "low->none": {
+              "cases": 25,
+              "accuracy": 0.88,
+              "none_precision": 0.8,
+              "none_recall": 1.0,
+              "invalid_rate": 0.0,
+              "ai_accuracy": 0.857,
+              "misses": [
+                {
+                  "rule": "semgrep:llm-auto-apply-without-approval",
+                  "expected": "iso42001:a.9",
+                  "got": "eu-ai-act:art-14"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_22",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:django-admin-no-audit-log",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                }
+              ]
+            },
+            "low+medium->none": {
+              "cases": 25,
+              "accuracy": 0.64,
+              "none_precision": 0.5,
+              "none_recall": 1.0,
+              "invalid_rate": 0.0,
+              "ai_accuracy": 0.571,
+              "misses": [
+                {
+                  "rule": "semgrep:llm-stream-no-max-tokens",
+                  "expected": "iso42001:a.6",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:llm-no-feedback-channel",
+                  "expected": "iso42001:a.8",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:llm-auto-apply-without-approval",
+                  "expected": "iso42001:a.9",
+                  "got": "eu-ai-act:art-14"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_22",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_K8S_38",
+                  "expected": "soc2:cc6.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:python-yaml-load-request",
+                  "expected": "soc2:cc7.1",
+                  "got": "none"
+                },
+                {
+                  "rule": "checkov:CKV_AWS_48",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:django-admin-no-audit-log",
+                  "expected": "soc2:cc7.2",
+                  "got": "none"
+                },
+                {
+                  "rule": "semgrep:dockerfile-apt-install-unpinned",
+                  "expected": "soc2:cc8.1",
+                  "got": "none"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
