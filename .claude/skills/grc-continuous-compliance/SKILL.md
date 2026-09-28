@@ -48,6 +48,11 @@ description: >
    coverage-gap rule. Present the proposals for human review as `rule_ids`
    additions to the relevant guardrail concept. Never apply them, and do not
    edit `knowledge/` unasked.
+6. **Suppressions are a person's decision.** If a finding looks like a false
+   positive or a risk to accept, say so and draft the suppression for review
+   (one exact finding, owner, reason, expiry within 90 days). Never add, renew,
+   or extend a suppression unasked, and always report the Suppressed, Expired,
+   and Unused sections of `out/report.md`.
 
 ## Scope
 
