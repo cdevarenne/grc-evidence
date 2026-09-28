@@ -1,5 +1,6 @@
 ---
 type: SOC 2 Control
+framework: soc2
 title: CC7.2 — Security Monitoring
 description: System components are monitored for anomalous and malicious activity.
 tags: [soc2, cc7.2, nist-si-4, nist-au-6]

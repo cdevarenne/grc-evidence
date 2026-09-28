@@ -1,5 +1,6 @@
 ---
 type: SOC 2 Control
+framework: soc2
 title: CC7.1 — Vulnerability Detection
 description: Vulnerabilities in code, dependencies, images, and configuration are detected.
 tags: [soc2, cc7.1, nist-ra-5, nist-si-2]

@@ -1,5 +1,6 @@
 ---
 type: SOC 2 Control
+framework: soc2
 title: CC8.1 — Change Management
 description: Changes to infrastructure and software are controlled, reproducible, and reviewed.
 tags: [soc2, cc8.1, nist-cm-2, nist-cm-3]

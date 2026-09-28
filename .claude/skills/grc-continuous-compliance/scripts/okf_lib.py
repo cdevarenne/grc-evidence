@@ -14,10 +14,14 @@ import yaml
 
 RESERVED = frozenset({"index.md", "log.md"})
 CONTROL_TYPE = "SOC 2 Control"
+FRAMEWORK_TYPES = {"soc2": CONTROL_TYPE, "iso42001": "ISO/IEC 42001 Control", "eu-ai-act": "EU AI Act Article"}
+FRAMEWORK_TITLES = {"soc2": "SOC 2", "iso42001": "ISO/IEC 42001", "eu-ai-act": "EU AI Act"}
+DEFAULT_FRAMEWORK = "soc2"
+CROSSWALK_TYPE = "Crosswalk"
 SCANNER_TYPE = "Scanner"
 GUARDRAIL_TYPES = ("Rego Policy", "Semgrep Rule")
 COMPONENT_TYPE = "Stack Component"
-_CONTROL_TAG = re.compile(r"^cc\d+\.\d+$")
+_CONTROL_TAG = re.compile(r"^(?:cc\d+\.\d+|iso42001:a\.\d+|eu-ai-act:art-\d+)$")
 _FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n?(.*)\Z", re.S)
 _LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 _H1 = re.compile(r"^# (.+?)\s*$", re.M)
@@ -50,8 +54,23 @@ class Concept:
 
     @property
     def control_tags(self) -> tuple[str, ...]:
-        """Tags naming a SOC 2 criterion, e.g. ('cc7.1',)."""
+        """Tags naming a control, as written, e.g. ('cc7.1',) or ('iso42001:a.6',)."""
         return tuple(t for t in self.tags if _CONTROL_TAG.match(t))
+
+    @property
+    def control_keys(self) -> tuple[str, ...]:
+        """Control tags as `framework:code` keys, e.g. ('soc2:cc7.1',)."""
+        return tuple(control_key(t) for t in self.control_tags)
+
+    @property
+    def framework(self) -> str:
+        """The control framework a control concept belongs to (`soc2` when unset)."""
+        return str(self.frontmatter.get("framework") or DEFAULT_FRAMEWORK)
+
+    @property
+    def key(self) -> str:
+        """Framework-qualified control key, e.g. 'iso42001:a.6'."""
+        return f"{self.framework}:{self.code}"
 
 
 @dataclass(frozen=True)
@@ -65,12 +84,13 @@ class Bundle:
         return sorted((c for c in self.concepts.values() if c.type in types), key=lambda c: c.id)
 
     def controls(self) -> list[Concept]:
-        """SOC 2 control concepts, sorted by id."""
-        return self.of_type(CONTROL_TYPE)
+        """Control concepts of every framework, sorted by id."""
+        return self.of_type(*FRAMEWORK_TYPES.values())
 
-    def control(self, code: str) -> Concept | None:
-        """The control concept whose code is `code`, if the bundle has one."""
-        return next((c for c in self.controls() if c.code == code), None)
+    def control(self, key: str) -> Concept | None:
+        """The control concept for `key` ('iso42001:a.6'; a bare 'cc7.1' means SOC 2), if the bundle has one."""
+        key = control_key(key)
+        return next((c for c in self.controls() if c.key == key), None)
 
     def by_rule(self, tool: str, rule_id: str) -> list[Concept]:
         """Concepts whose `rule_ids` declare coverage of this scanner rule (globs allowed)."""
@@ -80,11 +100,23 @@ class Bundle:
             if any(_rule_matches(entry, tool, rule_id) for entry in c.rule_ids)
         ]
 
-    def declaring(self, code: str) -> list[Concept]:
-        """Concepts that declare `rule_ids` and carry control tag `code`, sorted by id."""
+    def declaring(self, key: str) -> list[Concept]:
+        """Concepts that declare `rule_ids` and carry the control tag for `key`, sorted by id."""
+        key = control_key(key)
         return sorted(
-            (c for c in self.concepts.values() if c.rule_ids and code in c.control_tags), key=lambda c: c.id
+            (c for c in self.concepts.values() if c.rule_ids and key in c.control_keys), key=lambda c: c.id
         )
+
+    def crosswalk_pairs(self) -> list[tuple[str, str, str]]:
+        """(crosswalk id, left control id, right control id) for each crosswalk line linking two controls."""
+        control_ids = {c.id for c in self.controls()}
+        pairs = []
+        for cw in self.of_type(CROSSWALK_TYPE):
+            for line in cw.body.splitlines():
+                ids = [i for t in _LINK.findall(line) if (i := _resolve_link(t, cw.path)) in control_ids]
+                if len(ids) == 2:
+                    pairs.append((cw.id, ids[0], ids[1]))
+        return pairs
 
     def section(self, concept: Concept, heading: str) -> str | None:
         """Body text under `# heading`, up to the next level-1 heading."""
@@ -94,6 +126,22 @@ class Bundle:
                 end = matches[i + 1].start() if i + 1 < len(matches) else len(concept.body)
                 return concept.body[m.end() : end].strip()
         return None
+
+
+def control_key(tag: str) -> str:
+    """Normalize a control tag to `framework:code`; a bare SOC 2 tag ('cc6.1') gets the `soc2:` prefix."""
+    return tag if ":" in tag else f"{DEFAULT_FRAMEWORK}:{tag}"
+
+
+def applies(control: Concept, context: Mapping[str, Any]) -> bool:
+    """False when the control's `applies_when` names a context value that excludes it.
+
+    A context key that is missing (no inventory) never excludes a control: unknown means assess it.
+    """
+    for field, allowed in (control.frontmatter.get("applies_when") or {}).items():
+        if field in context and context[field] not in allowed:
+            return False
+    return True
 
 
 def _rule_matches(entry: str, tool: str, rule_id: str) -> bool:
@@ -128,8 +176,19 @@ def _check_grounding(rel_path: str, tags: tuple[str, ...], rule_ids: tuple[str, 
         tool, _, rule = entry.partition(":")
         if not tool or not _RULE_PATTERN.fullmatch(rule):
             raise BundleError(f"{rel_path}: rule id {entry!r} is not '<tool>:<literal prefix>[*]'")
-    if rule_ids and sum(1 for t in tags if _CONTROL_TAG.match(t)) != 1:
-        raise BundleError(f"{rel_path}: a concept declaring rule_ids needs exactly one control tag")
+    frameworks = [control_key(t).partition(":")[0] for t in tags if _CONTROL_TAG.match(t)]
+    if rule_ids and (not frameworks or len(frameworks) != len(set(frameworks))):
+        raise BundleError(f"{rel_path}: a concept declaring rule_ids needs exactly one control tag per framework")
+
+
+def _check_control(rel_path: str, fm: Mapping[str, Any], type_: str) -> None:
+    """A control's `framework` must be known and match its type; `applies_when` maps fields to lists."""
+    framework = str(fm.get("framework") or DEFAULT_FRAMEWORK)
+    if type_ in FRAMEWORK_TYPES.values() and FRAMEWORK_TYPES.get(framework) != type_:
+        raise BundleError(f"{rel_path}: framework {framework!r} does not match type {type_!r}")
+    applies_when = fm.get("applies_when", {})
+    if not isinstance(applies_when, dict) or not all(isinstance(v, list) for v in applies_when.values()):
+        raise BundleError(f"{rel_path}: 'applies_when' must map each field to a YAML list")
 
 
 def _parse(rel_path: str, text: str) -> Concept:
@@ -147,10 +206,12 @@ def _parse(rel_path: str, text: str) -> Concept:
     tags = _string_list(rel_path, fm, "tags")
     rule_ids = _string_list(rel_path, fm, "rule_ids")
     _check_grounding(rel_path, tags, rule_ids)
+    type_ = str(fm["type"]).strip()
+    _check_control(rel_path, fm, type_)
     return Concept(
         id=stem,
         path=rel_path,
-        type=str(fm["type"]).strip(),
+        type=type_,
         title=str(fm.get("title") or posixpath.basename(stem)),
         description=str(fm.get("description") or ""),
         tags=tags,

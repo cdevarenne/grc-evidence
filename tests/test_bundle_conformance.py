@@ -6,11 +6,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-from okf_lib import load_bundle
+from okf_lib import FRAMEWORK_TYPES, load_bundle
 
 KNOWLEDGE = Path(__file__).parent.parent / "knowledge"
 TOOLS = {"semgrep", "trivy", "checkov", "conftest"}
-TYPES = {"SOC 2 Control", "Stack Component", "Rego Policy", "Semgrep Rule", "Scanner", "Reference"}
+TYPES = {*FRAMEWORK_TYPES.values(), "Crosswalk", "Stack Component", "Rego Policy", "Semgrep Rule", "Scanner", "Reference"}
 BUNDLE = load_bundle(KNOWLEDGE)  # raises BundleError on a missing or empty `type` (OKF §11)
 
 
@@ -35,7 +35,8 @@ def test_rule_declarations_are_grounded(concept) -> None:
         tool, _, rule = entry.partition(":")
         assert tool in TOOLS, f"{concept.path}: unknown tool in {entry!r}"
         assert re.fullmatch(r"[^*?\[\]]+\*?", rule), f"{concept.path}: {entry!r} is not a literal prefix"
-    assert len(concept.control_tags) == 1, f"{concept.path}: rule_ids need exactly one control tag"
+    frameworks = [key.partition(":")[0] for key in concept.control_keys]
+    assert frameworks and len(frameworks) == len(set(frameworks)), f"{concept.path}: one control tag per framework"
 
 
 def test_every_control_tag_names_a_control() -> None:
@@ -44,9 +45,14 @@ def test_every_control_tag_names_a_control() -> None:
             assert BUNDLE.control(tag), f"{concept.path}: tag {tag} has no control concept"
 
 
-def test_controls_carry_their_own_code_as_tag() -> None:
+def test_every_control_names_its_framework() -> None:
     for control in BUNDLE.controls():
-        assert control.code in control.tags, control.path
+        assert control.frontmatter.get("framework") in FRAMEWORK_TYPES, control.path
+
+
+def test_controls_carry_their_own_key_as_tag() -> None:
+    for control in BUNDLE.controls():
+        assert control.key in control.control_keys, control.path
 
 
 def test_no_broken_links() -> None:

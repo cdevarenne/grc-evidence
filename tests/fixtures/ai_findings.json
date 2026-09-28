@@ -1,0 +1,5 @@
+[
+  {"tool": "semgrep", "rule_id": "llm-prompt-logged", "severity": "high", "target": "app/assistant/views.py", "message": "prompt written to log", "tags": []},
+  {"tool": "semgrep", "rule_id": "llm-hardcoded-key", "severity": "high", "target": "app/assistant/settings.py", "message": "hard-coded API key", "tags": []},
+  {"tool": "semgrep", "rule_id": "llm-unbounded-call", "severity": "medium", "target": "app/assistant/views.py", "message": "no timeout", "tags": []}
+]

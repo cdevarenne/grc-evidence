@@ -1,5 +1,6 @@
 ---
 type: SOC 2 Control
+framework: soc2
 title: CC6.6 — System Boundary Protection
 description: Resources are protected from access originating outside the system boundary.
 tags: [soc2, cc6.6, nist-sc-7, nist-sc-8]
