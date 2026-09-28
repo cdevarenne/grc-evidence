@@ -9,7 +9,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, Bundle, Concept, load_bundle
+from okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, MAX_SUPPRESSION_DAYS, Bundle, Concept, load_bundle
+from run_scan import CONFTEST_PATTERNS, scanner_runs
 
 OSCAL_VERSION = "1.2.3"
 DOC_VERSION = "0.1.0"
@@ -33,6 +34,21 @@ SOURCES: dict[str, Json] = {
     },
 }
 NO_AP_HREF = "#assessment-plan-not-modeled"
+NO_SSP_HREF = "#system-security-plan-not-modeled"
+# Namespace for this repo's own props (OSCAL reserves un-namespaced names for NIST-defined ones).
+PROP_NS = "https://github.com/cdevarenne/okf-grc-skill/ns/oscal"
+SUPPRESSION_POLICY = (
+    "A finding may be suppressed only by a suppression concept in the knowledge bundle that matches it exactly "
+    "(tool, rule id, target, and optionally a message fragment; no wildcards), names a human owner and a reason, "
+    "carries a human `verified` entry, and expires at most {days} days after approval. A false positive leaves "
+    "the control's status and is named in the results' remarks; an accepted risk keeps the control not-satisfied "
+    "and is recorded as a deviation-approved risk. An expired suppression no longer applies."
+)
+GROUNDING_RULE = (
+    "A finding maps to a control only through a `rule_ids` declaration in the knowledge bundle. A finding no "
+    "declaration covers is a coverage gap, recorded as an open risk, never as a control finding. A clean "
+    "automated scan evidences a control but never attests it."
+)
 
 
 def _uuid(*parts: str) -> str:
@@ -101,6 +117,123 @@ def component_definition(bundle: Bundle, now: str) -> Json:
             "back-matter": {"resources": resources},
         }
     }
+
+
+def _component(comp: Concept) -> Json:
+    """A stack component with the same UUID as in the component-definition."""
+    return {
+        "uuid": _uuid("component", comp.id),
+        "type": "software",
+        "title": comp.title,
+        "description": comp.description or comp.title,
+        "status": {"state": "operational"},
+    }
+
+
+def _evidenced_by(bundle: Bundle, key: str) -> set[str]:
+    """Tools whose rules some concept declares for this control."""
+    return {entry.partition(":")[0] for c in bundle.declaring(key) for entry in c.rule_ids}
+
+
+def assessment_plan(bundle: Bundle, mapping: Json, now: str, pins: dict[str, str], target: str = "app") -> Json:
+    """What the automated scan intends to assess: every applicable control, the scanner runs, the components.
+
+    In scope is every control not excluded by the declared AI risk tier, including controls no scanner
+    evidences; a planned control the results mark not-assessed is a coverage gap at the control level.
+    """
+    in_scope = sorted(key for key, c in mapping["controls"].items() if c["status"] != "not-applicable")
+    excluded = sorted(key for key, c in mapping["controls"].items() if c["status"] == "not-applicable")
+    runs = scanner_runs(target, [f"{target}/{p}" for p in CONFTEST_PATTERNS])
+    activities = []
+    for run in runs:
+        command = " ".join(run.argv)
+        activity: Json = {
+            "uuid": _uuid("activity", command),
+            "title": run.title,
+            "description": f"Run {run.tool} {pins[run.pin]} over `{target}` and normalize its JSON output to findings.",
+            "props": [
+                {"name": "method", "value": "TEST"},
+                {"name": "tool-version", "ns": PROP_NS, "value": pins[run.pin]},
+            ],
+            "steps": [
+                {
+                    "uuid": _uuid("step", command),
+                    "title": "Run the scanner",
+                    "description": f"`{command}` (working directory: {'the scan target' if run.in_target else 'the repository root'})",
+                }
+            ],
+        }
+        if selections := _control_selections(bundle, [k for k in in_scope if run.tool in _evidenced_by(bundle, k)]):
+            activity["related-controls"] = {"control-selections": selections}
+        activities.append(activity)
+    components = [_component(comp) for comp in bundle.of_type(COMPONENT_TYPE)]
+    subjects = [
+        {
+            "type": "component",
+            "description": "The stack components described in the knowledge bundle.",
+            **(
+                {"include-subjects": [{"subject-uuid": c["uuid"], "type": "component"} for c in components]}
+                if components
+                else {"include-all": {}}
+            ),
+        }
+    ]
+    tools = {run.tool: pins[run.pin] for run in runs}
+    tool_components = [
+        {
+            "uuid": _uuid("tool", tool),
+            "type": "software",
+            "title": f"{tool} {version}",
+            "description": f"{tool}, pinned to {version} in tools.lock.",
+            "props": [{"name": "tool-version", "ns": PROP_NS, "value": version}],
+            "status": {"state": "operational"},
+        }
+        for tool, version in tools.items()
+    ]
+    reviewed: Json = {
+        "description": "Every control applicable at the declared AI risk tier, including controls no scanner evidences.",
+        "control-selections": _control_selections(bundle, in_scope),
+    }
+    if excluded:
+        reviewed["remarks"] = f"Not applicable at the declared AI risk tier: {', '.join(excluded)}"
+    plan: Json = {
+        "uuid": _uuid("assessment-plan", now),
+        "metadata": _metadata("okf-grc-skill automated assessment plan", now),
+        "import-ssp": {"href": NO_SSP_HREF, "remarks": "System security plan not modeled; see docs/oscal-subset.md."},
+        "local-definitions": {"activities": activities},
+        "terms-and-conditions": {
+            "parts": [
+                {"name": "rules-of-engagement", "title": "Suppression policy",
+                 "prose": SUPPRESSION_POLICY.format(days=MAX_SUPPRESSION_DAYS)},
+                {"name": "methodology", "title": "Grounding rule", "prose": GROUNDING_RULE},
+            ]
+        },
+        "reviewed-controls": reviewed,
+        "assessment-subjects": subjects,
+        "assessment-assets": {
+            "components": tool_components,
+            "assessment-platforms": [
+                {
+                    "uuid": _uuid("platform", "make-scan"),
+                    "title": "`make scan` pipeline, scanners pinned in tools.lock",
+                    "uses-components": [{"component-uuid": c["uuid"]} for c in tool_components],
+                }
+            ],
+        },
+        "tasks": [
+            {
+                "uuid": _uuid("task", "automated-scan"),
+                "type": "action",
+                "title": "Automated compliance scan",
+                "description": "Run every scanner activity, then map findings to controls through the knowledge bundle.",
+                "associated-activities": [{"activity-uuid": a["uuid"], "subjects": subjects} for a in activities],
+                "subjects": subjects,
+            }
+        ],
+    }
+    if components:
+        plan["local-definitions"]["components"] = components
+    return {"assessment-plan": plan}
 
 
 def _observation(f: Json, now: str) -> Json:

@@ -6,10 +6,12 @@ import pytest
 from map_findings import map_findings
 from okf_lib import Bundle, load_bundle
 from oscal_schema import validate
-from to_oscal import assessment_results, component_definition
+from run_scan import load_pins
+from to_oscal import NO_SSP_HREF, assessment_plan, assessment_results, component_definition
 
 FIXTURES = Path(__file__).parent / "fixtures"
 NOW = "2026-09-25T12:00:00+00:00"
+PINS = load_pins(Path(__file__).parent.parent / "tools.lock")
 
 
 @pytest.fixture
@@ -171,3 +173,108 @@ def test_reviewed_controls_are_grouped_by_framework() -> None:
     (result,) = assessment_results(ai, mapping, NOW)["assessment-results"]["results"]
     selections = result["reviewed-controls"]["control-selections"]
     assert [s["description"].split(" ")[0] for s in selections] == ["AICPA", "ISO/IEC", "Regulation"]
+
+
+def _plan(bundle: Bundle, mapping: dict) -> dict:
+    return assessment_plan(bundle, mapping, NOW, PINS)["assessment-plan"]
+
+
+def _codes(selections: list[dict]) -> list[str]:
+    return [c["control-id"] for s in selections for c in s["include-controls"]]
+
+
+def test_assessment_plan_is_schema_valid(bundle: Bundle, mapping: dict) -> None:
+    validate(assessment_plan(bundle, mapping, NOW, PINS), "oscal_assessment-plan_schema.json")
+    ai, ai_mapping = _ai()
+    validate(assessment_plan(ai, ai_mapping, NOW, PINS), "oscal_assessment-plan_schema.json")
+
+
+def test_assessment_plan_is_deterministic(bundle: Bundle, mapping: dict) -> None:
+    assert assessment_plan(bundle, mapping, NOW, PINS) == assessment_plan(bundle, mapping, NOW, PINS)
+    assert _plan(bundle, mapping)["uuid"] != assessment_plan(bundle, mapping, "2026-09-26T12:00:00+00:00", PINS)[
+        "assessment-plan"
+    ]["uuid"]
+
+
+def test_plan_imports_the_ssp_placeholder(bundle: Bundle, mapping: dict) -> None:
+    assert _plan(bundle, mapping)["import-ssp"]["href"] == NO_SSP_HREF == "#system-security-plan-not-modeled"
+
+
+def test_plan_scopes_every_applicable_control_including_unevidenced(bundle: Bundle, mapping: dict) -> None:
+    planned = _codes(_plan(bundle, mapping)["reviewed-controls"]["control-selections"])
+    assert planned == ["cc6.1", "cc7.1", "cc7.2", "cc8.1"]  # cc7.2 has no scanner: planned, not assessed
+
+
+def test_plan_excludes_not_applicable_controls() -> None:
+    ai, mapping = _ai()
+    reviewed = _plan(ai, mapping)["reviewed-controls"]
+    assert "art-12" not in _codes(reviewed["control-selections"])
+    assert "art-50" in _codes(reviewed["control-selections"])
+    assert reviewed["remarks"] == "Not applicable at the declared AI risk tier: eu-ai-act:art-12"
+
+
+def test_plan_components_share_uuids_with_the_component_definition(bundle: Bundle, mapping: dict) -> None:
+    plan = _plan(bundle, mapping)
+    cd = component_definition(bundle, NOW)["component-definition"]["components"]
+    planned = [c["uuid"] for c in plan["local-definitions"]["components"]]
+    assert planned == [c["uuid"] for c in cd]
+    (subjects,) = plan["assessment-subjects"]
+    assert [s["subject-uuid"] for s in subjects["include-subjects"]] == planned
+
+
+def test_plan_has_one_activity_per_scanner_run_with_its_pinned_version(bundle: Bundle, mapping: dict) -> None:
+    activities = _plan(bundle, mapping)["local-definitions"]["activities"]
+    versions = [next(p["value"] for p in a["props"] if p["name"] == "tool-version") for a in activities]
+    pins = [PINS[k] for k in ("SEMGREP_VERSION", "TRIVY_VERSION", "TRIVY_VERSION", "CHECKOV_VERSION", "CONFTEST_VERSION")]
+    assert versions == pins
+    assert activities[0]["steps"][0]["description"].startswith("`semgrep scan --config policies/semgrep")
+    assert len({a["uuid"] for a in activities}) == 5
+
+
+def test_activity_related_controls_come_from_rule_declarations(bundle: Bundle, mapping: dict) -> None:
+    by_title = {a["title"]: a for a in _plan(bundle, mapping)["local-definitions"]["activities"]}
+    related = {t: _codes(a.get("related-controls", {}).get("control-selections", [])) for t, a in by_title.items()}
+    declared = {
+        tool: sorted({k.partition(":")[2] for c in bundle.concepts.values() for e in c.rule_ids
+                      if e.startswith(f"{tool}:") for k in c.control_keys if bundle.control(k)})
+        for tool in ("semgrep", "trivy", "checkov", "conftest")
+    }
+    assert related["Semgrep code scan"] == declared["semgrep"]
+    assert related["Checkov infrastructure-as-code scan"] == declared["checkov"]
+    assert "cc7.2" not in {c for codes in related.values() for c in codes}
+
+
+def test_plan_states_the_suppression_policy_and_grounding_rule(bundle: Bundle, mapping: dict) -> None:
+    parts = {p["title"]: p["prose"] for p in _plan(bundle, mapping)["terms-and-conditions"]["parts"]}
+    assert "exactly" in parts["Suppression policy"] and "90 days" in parts["Suppression policy"]
+    assert "human owner" in parts["Suppression policy"] and "`verified`" in parts["Suppression policy"]
+    assert "coverage gap" in parts["Grounding rule"]
+
+
+def test_one_task_runs_every_activity_against_every_subject(bundle: Bundle, mapping: dict) -> None:
+    plan = _plan(bundle, mapping)
+    (task,) = plan["tasks"]
+    assert task["type"] == "action"
+    assert [a["activity-uuid"] for a in task["associated-activities"]] == [
+        a["uuid"] for a in plan["local-definitions"]["activities"]
+    ]
+    assert task["subjects"] == plan["assessment-subjects"]
+
+
+def test_platform_uses_one_component_per_pinned_tool(bundle: Bundle, mapping: dict) -> None:
+    assets = _plan(bundle, mapping)["assessment-assets"]
+    assert [c["title"] for c in assets["components"]] == [
+        f"semgrep {PINS['SEMGREP_VERSION']}", f"trivy {PINS['TRIVY_VERSION']}",
+        f"checkov {PINS['CHECKOV_VERSION']}", f"conftest {PINS['CONFTEST_VERSION']}",
+    ]
+    (platform,) = assets["assessment-platforms"]
+    assert [u["component-uuid"] for u in platform["uses-components"]] == [c["uuid"] for c in assets["components"]]
+
+
+def test_plan_without_components_selects_all_subjects(tmp_path: Path) -> None:
+    (tmp_path / "controls").mkdir()
+    (tmp_path / "controls/cc6.1.md").write_text("---\ntype: SOC 2 Control\ntags: [cc6.1]\n---\n", encoding="utf-8")
+    b = load_bundle(tmp_path)
+    doc = assessment_plan(b, map_findings(b, []), NOW, PINS)
+    validate(doc, "oscal_assessment-plan_schema.json")
+    assert doc["assessment-plan"]["assessment-subjects"][0]["include-all"] == {}
