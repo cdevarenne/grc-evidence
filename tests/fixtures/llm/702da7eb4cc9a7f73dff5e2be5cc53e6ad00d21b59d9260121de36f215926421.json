@@ -1,0 +1,26 @@
+{
+  "model": "claude-haiku-4-5",
+  "output": {
+    "proposals": [
+      {
+        "confidence": "medium",
+        "proposal": "soc2:cc7.2",
+        "rationale": "Health check monitoring detects when services become unavailable, supporting continuous monitoring of system status.",
+        "rule": "checkov:CKV_TEST_99"
+      },
+      {
+        "confidence": "high",
+        "proposal": "none",
+        "rationale": "An orphan rule without context about what it validates cannot be reliably mapped to any control in the bundle.",
+        "rule": "conftest:orphan_rule"
+      }
+    ]
+  },
+  "task": "triage",
+  "usage": {
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "input_tokens": 872,
+    "output_tokens": 104
+  }
+}

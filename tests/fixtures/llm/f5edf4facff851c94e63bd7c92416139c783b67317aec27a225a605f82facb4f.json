@@ -2,20 +2,20 @@
   "model": "claude-haiku-4-5",
   "output": {
     "soc2:cc6.1": {
-      "auditor_note": "Verify the 2 logical access findings and confirm remediation steps for both high and medium severity issues.",
-      "summary": "CC6.1 \u2014 Logical Access is not-satisfied with 2 findings: 1 high severity and 1 medium severity."
+      "auditor_note": "Verify the nature of the 2 findings and confirm whether compensating controls or remediation plans exist for the high and medium severity issues.",
+      "summary": "CC6.1 \u2014 Logical Access status is not-satisfied with 2 findings (1 high, 1 medium)."
     },
     "soc2:cc7.1": {
-      "auditor_note": "Review the critical severity vulnerability detection finding and validate that corrective actions have been implemented.",
-      "summary": "CC7.1 \u2014 Vulnerability Detection is not-satisfied with 1 finding of critical severity."
+      "auditor_note": "Review the critical severity finding and assess the timeline and plan for addressing the vulnerability.",
+      "summary": "CC7.1 \u2014 Vulnerability Detection status is not-satisfied with 1 finding (1 critical)."
     },
     "soc2:cc7.2": {
-      "auditor_note": "Determine why monitoring was not assessed and request evidence of monitoring controls or clarify assessment scope.",
-      "summary": "CC7.2 \u2014 Monitoring is not-assessed with 0 findings."
+      "auditor_note": "Determine why this control was not assessed and confirm whether assessment criteria or evidence exist to evaluate it.",
+      "summary": "CC7.2 \u2014 Monitoring status is not-assessed with 0 findings."
     },
     "soc2:cc8.1": {
-      "auditor_note": "Review change management procedures and audit logs to confirm the absence of violations is accurate.",
-      "summary": "CC8.1 \u2014 Change Management has no-violations-detected with 0 findings."
+      "auditor_note": "Confirm that the absence of violations reflects adequate monitoring and change controls, and review the scope of what was assessed.",
+      "summary": "CC8.1 \u2014 Change Management status is no-violations-detected with 0 findings."
     }
   },
   "task": "narrate",
@@ -23,6 +23,6 @@
     "cache_creation_input_tokens": 0,
     "cache_read_input_tokens": 0,
     "input_tokens": 1279,
-    "output_tokens": 248
+    "output_tokens": 264
   }
 }
