@@ -11,11 +11,41 @@ from okf_lib import FRAMEWORK_TYPES, load_bundle
 KNOWLEDGE = Path(__file__).parent.parent / "knowledge"
 TOOLS = {"semgrep", "trivy", "checkov", "conftest"}
 TYPES = {*FRAMEWORK_TYPES.values(), "Crosswalk", "Stack Component", "Rego Policy", "Semgrep Rule", "Scanner", "Reference"}
+RISK_TIERS = {"minimal", "limited", "high"}
 BUNDLE = load_bundle(KNOWLEDGE)  # raises BundleError on a missing or empty `type` (OKF §11)
 
 
-def test_bundle_has_the_five_controls() -> None:
-    assert [c.code for c in BUNDLE.controls()] == ["cc6.1", "cc6.6", "cc7.1", "cc7.2", "cc8.1"]
+def test_bundle_has_the_expected_controls() -> None:
+    keys = {c.key for c in BUNDLE.controls()}
+    assert {k for k in keys if k.startswith("soc2:")} == {f"soc2:{c}" for c in ("cc6.1", "cc6.6", "cc7.1", "cc7.2", "cc8.1")}
+    assert {k for k in keys if k.startswith("iso42001:")} == {f"iso42001:a.{n}" for n in range(4, 10)}
+    assert {k for k in keys if k.startswith("eu-ai-act:")} == {f"eu-ai-act:art-{n}" for n in (9, 10, 12, 13, 14, 15, 50)}
+
+
+def test_applies_when_uses_known_fields_and_tiers() -> None:
+    for control in BUNDLE.controls():
+        applies_when = control.frontmatter.get("applies_when") or {}
+        assert set(applies_when) <= {"risk_tier"}, control.path
+        assert set(applies_when.get("risk_tier", [])) <= RISK_TIERS, control.path
+
+
+def test_high_risk_articles_declare_their_tier() -> None:
+    for n in (9, 10, 12, 13, 14, 15):
+        assert BUNDLE.control(f"eu-ai-act:art-{n}").frontmatter["applies_when"] == {"risk_tier": ["high"]}
+    assert "applies_when" not in BUNDLE.control("eu-ai-act:art-50").frontmatter
+
+
+def test_inventory_tier_is_known() -> None:
+    inventory = yaml.safe_load((KNOWLEDGE.parent / "app" / "ai-inventory.yaml").read_text())
+    assert inventory["risk_tier"] in RISK_TIERS
+
+
+def test_every_crosswalk_links_controls_across_frameworks() -> None:
+    pairs = BUNDLE.crosswalk_pairs()
+    assert {cw for cw, _, _ in pairs} == {c.id for c in BUNDLE.of_type("Crosswalk")}
+    for cw, left, right in pairs:
+        a, b = BUNDLE.concepts[left], BUNDLE.concepts[right]
+        assert a.framework != b.framework, f"{cw}: {left} and {right} are in the same framework"
 
 
 def test_types_are_the_documented_set() -> None:
