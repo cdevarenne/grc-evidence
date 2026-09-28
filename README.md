@@ -22,7 +22,7 @@ make scan              # out/findings.json, out/mapping.json, out/oscal/*.json, 
 make render            # out/knowledge-viz.html — the OKF graph
 make narrate           # optional: LLM prose per control, validated, then re-render (LLM_MODE=anthropic)
 make triage            # optional: LLM proposals for coverage gaps → out/proposals.json (review only)
-make eval-triage       # optional: score triage on 25 labeled gaps via the Batch API
+make eval-triage       # optional: score triage variants on labeled gaps (tune + holdout) via the Batch API
 make test              # unit + Rego + Semgrep rule tests
 make test-integration  # full scan; asserts every seeded issue lands where expected
 make clean             # remove out/
@@ -53,9 +53,12 @@ An optional Claude API step adds words and proposals on top, never statuses:
   compliant, or passed, or uses a number that is not in the input.
 - **`make triage`** proposes an in-bundle control, or `none`, for each coverage
   gap, in `out/proposals.json`. Nothing is applied: a person adds `rule_ids`.
-- **`make eval-triage`** scores triage on 25 labeled gaps (accuracy, and
-  precision and recall of `none`) through the Message Batches API. The first
-  baseline is in [`examples/triage-eval-baseline.json`](examples/triage-eval-baseline.json).
+- **`make eval-triage`** scores triage on 40 labeled gaps (accuracy, and
+  precision and recall of `none`) through the Message Batches API. Cases are
+  split into `tune` (seen while diagnosing a problem) and `holdout` (labeled
+  before any run; the number that counts), and each input variant
+  (`baseline`, `scoped`) runs on both. The first baseline is in
+  [`examples/triage-eval-baseline.json`](examples/triage-eval-baseline.json).
 
 `LLM_MODE` picks the provider: `replay` (default; recorded responses, $0, used
 by tests and CI), `record`, `anthropic` (the Claude API, key from the
@@ -75,10 +78,10 @@ cost. A full run on the sample app costs about $0.04 on Haiku.
 landed on the right control, but the model said `none` for only 1 of the 10 gaps
 that no control fits. Eight of those nine misses put ordinary infrastructure
 rules (health checks, probes, backups, CPU limits) on ISO/IEC 42001 or EU AI Act
-controls: the bundle digest gives each control's intent but not that AI
-controls cover AI components only. Adding that scope to the digest is the next
-improvement, to be measured on a held-out split rather than tuned against these
-25 labels. This is why triage only proposes: a person decides.
+controls. The diagnosis, the fix (the `scoped` variant: each control's
+framework scope and each gap's target files), and its held-out measurement are
+tracked in [issue #32](https://github.com/cdevarenne/okf-grc-skill/issues/32).
+This is why triage only proposes: a person decides.
 
 Prompt caching is requested but does not take effect on Haiku 4.5 today: its
 minimum cacheable prefix is 4,096 tokens and the bundle digest is smaller. The

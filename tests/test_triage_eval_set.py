@@ -13,9 +13,27 @@ CASES = yaml.safe_load((ROOT / "tests" / "fixtures" / "triage_eval.yaml").read_t
 BUNDLE = load_bundle(ROOT / "knowledge")
 
 
-def test_size_and_mix() -> None:
-    labels = Counter("none" if c["expected"] == "none" else "control" for c in CASES)
-    assert len(CASES) == 25 and labels["none"] >= 8 and labels["control"] >= 12
+def _split(name: str) -> list[dict]:
+    return [c for c in CASES if c["split"] == name]
+
+
+def test_every_case_has_a_split_and_a_target() -> None:
+    assert {c["split"] for c in CASES} == {"tune", "holdout"}
+    assert all(c["target"].startswith("app/") for c in CASES)
+
+
+def test_tune_split_is_the_first_baseline_set() -> None:
+    labels = Counter("none" if c["expected"] == "none" else "control" for c in _split("tune"))
+    assert labels == {"control": 15, "none": 10}
+
+
+def test_holdout_split_can_catch_both_failure_modes() -> None:
+    """Enough `none` cases to measure abstention, and enough AI cases to catch over-suppression."""
+    holdout = _split("holdout")
+    ai = [c for c in holdout if c["expected"].startswith(("iso42001:", "eu-ai-act:"))]
+    assert len(holdout) >= 15
+    assert sum(c["expected"] == "none" for c in holdout) >= 5
+    assert len(ai) >= 5 and all("assistant" in c["target"] or "ai-inventory" in c["target"] for c in ai)
 
 
 def test_rules_are_unique() -> None:

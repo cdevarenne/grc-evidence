@@ -2,34 +2,63 @@
 # so each is a real gap. `expected` is the in-bundle control a reviewer would claim it for, or `none`
 # when no control in the bundle fits (availability, cost, encryption in transit, and so on).
 # Labels are a reviewer's judgment: change one only with a note in the commit message.
+#
+# Splits (issue #32): `tune` cases informed the diagnosis of the first baseline, so they are not
+# evidence for a fix. `holdout` cases were written and labeled before any run of the fix; report
+# the fix on `holdout`. `target` is the file the finding would come from.
 
 # Clear matches
-- {rule: "checkov:CKV_K8S_16", message: "Container should not be privileged", expected: "soc2:cc6.1"}
-- {rule: "checkov:CKV_K8S_20", message: "Containers should not run with allowPrivilegeEscalation", expected: "soc2:cc6.1"}
-- {rule: "trivy:KSV-0001", message: "Process can elevate its own privileges: container should set allowPrivilegeEscalation to false", expected: "soc2:cc6.1"}
-- {rule: "checkov:CKV_K8S_37", message: "Minimize the admission of containers with capabilities assigned", expected: "soc2:cc6.1"}
-- {rule: "semgrep:django-no-csrf-exempt", message: "View is decorated with csrf_exempt; state-changing requests are not protected", expected: "soc2:cc6.1"}
-- {rule: "checkov:CKV_GCP_2", message: "Ensure Google compute firewall ingress does not allow unrestricted ssh access", expected: "soc2:cc6.6"}
-- {rule: "checkov:CKV_GCP_3", message: "Ensure Google compute firewall ingress does not allow unrestricted rdp access", expected: "soc2:cc6.6"}
-- {rule: "checkov:CKV_AWS_20", message: "S3 Bucket has an ACL defined which allows public READ access", expected: "soc2:cc6.6"}
-- {rule: "checkov:CKV_GCP_26", message: "Ensure that VPC Flow Logs is enabled for every subnet in a VPC Network", expected: "soc2:cc7.2"}
-- {rule: "checkov:CKV_AWS_18", message: "Ensure the S3 bucket has access logging enabled", expected: "soc2:cc7.2"}
-- {rule: "checkov:CKV_AWS_67", message: "Ensure CloudTrail is enabled in all Regions", expected: "soc2:cc7.2"}
-- {rule: "checkov:CKV_K8S_43", message: "Image should use digest", expected: "soc2:cc8.1"}
-- {rule: "checkov:CKV_DOCKER_7", message: "Ensure the base image uses a non latest version tag", expected: "soc2:cc8.1"}
-- {rule: "checkov:CKV_TF_1", message: "Ensure Terraform module sources use a commit hash", expected: "soc2:cc8.1"}
-- {rule: "semgrep:python-eval-user-input", message: "eval() on data derived from the request allows code injection", expected: "soc2:cc7.1"}
+- {rule: "checkov:CKV_K8S_16", message: "Container should not be privileged", target: app/k8s/deployment.yaml, split: tune, expected: "soc2:cc6.1"}
+- {rule: "checkov:CKV_K8S_20", message: "Containers should not run with allowPrivilegeEscalation", target: app/k8s/deployment.yaml, split: tune, expected: "soc2:cc6.1"}
+- {rule: "trivy:KSV-0001", message: "Process can elevate its own privileges: container should set allowPrivilegeEscalation to false", target: app/k8s/deployment.yaml, split: tune, expected: "soc2:cc6.1"}
+- {rule: "checkov:CKV_K8S_37", message: "Minimize the admission of containers with capabilities assigned", target: app/k8s/deployment.yaml, split: tune, expected: "soc2:cc6.1"}
+- {rule: "semgrep:django-no-csrf-exempt", message: "View is decorated with csrf_exempt; state-changing requests are not protected", target: app/widgets/views.py, split: tune, expected: "soc2:cc6.1"}
+- {rule: "checkov:CKV_GCP_2", message: "Ensure Google compute firewall ingress does not allow unrestricted ssh access", target: app/infra/main.tf, split: tune, expected: "soc2:cc6.6"}
+- {rule: "checkov:CKV_GCP_3", message: "Ensure Google compute firewall ingress does not allow unrestricted rdp access", target: app/infra/main.tf, split: tune, expected: "soc2:cc6.6"}
+- {rule: "checkov:CKV_AWS_20", message: "S3 Bucket has an ACL defined which allows public READ access", target: app/infra/main.tf, split: tune, expected: "soc2:cc6.6"}
+- {rule: "checkov:CKV_GCP_26", message: "Ensure that VPC Flow Logs is enabled for every subnet in a VPC Network", target: app/infra/main.tf, split: tune, expected: "soc2:cc7.2"}
+- {rule: "checkov:CKV_AWS_18", message: "Ensure the S3 bucket has access logging enabled", target: app/infra/main.tf, split: tune, expected: "soc2:cc7.2"}
+- {rule: "checkov:CKV_AWS_67", message: "Ensure CloudTrail is enabled in all Regions", target: app/infra/main.tf, split: tune, expected: "soc2:cc7.2"}
+- {rule: "checkov:CKV_K8S_43", message: "Image should use digest", target: app/k8s/deployment.yaml, split: tune, expected: "soc2:cc8.1"}
+- {rule: "checkov:CKV_DOCKER_7", message: "Ensure the base image uses a non latest version tag", target: app/Dockerfile, split: tune, expected: "soc2:cc8.1"}
+- {rule: "checkov:CKV_TF_1", message: "Ensure Terraform module sources use a commit hash", target: app/infra/main.tf, split: tune, expected: "soc2:cc8.1"}
+- {rule: "semgrep:python-eval-user-input", message: "eval() on data derived from the request allows code injection", target: app/widgets/views.py, split: tune, expected: "soc2:cc7.1"}
 
 # Near misses: sound related to an in-bundle control, but the criterion that fits is not in the bundle
-- {rule: "checkov:CKV_GCP_6", message: "Ensure all Cloud SQL database instances require all incoming connections to use SSL", expected: "none"}
-- {rule: "checkov:CKV_GCP_14", message: "Ensure all Cloud SQL database instances have backup configuration enabled", expected: "none"}
-- {rule: "checkov:CKV_GCP_78", message: "Ensure Cloud storage has versioning enabled", expected: "none"}
-- {rule: "trivy:AVD-GCP-0066", message: "Storage bucket encryption does not use a customer-managed key", expected: "none"}
+- {rule: "checkov:CKV_GCP_6", message: "Ensure all Cloud SQL database instances require all incoming connections to use SSL", target: app/infra/main.tf, split: tune, expected: "none"}
+- {rule: "checkov:CKV_GCP_14", message: "Ensure all Cloud SQL database instances have backup configuration enabled", target: app/infra/main.tf, split: tune, expected: "none"}
+- {rule: "checkov:CKV_GCP_78", message: "Ensure Cloud storage has versioning enabled", target: app/infra/main.tf, split: tune, expected: "none"}
+- {rule: "trivy:AVD-GCP-0066", message: "Storage bucket encryption does not use a customer-managed key", target: app/infra/main.tf, split: tune, expected: "none"}
 
 # Clear `none`: availability, capacity, hygiene
-- {rule: "trivy:DS-0026", message: "No HEALTHCHECK defined: add HEALTHCHECK instruction in your Dockerfile", expected: "none"}
-- {rule: "checkov:CKV_DOCKER_2", message: "Ensure that HEALTHCHECK instructions have been added to container images", expected: "none"}
-- {rule: "checkov:CKV_K8S_8", message: "Liveness Probe Should be Configured", expected: "none"}
-- {rule: "checkov:CKV_K8S_9", message: "Readiness Probe Should be Configured", expected: "none"}
-- {rule: "checkov:CKV_K8S_11", message: "CPU limits should be set", expected: "none"}
-- {rule: "trivy:DS-0017", message: "'RUN <package-manager> update' instruction alone: combine it with install", expected: "none"}
+- {rule: "trivy:DS-0026", message: "No HEALTHCHECK defined: add HEALTHCHECK instruction in your Dockerfile", target: app/Dockerfile, split: tune, expected: "none"}
+- {rule: "checkov:CKV_DOCKER_2", message: "Ensure that HEALTHCHECK instructions have been added to container images", target: app/Dockerfile, split: tune, expected: "none"}
+- {rule: "checkov:CKV_K8S_8", message: "Liveness Probe Should be Configured", target: app/k8s/deployment.yaml, split: tune, expected: "none"}
+- {rule: "checkov:CKV_K8S_9", message: "Readiness Probe Should be Configured", target: app/k8s/deployment.yaml, split: tune, expected: "none"}
+- {rule: "checkov:CKV_K8S_11", message: "CPU limits should be set", target: app/k8s/deployment.yaml, split: tune, expected: "none"}
+- {rule: "trivy:DS-0017", message: "'RUN <package-manager> update' instruction alone: combine it with install", target: app/Dockerfile, split: tune, expected: "none"}
+
+# ---------------------------------------------------------------------------------------------
+# Holdout: labeled before any measured run. Includes AI-component gaps that SHOULD map to AI
+# controls, so a fix cannot win by suppressing AI-governance controls altogether.
+
+# AI components -> AI-governance controls
+- {rule: "semgrep:llm-output-unreviewed-write", message: "Model output is written to a record with no human-review flag checked first", target: app/assistant/views.py, split: holdout, expected: "iso42001:a.9"}
+- {rule: "semgrep:llm-pii-sent-to-model", message: "A customer email address is included in the prompt sent to the model provider", target: app/assistant/views.py, split: holdout, expected: "iso42001:a.7"}
+- {rule: "conftest:ai_inventory_owner_missing", message: "AI system entry for app/assistant has no owner", target: app/ai-inventory.yaml, split: holdout, expected: "iso42001:a.4"}
+- {rule: "semgrep:llm-chat-no-ai-notice", message: "Chat widget does not tell users they are talking to an AI system", target: app/assistant/templates/chat.html, split: holdout, expected: "eu-ai-act:art-50"}
+- {rule: "semgrep:llm-unbounded-retry", message: "LLM call is retried in a loop with no attempt limit", target: app/assistant/views.py, split: holdout, expected: "iso42001:a.6"}
+
+# Ordinary matches
+- {rule: "checkov:CKV_K8S_28", message: "Minimize the admission of containers with the NET_RAW capability", target: app/k8s/deployment.yaml, split: holdout, expected: "soc2:cc6.1"}
+- {rule: "checkov:CKV_GCP_106", message: "Ensure Google compute firewall ingress does not allow unrestricted http port 80 access", target: app/infra/main.tf, split: holdout, expected: "soc2:cc6.6"}
+- {rule: "checkov:CKV_AWS_36", message: "Ensure CloudTrail log file validation is enabled", target: app/infra/main.tf, split: holdout, expected: "soc2:cc7.2"}
+- {rule: "semgrep:dockerfile-pip-install-unpinned", message: "pip install without pinned versions makes builds non-reproducible", target: app/Dockerfile, split: holdout, expected: "soc2:cc8.1"}
+- {rule: "semgrep:python-pickle-load-request", message: "pickle.loads on request data allows arbitrary code execution", target: app/widgets/views.py, split: holdout, expected: "soc2:cc7.1"}
+
+# `none`: availability, capacity, hygiene (the error class behind issue #32)
+- {rule: "checkov:CKV_K8S_10", message: "CPU requests should be set", target: app/k8s/deployment.yaml, split: holdout, expected: "none"}
+- {rule: "checkov:CKV_K8S_12", message: "Memory requests should be set", target: app/k8s/deployment.yaml, split: holdout, expected: "none"}
+- {rule: "checkov:CKV_K8S_13", message: "Memory limits should be set", target: app/k8s/deployment.yaml, split: holdout, expected: "none"}
+- {rule: "trivy:DS-0005", message: "Use COPY instead of ADD in the Dockerfile", target: app/Dockerfile, split: holdout, expected: "none"}
+- {rule: "checkov:CKV_GCP_81", message: "Ensure Cloud SQL instances are deployed in multiple zones for high availability", target: app/infra/main.tf, split: holdout, expected: "none"}

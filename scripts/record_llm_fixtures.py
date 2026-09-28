@@ -1,4 +1,4 @@
-"""Record the replay fixtures the offline tests use: one narrate call and one triage call per fixture gap.
+"""Record the replay fixtures the offline tests use: one narrate call and a baseline and a scoped triage call.
 
 Metered: run once with LLM_MODE=record and an API key. Costs well under $0.05 on Haiku.
 """
@@ -32,7 +32,11 @@ def main() -> None:
     mapping = map_findings(bundle, json.loads((FIXTURES / "findings.json").read_text(encoding="utf-8")))
     narratives, errors = narrate(llm, bundle_digest(bundle), mapping)
     proposals = triage(llm, bundle_digest(bundle), scan_digest(mapping)["gaps"])
-    print(json.dumps({"narrate_errors": errors, "narrated": sorted(narratives), "proposals": proposals}, indent=2))
+    scoped = triage(
+        llm, bundle_digest(bundle, scoped=True), scan_digest(mapping, targets=True)["gaps"], variant="scoped"
+    )
+    report = {"narrate_errors": errors, "narrated": sorted(narratives), "proposals": proposals, "scoped": scoped}
+    print(json.dumps(report, indent=2))
     print(f"spent ${llm.spent_usd():.4f}; fixtures in {llm.fixtures.relative_to(ROOT)}")
 
 

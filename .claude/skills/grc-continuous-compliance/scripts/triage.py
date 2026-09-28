@@ -15,6 +15,7 @@ Json = dict[str, Any]
 MAX_TOKENS = 1000
 GAPS_PER_CALL = 8  # ~100 output tokens per proposal keeps each call under MAX_TOKENS
 CONFIDENCE = ("low", "medium", "high")
+VARIANTS = ("baseline", "scoped")  # baseline: the first eval's input, byte for byte; scoped: issue #32
 
 SYSTEM = """You triage scanner rules that no control in a GRC knowledge bundle claims yet.
 
@@ -28,6 +29,12 @@ Rules:
 
 Bundle digest (the only controls you may propose):
 """
+
+SCOPE_RULE = """- Each control has a `scope` and each gap lists the files (`targets`) it was found in. Propose a
+  control whose scope is AI system components only when the gap is in an AI component (an LLM feature,
+  a model call, or the AI inventory); otherwise choose among the other controls or answer `none`.
+"""
+SYSTEM_SCOPED = SYSTEM.replace("\nBundle digest", SCOPE_RULE + "\nBundle digest")
 
 
 def rule_name(gap: Json) -> str:
@@ -58,15 +65,24 @@ def schema(keys: list[str], rules: list[str]) -> Json:
     }
 
 
-def request(bundle_doc: Json, gaps: list[Json]) -> Request:
+def request(bundle_doc: Json, gaps: list[Json], variant: str = "baseline") -> Request:
     """Up to GAPS_PER_CALL gap rules per call; the bundle digest is the stable system block.
 
     Each gap is sent with its exact `rule` string (`tool:rule_id`), the key its proposal must echo.
+    The `scoped` variant also sends each gap's target files and the scope rule; pair it with a
+    `bundle_digest(..., scoped=True)` so the controls carry their scope.
     """
-    payload = [{"rule": rule_name(g), "message": g["message"], "count": g["count"]} for g in gaps]
+    if variant not in VARIANTS:
+        raise ValueError(f"variant must be one of {VARIANTS}, not {variant!r}")
+    payload = []
+    for g in gaps:
+        item = {"rule": rule_name(g), "message": g["message"], "count": g["count"]}
+        if variant == "scoped":
+            item["targets"] = g["targets"]
+        payload.append(item)
     return Request(
         task="triage",
-        system=SYSTEM + dumps(bundle_doc),
+        system=(SYSTEM_SCOPED if variant == "scoped" else SYSTEM) + dumps(bundle_doc),
         user="Coverage-gap rules:\n" + json.dumps(payload, sort_keys=True, indent=1, ensure_ascii=False),
         schema=schema(sorted(bundle_doc), [g["rule"] for g in payload]),
         max_tokens=MAX_TOKENS,
@@ -87,13 +103,36 @@ def _invalid(gap: Json, errors: list[str]) -> Json:
     return {"rule": rule_name(gap), "proposal": "invalid", "errors": errors}
 
 
-def triage(llm: LLM, bundle_doc: Json, gaps: list[Json], batch: bool = False) -> list[Json]:
+def chunk_requests(bundle_doc: Json, gaps: list[Json], variant: str = "baseline") -> dict[str, tuple[Request, list[Json]]]:
+    """{chunk id: (request, its gaps)}: GAPS_PER_CALL gaps per request, in input order."""
+    chunks = [gaps[i : i + GAPS_PER_CALL] for i in range(0, len(gaps), GAPS_PER_CALL)]
+    return {f"chunk-{i}": (request(bundle_doc, chunk, variant), chunk) for i, chunk in enumerate(chunks)}
+
+
+def parse(outputs: dict[str, Json], chunks: dict[str, tuple[Request, list[Json]]], keys: set[str]) -> list[Json]:
+    """One entry per gap, in input order. A missing or invalid proposal is `invalid`, never applied."""
+    proposals = []
+    for cid, (_, chunk) in chunks.items():
+        by_rule = {p.get("rule"): p for p in outputs[cid].get("proposals", [])}
+        for gap in chunk:
+            if (output := by_rule.get(rule_name(gap))) is None:
+                proposals.append(_invalid(gap, ["no proposal returned for this rule"]))
+            elif errors := validate(output, gap, keys):
+                proposals.append(_invalid(gap, errors))
+            else:
+                proposals.append(output)
+    return proposals
+
+
+def triage(
+    llm: LLM, bundle_doc: Json, gaps: list[Json], batch: bool = False, variant: str = "baseline"
+) -> list[Json]:
     """One entry per gap rule, in input order. A missing, invalid, or failed proposal is `invalid`, never applied.
 
-    `batch=True` sends cache misses as one Message Batch (half price, asynchronous): used by the eval.
+    `batch=True` sends cache misses as one Message Batch (half price, asynchronous).
     """
-    chunks = {f"chunk-{i // GAPS_PER_CALL}": gaps[i : i + GAPS_PER_CALL] for i in range(0, len(gaps), GAPS_PER_CALL)}
-    requests = {cid: request(bundle_doc, chunk) for cid, chunk in chunks.items()}
+    chunks = chunk_requests(bundle_doc, gaps, variant)
+    requests = {cid: req for cid, (req, _) in chunks.items()}
     try:
         if batch:
             outputs = llm.complete_batch(requests)
@@ -101,27 +140,20 @@ def triage(llm: LLM, bundle_doc: Json, gaps: list[Json], batch: bool = False) ->
             outputs = {cid: llm.complete(r) for cid, r in requests.items()}
     except LLMError as e:
         return [_invalid(g, [str(e)]) for g in gaps]
-    proposals = []
-    for cid, chunk in chunks.items():
-        by_rule = {p.get("rule"): p for p in outputs[cid].get("proposals", [])}
-        for gap in chunk:
-            if (output := by_rule.get(rule_name(gap))) is None:
-                proposals.append(_invalid(gap, ["no proposal returned for this rule"]))
-            elif errors := validate(output, gap, set(bundle_doc)):
-                proposals.append(_invalid(gap, errors))
-            else:
-                proposals.append(output)
-    return proposals
+    return parse(outputs, chunks, set(bundle_doc))
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
     parser.add_argument("--out", type=Path, default=Path("out"))
+    parser.add_argument("--variant", choices=VARIANTS, default="scoped")
     args = parser.parse_args()
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
-    gaps = scan_digest(mapping)["gaps"]
-    proposals = triage(LLM.from_env(args.out), bundle_digest(load_bundle(args.knowledge)), gaps)
+    scoped = args.variant == "scoped"
+    gaps = scan_digest(mapping, targets=scoped)["gaps"]
+    bundle_doc = bundle_digest(load_bundle(args.knowledge), scoped=scoped)
+    proposals = triage(LLM.from_env(args.out), bundle_doc, gaps, variant=args.variant)
     (args.out / "proposals.json").write_text(json.dumps(proposals, indent=2) + "\n", encoding="utf-8")
     print(f"triage: {len(proposals)} proposal(s) in {args.out / 'proposals.json'}; nothing applied to knowledge/")
 

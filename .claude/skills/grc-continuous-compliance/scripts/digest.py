@@ -6,22 +6,32 @@ import json
 from collections import Counter
 from typing import Any
 
-from okf_lib import Bundle
+from okf_lib import FRAMEWORK_SCOPES, Bundle
 
 Json = dict[str, Any]
 MESSAGE_CHARS = 160
+MAX_TARGETS = 5
 
 
-def bundle_digest(bundle: Bundle) -> Json:
-    """Per control: title, one-line description, and intent. Stable across runs, so it is the cached prefix."""
-    return {
-        c.key: {"title": c.title, "description": c.description, "intent": bundle.section(c, "Intent") or ""}
-        for c in bundle.controls()
-    }
+def bundle_digest(bundle: Bundle, scoped: bool = False) -> Json:
+    """Per control: title, one-line description, and intent. Stable across runs, so it is the cached prefix.
+
+    `scoped=True` adds the framework's component scope (AI-governance controls cover AI components only).
+    """
+    digest = {}
+    for c in bundle.controls():
+        entry = {"title": c.title, "description": c.description, "intent": bundle.section(c, "Intent") or ""}
+        if scoped:
+            entry["scope"] = FRAMEWORK_SCOPES[c.framework]
+        digest[c.key] = entry
+    return digest
 
 
-def scan_digest(mapping: Json) -> Json:
-    """Per control: status and counts. Per coverage-gap rule: tool, rule_id, first message line, count."""
+def scan_digest(mapping: Json, targets: bool = False) -> Json:
+    """Per control: status and counts. Per coverage-gap rule: tool, rule_id, first message line, count.
+
+    `targets=True` adds up to MAX_TARGETS files each gap rule fired on, so triage can see where it was found.
+    """
     controls = {
         key: {
             "status": entry["status"],
@@ -39,6 +49,11 @@ def scan_digest(mapping: Json) -> Json:
              "reason": u["reason"], "count": 0},
         )
         gap["count"] += 1
+        if targets:
+            gap.setdefault("targets", set()).add(f["target"])
+    for gap in gaps.values():
+        if targets:
+            gap["targets"] = sorted(gap["targets"])[:MAX_TARGETS]
     return {"controls": controls, "gaps": [gaps[k] for k in sorted(gaps)]}
 
 

@@ -6,8 +6,8 @@ from pathlib import Path
 from digest import bundle_digest, scan_digest
 from llm_stub import StubLLM
 from map_findings import map_findings
-from okf_lib import load_bundle
-from triage import triage
+from okf_lib import FRAMEWORK_SCOPES, load_bundle
+from triage import SCOPE_RULE, SYSTEM, request, triage
 
 FIXTURES = Path(__file__).parent / "fixtures"
 BUNDLE = load_bundle(FIXTURES / "bundle")
@@ -70,3 +70,39 @@ def test_each_gap_is_sent_with_the_exact_rule_the_proposal_must_echo() -> None:
     assert [g["rule"] for g in sent] == ["checkov:CKV_TEST_99", "conftest:orphan_rule"]
     rule_schema = req.schema["properties"]["proposals"]["items"]["properties"]["rule"]
     assert rule_schema == {"type": "string", "enum": ["checkov:CKV_TEST_99", "conftest:orphan_rule"]}
+
+
+def _scoped_gaps() -> list[dict]:
+    return scan_digest(MAPPING, targets=True)["gaps"]
+
+
+def test_scan_digest_can_carry_each_gaps_targets() -> None:
+    assert [g["targets"] for g in _scoped_gaps()] == [["app/Dockerfile"], ["app/infra/main.tf"]]
+    assert "targets" not in scan_digest(MAPPING)["gaps"][0]
+
+
+def test_scoped_bundle_digest_marks_ai_controls_as_ai_only() -> None:
+    ai = bundle_digest(load_bundle(FIXTURES / "ai_bundle"), scoped=True)
+    assert ai["soc2:cc6.1"]["scope"] == FRAMEWORK_SCOPES["soc2"]
+    assert ai["iso42001:a.6"]["scope"] == ai["eu-ai-act:art-50"]["scope"]
+    assert "AI system components only" in ai["iso42001:a.6"]["scope"]
+    assert "scope" not in bundle_digest(load_bundle(FIXTURES / "ai_bundle"))["iso42001:a.6"]
+
+
+def test_baseline_request_has_no_scope_rule_and_no_targets() -> None:
+    req = request(DIGEST, _scoped_gaps())
+    assert req.system.startswith(SYSTEM) and SCOPE_RULE not in req.system
+    assert all("targets" not in g for g in json.loads(req.user.split("\n", 1)[1]))
+
+
+def test_scoped_request_sends_the_scope_rule_and_targets() -> None:
+    req = request(bundle_digest(BUNDLE, scoped=True), _scoped_gaps(), "scoped")
+    assert SCOPE_RULE in req.system and '"scope"' in req.system
+    assert [g["targets"] for g in json.loads(req.user.split("\n", 1)[1])] == [["app/Dockerfile"], ["app/infra/main.tf"]]
+
+
+def test_unknown_variant_is_refused() -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="variant"):
+        request(DIGEST, _gaps(), "tuned")
