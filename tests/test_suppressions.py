@@ -10,6 +10,7 @@ import pytest
 from map_findings import map_findings
 from okf_lib import BundleError, load_bundle
 from oscal_schema import validate
+from render_report import render_report
 from to_oscal import assessment_results
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -149,3 +150,22 @@ def test_oscal_records_accepted_risk_as_deviation_approved(tmp_path: Path) -> No
     assert "Suppressed as false positives (reviewed; see the bundle): suppressions/fp" in result["remarks"]
     assert any(o["title"] == "checkov CKV_TEST_99" for o in result["observations"])
     assert not any(r["title"] == "Coverage gap: checkov CKV_TEST_99" for r in result["risks"])
+
+
+def test_report_marks_accepted_findings_and_lists_suppressions(tmp_path: Path) -> None:
+    stale = _suppression("false-positive", "checkov", "CKV_GONE", "app/Dockerfile")
+    bundle = _bundle(tmp_path, accepted=ACCEPTED, fp=FALSE_POSITIVE, stale=stale)
+    report = render_report(bundle, map_findings(bundle, FINDINGS, today=IN_FORCE), NOW)
+    assert "— **accepted risk** (`suppressions/accepted`)" in report
+    assert "1 accepted risk and 1 false positive suppressed after review." in report
+    assert "2 open findings across 1 of 4 controls" in report
+    assert "| false-positive | `checkov` `CKV_TEST_99` — `app/Dockerfile` | human:reviewer | 2026-12-27 |" in report
+    assert "## Unused suppressions" in report and "## Expired suppressions" not in report
+
+
+def test_reason_renders_as_one_plain_table_cell(tmp_path: Path) -> None:
+    fp = _suppression("false-positive", "checkov", "CKV_TEST_99", "app/Dockerfile",
+                      reason="See [CC7.1](../controls/cc7.1.md) | and\nmore.")
+    bundle = _bundle(tmp_path, fp=fp)
+    report = render_report(bundle, map_findings(bundle, FINDINGS, today=IN_FORCE), NOW)
+    assert "| See CC7.1 \\| and more. |" in report

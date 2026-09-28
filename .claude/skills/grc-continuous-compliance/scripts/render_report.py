@@ -44,7 +44,8 @@ def _link(bundle: Bundle, concept_id: str) -> str:
 
 
 def _finding_line(f: Json) -> str:
-    return f"- `{f['tool']}` `{f['rule_id']}` ({f['severity']}) — {f['message']} — `{f['target']}`"
+    line = f"- `{f['tool']}` `{f['rule_id']}` ({f['severity']}) — {f['message']} — `{f['target']}`"
+    return f"{line} — **accepted risk** (`{f['accepted']}`)" if f.get("accepted") else line
 
 
 def _remediation(bundle: Bundle, key: str, findings: list[Json]) -> str:
@@ -84,8 +85,11 @@ def _control_section(bundle: Bundle, key: str, entry: Json, narrative: Json | No
     return lines
 
 
-def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json]) -> list[str]:
-    """A one-glance summary: open findings by severity, control status counts, and coverage gaps."""
+def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json], suppressed: list[Json]) -> list[str]:
+    """A one-glance summary: open findings by severity, control status counts, gaps, and suppressions.
+
+    Accepted risks keep their control `not-satisfied` but are counted apart from open findings.
+    """
     total = dict.fromkeys((*SEVERITIES, UNCLASSIFIED), 0)
     open_findings = not_satisfied = not_assessed = not_applicable = clean = 0
     for _key, entry in controls:
@@ -96,10 +100,13 @@ def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json]) -> lis
         if status == "not-assessed":
             not_assessed += 1
         elif status == "not-satisfied":
-            not_satisfied += 1
+            # counts controls with open findings; a control whose findings are all accepted risks does not
+            not_satisfied += any(not f.get("accepted") for f in entry["findings"])
         else:
             clean += 1
         for f in entry["findings"]:
+            if f.get("accepted"):
+                continue
             total[_bucket(f["severity"])] += 1
             open_findings += 1
     findings_word = "finding" if open_findings == 1 else "findings"
@@ -108,15 +115,50 @@ def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json]) -> lis
     applicable = len(controls) - not_applicable
     controls_word = "control" if applicable == 1 else "controls"
     na_clause = f" {not_applicable} not applicable." if not_applicable else ""
+    accepted = sum(s["kind"] == "accepted-risk" for s in suppressed)
+    false_pos = len(suppressed) - accepted
+    suppressed_clause = (
+        f" {accepted} accepted {'risk' if accepted == 1 else 'risks'} and {false_pos} "
+        f"{'false positive' if false_pos == 1 else 'false positives'} suppressed after review."
+        if suppressed
+        else ""
+    )
     return [
         "## Risk posture",
         "",
         f"{open_findings} open {findings_word} across {not_satisfied} of {applicable} {controls_word}: "
         f"{_breakdown(total)}.",
         f"{clean} {clean_clause} no violations. {not_assessed} not assessed.{na_clause} "
-        f"{len(unmapped)} {gaps_word} to triage.",
+        f"{len(unmapped)} {gaps_word} to triage.{suppressed_clause}",
         "",
     ]
+
+
+def _table_text(text: str) -> str:
+    """Bundle prose as one table cell: links become their text (bundle-relative paths break here), `|` escaped."""
+    plain = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", " ".join(text.split()))
+    return plain.replace("|", "\\|")
+
+
+def _suppression_sections(mapping: Json) -> list[str]:
+    """Suppressed, expired, and unused suppressions; each section appears only when it has entries."""
+    lines: list[str] = []
+    if suppressed := mapping.get("suppressed"):
+        lines += ["", "## Suppressed", "", "Reviewed and time-limited. Shown here so nothing is hidden.", ""]
+        lines += ["| Kind | Finding | Owner | Expires | Reason |", "|---|---|---|---|---|"]
+        for s in suppressed:
+            f = s["finding"]
+            reason = _table_text(s["reason"])
+            lines.append(
+                f"| {s['kind']} | `{f['tool']}` `{f['rule_id']}` — `{f['target']}` | {s['owner']} | {s['expires']} | {reason} |"
+            )
+    if expired := mapping.get("expired_suppressions"):
+        lines += ["", "## Expired suppressions", "", "No longer applied; their findings count again. Renew or remove.", ""]
+        lines += [f"- `{sid}`" for sid in expired]
+    if unused := mapping.get("unused_suppressions"):
+        lines += ["", "## Unused suppressions", "", "Match no finding in this scan. Remove them.", ""]
+        lines += [f"- `{sid}`" for sid in unused]
+    return lines
 
 
 def _crosswalk(bundle: Bundle, mapping: Json) -> list[str]:
@@ -167,7 +209,7 @@ def render_report(
         "`no-violations-detected` means automated checks found nothing for that control;",
         "it is evidence, not a control attestation.",
         "",
-        *_risk_posture(controls, mapping["unmapped"]),
+        *_risk_posture(controls, mapping["unmapped"], mapping.get("suppressed", [])),
         "## Summary",
         "",
         "| Control | Status | Critical | High | Medium | Low | Uncl. | Total |",
@@ -193,6 +235,7 @@ def render_report(
         lines += [f"{_finding_line(u['finding'])} — reason: `{u['reason']}`" for u in mapping["unmapped"]]
     else:
         lines.append("None.")
+    lines += _suppression_sections(mapping)
     lines += ["", "## Not assessed", ""]
     not_assessed = [key for key, entry in controls if entry["status"] == "not-assessed"]
     for key in not_assessed:
