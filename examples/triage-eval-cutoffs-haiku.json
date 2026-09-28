@@ -1,0 +1,913 @@
+{
+  "model": "claude-haiku-4-5",
+  "mode": "anthropic",
+  "cost_usd": 0.0,
+  "cost_per_case_usd": 0.0,
+  "results": {
+    "baseline": {
+      "tune": {
+        "cutoffs": {
+          "as-is": {
+            "cases": 25,
+            "accuracy": 0.64,
+            "none_precision": 1.0,
+            "none_recall": 0.1,
+            "invalid_rate": 0.0,
+            "ai_accuracy": null,
+            "misses": [
+              {
+                "rule": "checkov:CKV_GCP_6",
+                "expected": "none",
+                "got": "soc2:cc6.6"
+              },
+              {
+                "rule": "checkov:CKV_GCP_14",
+                "expected": "none",
+                "got": "eu-ai-act:art-15"
+              },
+              {
+                "rule": "checkov:CKV_GCP_78",
+                "expected": "none",
+                "got": "eu-ai-act:art-15"
+              },
+              {
+                "rule": "trivy:AVD-GCP-0066",
+                "expected": "none",
+                "got": "eu-ai-act:art-15"
+              },
+              {
+                "rule": "trivy:DS-0026",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_DOCKER_2",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_8",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_9",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_11",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              }
+            ]
+          },
+          "low->none": {
+            "cases": 25,
+            "accuracy": 0.64,
+            "none_precision": 1.0,
+            "none_recall": 0.1,
+            "invalid_rate": 0.0,
+            "ai_accuracy": null,
+            "misses": [
+              {
+                "rule": "checkov:CKV_GCP_6",
+                "expected": "none",
+                "got": "soc2:cc6.6"
+              },
+              {
+                "rule": "checkov:CKV_GCP_14",
+                "expected": "none",
+                "got": "eu-ai-act:art-15"
+              },
+              {
+                "rule": "checkov:CKV_GCP_78",
+                "expected": "none",
+                "got": "eu-ai-act:art-15"
+              },
+              {
+                "rule": "trivy:AVD-GCP-0066",
+                "expected": "none",
+                "got": "eu-ai-act:art-15"
+              },
+              {
+                "rule": "trivy:DS-0026",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_DOCKER_2",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_8",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_9",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_11",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              }
+            ]
+          },
+          "low+medium->none": {
+            "cases": 25,
+            "accuracy": 0.92,
+            "none_precision": 0.9,
+            "none_recall": 0.9,
+            "invalid_rate": 0.0,
+            "ai_accuracy": null,
+            "misses": [
+              {
+                "rule": "semgrep:django-no-csrf-exempt",
+                "expected": "soc2:cc6.1",
+                "got": "none"
+              },
+              {
+                "rule": "checkov:CKV_GCP_6",
+                "expected": "none",
+                "got": "soc2:cc6.6"
+              }
+            ]
+          }
+        },
+        "answers": [
+          {
+            "rule": "checkov:CKV_K8S_16",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_20",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "trivy:KSV-0001",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_37",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:django-no-csrf-exempt",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_GCP_2",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_3",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_20",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_26",
+            "expected": "soc2:cc7.2",
+            "proposal": "soc2:cc7.2",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_18",
+            "expected": "soc2:cc7.2",
+            "proposal": "soc2:cc7.2",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_67",
+            "expected": "soc2:cc7.2",
+            "proposal": "soc2:cc7.2",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_43",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_DOCKER_7",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_TF_1",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:python-eval-user-input",
+            "expected": "soc2:cc7.1",
+            "proposal": "soc2:cc7.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_6",
+            "expected": "none",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_14",
+            "expected": "none",
+            "proposal": "eu-ai-act:art-15",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_GCP_78",
+            "expected": "none",
+            "proposal": "eu-ai-act:art-15",
+            "confidence": "medium"
+          },
+          {
+            "rule": "trivy:AVD-GCP-0066",
+            "expected": "none",
+            "proposal": "eu-ai-act:art-15",
+            "confidence": "medium"
+          },
+          {
+            "rule": "trivy:DS-0026",
+            "expected": "none",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_DOCKER_2",
+            "expected": "none",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_8",
+            "expected": "none",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_9",
+            "expected": "none",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_11",
+            "expected": "none",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "trivy:DS-0017",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "high"
+          }
+        ]
+      },
+      "holdout": {
+        "cutoffs": {
+          "as-is": {
+            "cases": 15,
+            "accuracy": 0.667,
+            "none_precision": 1.0,
+            "none_recall": 0.2,
+            "invalid_rate": 0.0,
+            "ai_accuracy": 1.0,
+            "misses": [
+              {
+                "rule": "semgrep:python-pickle-load-request",
+                "expected": "soc2:cc7.1",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_10",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_12",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_13",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "trivy:DS-0005",
+                "expected": "none",
+                "got": "soc2:cc8.1"
+              }
+            ]
+          },
+          "low->none": {
+            "cases": 15,
+            "accuracy": 0.667,
+            "none_precision": 1.0,
+            "none_recall": 0.2,
+            "invalid_rate": 0.0,
+            "ai_accuracy": 1.0,
+            "misses": [
+              {
+                "rule": "semgrep:python-pickle-load-request",
+                "expected": "soc2:cc7.1",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_10",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_12",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "checkov:CKV_K8S_13",
+                "expected": "none",
+                "got": "iso42001:a.6"
+              },
+              {
+                "rule": "trivy:DS-0005",
+                "expected": "none",
+                "got": "soc2:cc8.1"
+              }
+            ]
+          },
+          "low+medium->none": {
+            "cases": 15,
+            "accuracy": 0.733,
+            "none_precision": 0.625,
+            "none_recall": 1.0,
+            "invalid_rate": 0.0,
+            "ai_accuracy": 0.8,
+            "misses": [
+              {
+                "rule": "semgrep:llm-unbounded-retry",
+                "expected": "iso42001:a.6",
+                "got": "none"
+              },
+              {
+                "rule": "checkov:CKV_K8S_28",
+                "expected": "soc2:cc6.1",
+                "got": "none"
+              },
+              {
+                "rule": "checkov:CKV_AWS_36",
+                "expected": "soc2:cc7.2",
+                "got": "none"
+              },
+              {
+                "rule": "semgrep:python-pickle-load-request",
+                "expected": "soc2:cc7.1",
+                "got": "iso42001:a.6"
+              }
+            ]
+          }
+        },
+        "answers": [
+          {
+            "rule": "semgrep:llm-output-unreviewed-write",
+            "expected": "iso42001:a.9",
+            "proposal": "iso42001:a.9",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:llm-pii-sent-to-model",
+            "expected": "iso42001:a.7",
+            "proposal": "iso42001:a.7",
+            "confidence": "high"
+          },
+          {
+            "rule": "conftest:ai_inventory_owner_missing",
+            "expected": "iso42001:a.4",
+            "proposal": "iso42001:a.4",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:llm-chat-no-ai-notice",
+            "expected": "eu-ai-act:art-50",
+            "proposal": "eu-ai-act:art-50",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:llm-unbounded-retry",
+            "expected": "iso42001:a.6",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_28",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_GCP_106",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_36",
+            "expected": "soc2:cc7.2",
+            "proposal": "soc2:cc7.2",
+            "confidence": "medium"
+          },
+          {
+            "rule": "semgrep:dockerfile-pip-install-unpinned",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:python-pickle-load-request",
+            "expected": "soc2:cc7.1",
+            "proposal": "iso42001:a.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_10",
+            "expected": "none",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_12",
+            "expected": "none",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_13",
+            "expected": "none",
+            "proposal": "iso42001:a.6",
+            "confidence": "medium"
+          },
+          {
+            "rule": "trivy:DS-0005",
+            "expected": "none",
+            "proposal": "soc2:cc8.1",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_GCP_81",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "high"
+          }
+        ]
+      },
+      "selected_cutoff": "low+medium->none"
+    },
+    "scoped": {
+      "tune": {
+        "cutoffs": {
+          "as-is": {
+            "cases": 25,
+            "accuracy": 0.84,
+            "none_precision": 1.0,
+            "none_recall": 0.6,
+            "invalid_rate": 0.0,
+            "ai_accuracy": null,
+            "misses": [
+              {
+                "rule": "checkov:CKV_GCP_6",
+                "expected": "none",
+                "got": "soc2:cc6.6"
+              },
+              {
+                "rule": "trivy:AVD-GCP-0066",
+                "expected": "none",
+                "got": "soc2:cc6.1"
+              },
+              {
+                "rule": "checkov:CKV_K8S_11",
+                "expected": "none",
+                "got": "soc2:cc6.1"
+              },
+              {
+                "rule": "trivy:DS-0017",
+                "expected": "none",
+                "got": "soc2:cc7.1"
+              }
+            ]
+          },
+          "low->none": {
+            "cases": 25,
+            "accuracy": 0.84,
+            "none_precision": 1.0,
+            "none_recall": 0.6,
+            "invalid_rate": 0.0,
+            "ai_accuracy": null,
+            "misses": [
+              {
+                "rule": "checkov:CKV_GCP_6",
+                "expected": "none",
+                "got": "soc2:cc6.6"
+              },
+              {
+                "rule": "trivy:AVD-GCP-0066",
+                "expected": "none",
+                "got": "soc2:cc6.1"
+              },
+              {
+                "rule": "checkov:CKV_K8S_11",
+                "expected": "none",
+                "got": "soc2:cc6.1"
+              },
+              {
+                "rule": "trivy:DS-0017",
+                "expected": "none",
+                "got": "soc2:cc7.1"
+              }
+            ]
+          },
+          "low+medium->none": {
+            "cases": 25,
+            "accuracy": 0.96,
+            "none_precision": 1.0,
+            "none_recall": 0.9,
+            "invalid_rate": 0.0,
+            "ai_accuracy": null,
+            "misses": [
+              {
+                "rule": "checkov:CKV_GCP_6",
+                "expected": "none",
+                "got": "soc2:cc6.6"
+              }
+            ]
+          }
+        },
+        "answers": [
+          {
+            "rule": "checkov:CKV_K8S_16",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_20",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "trivy:KSV-0001",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_37",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:django-no-csrf-exempt",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_2",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_3",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_20",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_26",
+            "expected": "soc2:cc7.2",
+            "proposal": "soc2:cc7.2",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_18",
+            "expected": "soc2:cc7.2",
+            "proposal": "soc2:cc7.2",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_67",
+            "expected": "soc2:cc7.2",
+            "proposal": "soc2:cc7.2",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_43",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_DOCKER_7",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_TF_1",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:python-eval-user-input",
+            "expected": "soc2:cc7.1",
+            "proposal": "soc2:cc7.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_6",
+            "expected": "none",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_14",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_78",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "high"
+          },
+          {
+            "rule": "trivy:AVD-GCP-0066",
+            "expected": "none",
+            "proposal": "soc2:cc6.1",
+            "confidence": "medium"
+          },
+          {
+            "rule": "trivy:DS-0026",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_DOCKER_2",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_8",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_9",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_11",
+            "expected": "none",
+            "proposal": "soc2:cc6.1",
+            "confidence": "medium"
+          },
+          {
+            "rule": "trivy:DS-0017",
+            "expected": "none",
+            "proposal": "soc2:cc7.1",
+            "confidence": "medium"
+          }
+        ]
+      },
+      "holdout": {
+        "cutoffs": {
+          "as-is": {
+            "cases": 15,
+            "accuracy": 0.667,
+            "none_precision": 1.0,
+            "none_recall": 0.2,
+            "invalid_rate": 0.0,
+            "ai_accuracy": 0.8,
+            "misses": [
+              {
+                "rule": "semgrep:llm-chat-no-ai-notice",
+                "expected": "eu-ai-act:art-50",
+                "got": "iso42001:a.8"
+              },
+              {
+                "rule": "checkov:CKV_K8S_10",
+                "expected": "none",
+                "got": "soc2:cc7.2"
+              },
+              {
+                "rule": "checkov:CKV_K8S_12",
+                "expected": "none",
+                "got": "soc2:cc7.2"
+              },
+              {
+                "rule": "checkov:CKV_K8S_13",
+                "expected": "none",
+                "got": "soc2:cc7.2"
+              },
+              {
+                "rule": "trivy:DS-0005",
+                "expected": "none",
+                "got": "soc2:cc8.1"
+              }
+            ]
+          },
+          "low->none": {
+            "cases": 15,
+            "accuracy": 0.667,
+            "none_precision": 1.0,
+            "none_recall": 0.2,
+            "invalid_rate": 0.0,
+            "ai_accuracy": 0.8,
+            "misses": [
+              {
+                "rule": "semgrep:llm-chat-no-ai-notice",
+                "expected": "eu-ai-act:art-50",
+                "got": "iso42001:a.8"
+              },
+              {
+                "rule": "checkov:CKV_K8S_10",
+                "expected": "none",
+                "got": "soc2:cc7.2"
+              },
+              {
+                "rule": "checkov:CKV_K8S_12",
+                "expected": "none",
+                "got": "soc2:cc7.2"
+              },
+              {
+                "rule": "checkov:CKV_K8S_13",
+                "expected": "none",
+                "got": "soc2:cc7.2"
+              },
+              {
+                "rule": "trivy:DS-0005",
+                "expected": "none",
+                "got": "soc2:cc8.1"
+              }
+            ]
+          },
+          "low+medium->none": {
+            "cases": 15,
+            "accuracy": 0.867,
+            "none_precision": 1.0,
+            "none_recall": 0.8,
+            "invalid_rate": 0.0,
+            "ai_accuracy": 0.8,
+            "misses": [
+              {
+                "rule": "semgrep:llm-chat-no-ai-notice",
+                "expected": "eu-ai-act:art-50",
+                "got": "iso42001:a.8"
+              },
+              {
+                "rule": "trivy:DS-0005",
+                "expected": "none",
+                "got": "soc2:cc8.1"
+              }
+            ]
+          }
+        },
+        "answers": [
+          {
+            "rule": "semgrep:llm-output-unreviewed-write",
+            "expected": "iso42001:a.9",
+            "proposal": "iso42001:a.9",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:llm-pii-sent-to-model",
+            "expected": "iso42001:a.7",
+            "proposal": "iso42001:a.7",
+            "confidence": "high"
+          },
+          {
+            "rule": "conftest:ai_inventory_owner_missing",
+            "expected": "iso42001:a.4",
+            "proposal": "iso42001:a.4",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:llm-chat-no-ai-notice",
+            "expected": "eu-ai-act:art-50",
+            "proposal": "iso42001:a.8",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:llm-unbounded-retry",
+            "expected": "iso42001:a.6",
+            "proposal": "iso42001:a.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_28",
+            "expected": "soc2:cc6.1",
+            "proposal": "soc2:cc6.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_106",
+            "expected": "soc2:cc6.6",
+            "proposal": "soc2:cc6.6",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_AWS_36",
+            "expected": "soc2:cc7.2",
+            "proposal": "soc2:cc7.2",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:dockerfile-pip-install-unpinned",
+            "expected": "soc2:cc8.1",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "semgrep:python-pickle-load-request",
+            "expected": "soc2:cc7.1",
+            "proposal": "soc2:cc7.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_K8S_10",
+            "expected": "none",
+            "proposal": "soc2:cc7.2",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_12",
+            "expected": "none",
+            "proposal": "soc2:cc7.2",
+            "confidence": "medium"
+          },
+          {
+            "rule": "checkov:CKV_K8S_13",
+            "expected": "none",
+            "proposal": "soc2:cc7.2",
+            "confidence": "medium"
+          },
+          {
+            "rule": "trivy:DS-0005",
+            "expected": "none",
+            "proposal": "soc2:cc8.1",
+            "confidence": "high"
+          },
+          {
+            "rule": "checkov:CKV_GCP_81",
+            "expected": "none",
+            "proposal": "none",
+            "confidence": "high"
+          }
+        ]
+      },
+      "selected_cutoff": "low+medium->none"
+    }
+  }
+}
