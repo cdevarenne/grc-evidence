@@ -75,11 +75,11 @@ JSON output with `max_tokens` bounds (narrate 2K, triage 1K per call of 8
 gaps); a response cache keyed on `sha256(model + prompt)`; batches for the eval;
 and a budget guard that stops before a call could pass `LLM_BUDGET_USD`. Every
 call is logged to `out/llm-usage.jsonl`, and the report footer shows the run's
-cost. Narrate on Haiku costs about a cent. Triage on Sonnet 5 is estimated at
-$0.05–0.10 for the sample app's ~40 gap rules, above the $0.05-per-run target
-of the original spec; `LLM_MODEL=claude-haiku-4-5 make triage` is the cheaper
-option (see the confirm results below). The full-run cost on the real scan has
-not been measured yet.
+cost. Measured on the sample app's real scan (41 gap rules): narrate on Haiku
+4.5, 1 call, $0.014; triage on Sonnet 5, 6 calls, $0.097; **$0.111 per full
+run**, about twice the original spec's $0.05 target, almost all of it triage.
+`LLM_MODEL=claude-haiku-4-5 make triage` is the cheaper option, at lower
+accuracy (see the confirm results below).
 
 **First eval baseline** (Haiku 4.5, one Message Batch, $0.009): accuracy 0.64,
 `none` precision 1.0, `none` recall 0.1, no invalid outputs. Every clear match
