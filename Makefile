@@ -8,7 +8,7 @@ export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
 OKF := reference-agent @ git+https://github.com/GoogleCloudPlatform/open-knowledge-format@$(OKF_COMMIT)
 
-.PHONY: bootstrap scan narrate render test test-integration examples clean
+.PHONY: bootstrap scan narrate triage render test test-integration examples clean
 
 bootstrap:
 	uv sync
@@ -23,6 +23,9 @@ scan:
 narrate:
 	$(PY_LLM) $(SCRIPTS)/narrate.py --knowledge knowledge --out out
 	$(PY) $(SCRIPTS)/render_report.py --knowledge knowledge --out out
+
+triage:
+	$(PY_LLM) $(SCRIPTS)/triage.py --knowledge knowledge --out out
 
 render:
 	mkdir -p out
