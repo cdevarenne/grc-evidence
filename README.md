@@ -352,6 +352,10 @@ definition, assessment plan, and assessment results. Deliberately left out:
   the bundle and of scan history (search, graph queries, control health over
   time) is specified but not started:
   [Spec E](docs/superpowers/specs/2026-09-29-mini-spec-e-compliance-data-layer.md).
+- **Plugin and an adopter repo.** Packaging the skill as a Claude Code plugin,
+  a configurable scan layout, and a separate repo that applies it to
+  `microservices-demo` with CI is specified but not started:
+  [Spec F](docs/superpowers/specs/2026-09-29-mini-spec-f-plugin-and-adopter-repo.md).
 - **CI runs.** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) is
   manual-only (`workflow_dispatch`) and has not been run; `make test` and
   `make test-integration` are run locally.
