@@ -1,6 +1,6 @@
 # Compliance Scan Report
 
-Generated 2026-09-28T23:20:01+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-09-29T21:01:43+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.

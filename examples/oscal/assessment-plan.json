@@ -1,9 +1,9 @@
 {
   "assessment-plan": {
-    "uuid": "51637f0b-33ec-50d7-8c8f-9fd8294ae643",
+    "uuid": "53153c92-9f9a-5305-bb78-237019b9094a",
     "metadata": {
       "title": "okf-grc-skill automated assessment plan",
-      "last-modified": "2026-09-28T23:55:46+00:00",
+      "last-modified": "2026-09-29T21:01:43+00:00",
       "version": "0.1.0",
       "oscal-version": "1.2.3"
     },
@@ -197,7 +197,7 @@
           }
         },
         {
-          "uuid": "453cdade-8092-56fc-9e7b-38ff558acad2",
+          "uuid": "32847c13-d3d8-59bb-a21e-4ae9c2c13e15",
           "title": "Conftest policy check",
           "description": "Run conftest 0.70.1 over `app` and normalize its JSON output to findings.",
           "props": [
@@ -213,9 +213,9 @@
           ],
           "steps": [
             {
-              "uuid": "d9b184fa-8ebd-559d-ae70-5b69c1947dd7",
+              "uuid": "1b14dd42-0ebd-5e6a-8f38-abf0bc9cf2a2",
               "title": "Run the scanner",
-              "description": "`conftest test --all-namespaces --no-color -o json -p policies/rego app/k8s/**/*.yaml app/k8s/**/*.yml app/infra/**/*.tf app/ai-inventory.yaml` (working directory: the repository root)"
+              "description": "`conftest test --all-namespaces --no-color -o json -p policies/rego app/ai-inventory.yaml app/infra/main.tf app/k8s/deployment.yaml app/k8s/service.yaml` (working directory: the repository root)"
             }
           ],
           "related-controls": {
@@ -642,7 +642,7 @@
             ]
           },
           {
-            "activity-uuid": "453cdade-8092-56fc-9e7b-38ff558acad2",
+            "activity-uuid": "32847c13-d3d8-59bb-a21e-4ae9c2c13e15",
             "subjects": [
               {
                 "type": "component",
