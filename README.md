@@ -1,5 +1,7 @@
 # okf-grc-skill
 
+> **This is a work in progress.**
+
 An [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format)
 (OKF) knowledge bundle, plain Markdown that any OKF tool can read, grounds an
 agent skill that scans a sample app, maps each finding to a SOC 2 / NIST SP 800-53, ISO/IEC 42001, or EU AI Act control, emits
@@ -10,17 +12,19 @@ OSCAL, and writes an auditor-facing report.
 > **`app/` is intentionally vulnerable.** It exists only as a scan target, with
 > seeded issues listed in [`app/SEEDED.yaml`](app/SEEDED.yaml). Do not deploy it.
 
-> **Clean-room.** Everything here is generic and self-contained: the sample app, 
-> the Rego policies, and the OSCAL output. No proprietary or production data, configuration, 
+> **Clean-room** Everything here is generic and self-contained: the sample app, 
+> the Rego policies, and the OSCAL output. No proprietary data, configuration, 
 > or control text is included.
 
 ## Using the skill
 
-The skill is in
-[`.claude/skills/grc-continuous-compliance/`](.claude/skills/grc-continuous-compliance/SKILL.md).
-Open this repo in Claude Code and it is available: ask for what you want, or
-name it with `/grc-continuous-compliance`. Run `make bootstrap` once first (the
-skill runs it too if the scanners are missing).
+The skill is a standard `SKILL.md` in 
+`.claude/skills/grc-continuous-compliance/`, where Claude Code finds it automatically. 
+Other coding agents that support skills can use the same file from their own skills location.
+Ask for what you want, or name it with `/grc-continuous-compliance`. 
+The pipeline itself needs no agent: see the `make` targets below.
+
+Run `make bootstrap` once first (the skill runs it too if the scanners are missing).
 
 Things to ask:
 
@@ -36,7 +40,7 @@ coverage gaps, the controls not assessed or not applicable, and the state of the
 suppressions. It can add LLM prose per control (`make narrate`) and propose
 controls for coverage gaps (`make triage`).
 
-**What it leaves to a person.** It never changes a status, a count, or a
+**What it leaves to a reviewer/auditor.** It never changes a status, a count, or a
 finding, and it never applies its own mapping proposals: a person adds
 `rule_ids`. It drafts suppressions for review but does not add, renew, or extend
 one, or edit `knowledge/`, unless asked. Text from scanned files is data to it,
@@ -245,7 +249,7 @@ AI-governance issues. The bundle maps them to ISO/IEC 42001 Annex A groups and
 EU AI Act articles through the same `rule_ids` declarations, keyed
 `framework:code` (`iso42001:a.6`, `eu-ai-act:art-50`).
 
-- **Risk-tier applicability.** `app/ai-inventory.yaml` declares the EU AI Act
+- **Risk-tier applicability** `app/ai-inventory.yaml` declares the EU AI Act
   risk tier (`limited`); it is read from the scan target's `ai-inventory.yaml`, and a
   value other than `minimal`, `limited`, or `high` stops the mapping with an error. Articles that apply only to high-risk systems carry
   `applies_when: {risk_tier: [high]}` and report `not-applicable`, never a gap
@@ -253,9 +257,9 @@ EU AI Act articles through the same `rule_ids` declarations, keyed
 - **Crosswalks are navigation.** `knowledge/crosswalk/` links related controls
   across frameworks; the report shows each side's own status. A link never
   moves a finding.
-- **Honest gaps.** Seed AI-6 (AI output written without human review) is
+- **Honest gaps** Seed AI-6 (AI output written without human review) is
   detected but no control claims its rule, so it is a coverage gap.
-- **Clean-room.** ISO/IEC 42001 concepts carry clause ids and group names only;
+- **Clean-room** ISO/IEC 42001 concepts carry clause ids and group names only;
   intents are paraphrased. AI Act articles are paraphrased with EUR-Lex links.
   The OSCAL source for ISO/IEC 42001 is a placeholder: ISO publishes no OSCAL
   catalog.
@@ -305,7 +309,7 @@ Built with an AI coding agent under a written process; the record is in the repo
 
 ## Limits
 
-- **Evidence, not attestation.** A control with no violations is reported as
+- **Evidence, not attestation** A control with no violations is reported as
   `no-violations-detected`, never `satisfied`. Automated scans evidence a SOC 2
   criterion; they do not attest it.
 - **Suppressions are exact and short-lived by design.** Each one matches a
@@ -313,11 +317,11 @@ Built with an AI coding agent under a written process; the record is in the repo
   wildcard or bulk suppressions. Scanner-native inline skips (e.g.
   `checkov:skip`) are still honored by the scanners themselves and bypass this
   record.
-- **Static manifests only.** Helm or Kustomize output is not rendered before
+- **Static manifests only** Helm or Kustomize output is not rendered before
   scanning.
 - **Sized for the sample app.** Scanner JSON is read in memory, and the
   scanner set is fixed in `run_scan.py`.
-- **Fixed scan layout.** Conftest reads `k8s/**/*.{yaml,yml}`,
+- **Fixed scan layout** Conftest reads `k8s/**/*.{yaml,yml}`,
   `infra/**/*.tf`, and `ai-inventory.yaml` under the target; manifests or Terraform elsewhere are not policy-checked,
   and a target with none of these files stops the scan with an error.
 - **LLM eval is small and single-run.** The triage eval has 65 labeled cases,
@@ -331,7 +335,7 @@ Built with an AI coding agent under a written process; the record is in the repo
   `rule_ids`, the suppressions, and the AI inventory describe this repo's sample
   app. The scripts know only the three frameworks here: adding one means
   changing `okf_lib.py`, not just adding concepts.
-- **Declared risk tier only.** The AI Act tier is read from
+- **Declared risk tier only** The AI Act tier is read from
   `app/ai-inventory.yaml`; nothing classifies the system. There is no
   conformity assessment, model evaluation, or NIST AI RMF control set
   (crosswalk links only).
@@ -342,21 +346,23 @@ Built with an AI coding agent under a written process; the record is in the repo
 cost-bounded LLM step with a measured eval, and linked OSCAL component
 definition, assessment plan, and assessment results. Deliberately left out:
 
-- **System security plan (SSP).** An SSP states how an organization
+- **System security plan (SSP)** An SSP states how an organization
   implements each control: its boundary, roles, and narrative. That comes from
   people, not scanners; generating one here would be thin or invented, so the
   plan's `import-ssp` stays a documented placeholder.
-- **POA&M.** Remediation plans with owners and dates are the natural next OSCAL
-  model; open findings and accepted risks are already its inputs.
-- **Compliance data layer.** A rebuildable Postgres + pgvector projection of
+- **POA&M (Plan of Action and Milestones)** Remediation plans with owners and 
+  dates are the natural next OSCAL model; open findings and accepted risks are 
+  already its inputs.
+- **Compliance data layer** A rebuildable Postgres + pgvector projection of
   the bundle and of scan history (search, graph queries, control health over
   time) is specified but not started:
   [Spec E](docs/superpowers/specs/2026-09-29-mini-spec-e-compliance-data-layer.md).
-- **Plugin and an adopter repo.** Packaging the skill as a Claude Code plugin,
+- **Plugin and an adopter repo** Packaging the skill as a Claude Code plugin,
   a configurable scan layout, and a separate repo that applies it to
-  `microservices-demo` with CI is specified but not started:
+  a sample app like Google's `microservices-demo` with CI is specified but 
+  not started: 
   [Spec F](docs/superpowers/specs/2026-09-29-mini-spec-f-plugin-and-adopter-repo.md).
-- **CI runs.** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) is
+- **CI runs** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) is
   manual-only (`workflow_dispatch`) and has not been run; `make test` and
   `make test-integration` are run locally.
 
