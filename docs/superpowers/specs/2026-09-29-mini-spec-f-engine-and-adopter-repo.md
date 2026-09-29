@@ -232,9 +232,10 @@ LLM steps in CI; SSP and POA&M; the Spec E data layer; deploying the demo app.
 
 ## 6. Open questions for review
 
-1. **Distribution.** A Python package installed from a git tag (recommended:
-   light, and the scanners stay pinned by `tools.lock`), or a container image
-   with the scanners inside (hermetic for CI, heavier to build and publish).
+1. **Distribution. Decided 2026-09-29:** a Python package installed from a git
+   tag; the scanners stay pinned by `tools.lock`. A container image with the
+   scanners inside was the alternative (hermetic for CI, heavier to build and
+   publish).
 2. **Base bundle delivery.** Copy into the adopter's `knowledge/` on `init`
    with a version stamp (recommended: one self-contained bundle that the OKF
    visualizer renders and an auditor reads at the scanned commit), or load the
