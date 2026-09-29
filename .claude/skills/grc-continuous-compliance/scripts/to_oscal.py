@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, MAX_SUPPRESSION_DAYS, Bundle, Concept, load_bundle
-from run_scan import CONFTEST_PATTERNS, load_pins, scanner_runs
+from run_scan import conftest_inputs, load_pins, scanner_runs
 
 OSCAL_VERSION = "1.2.3"
 DOC_VERSION = "0.1.0"
@@ -135,7 +135,9 @@ def _evidenced_by(bundle: Bundle, key: str) -> set[str]:
     return {entry.partition(":")[0] for c in bundle.declaring(key) for entry in c.rule_ids}
 
 
-def assessment_plan(bundle: Bundle, mapping: Json, now: str, pins: dict[str, str], target: str = "app") -> Json:
+def assessment_plan(
+    bundle: Bundle, mapping: Json, now: str, pins: dict[str, str], target: str = "app", repo: Path = Path()
+) -> Json:
     """What the automated scan intends to assess: every applicable control, the scanner runs, the components.
 
     In scope is every control not excluded by the declared AI risk tier, including controls no scanner
@@ -143,7 +145,7 @@ def assessment_plan(bundle: Bundle, mapping: Json, now: str, pins: dict[str, str
     """
     in_scope = sorted(key for key, c in mapping["controls"].items() if c["status"] != "not-applicable")
     excluded = sorted(key for key, c in mapping["controls"].items() if c["status"] == "not-applicable")
-    runs = scanner_runs(target, [f"{target}/{p}" for p in CONFTEST_PATTERNS])
+    runs = scanner_runs(target, conftest_inputs(repo, target))
     activities = []
     for run in runs:
         command = " ".join(run.argv)

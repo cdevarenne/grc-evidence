@@ -147,15 +147,18 @@ def load_pins(lock: Path) -> dict[str, str]:
     return dict(ln.split("=", 1) for ln in lines)
 
 
+def conftest_inputs(repo: Path, target_dir: str) -> list[str]:
+    """The files Conftest checks: CONFTEST_PATTERNS under the target, repo-relative and sorted."""
+    target = repo / target_dir
+    return sorted(p.relative_to(repo).as_posix() for pattern in CONFTEST_PATTERNS for p in target.glob(pattern))
+
+
 def scan(repo: Path, target_dir: str) -> list[Finding]:
     """Run all four scanners over `repo/target_dir` and return deduplicated findings."""
     _check_target(repo, target_dir)
     target = repo / target_dir
-    conftest_inputs = sorted(
-        p.relative_to(repo).as_posix() for pattern in CONFTEST_PATTERNS for p in target.glob(pattern)
-    )
     findings: list[Finding] = []
-    for run in scanner_runs(target_dir, conftest_inputs):
+    for run in scanner_runs(target_dir, conftest_inputs(repo, target_dir)):
         findings += run.normalize(run_tool(run.tool, list(run.argv), target if run.in_target else repo), target_dir)
     return dedupe(findings)
 

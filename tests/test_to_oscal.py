@@ -6,10 +6,11 @@ import pytest
 from map_findings import map_findings
 from okf_lib import Bundle, load_bundle
 from oscal_schema import validate
-from run_scan import load_pins
+from run_scan import conftest_inputs, load_pins, scanner_runs
 from to_oscal import AP_HREF, NO_SSP_HREF, assessment_plan, assessment_results, component_definition
 
 FIXTURES = Path(__file__).parent / "fixtures"
+ROOT = Path(__file__).parent.parent
 NOW = "2026-09-25T12:00:00+00:00"
 PINS = load_pins(Path(__file__).parent.parent / "tools.lock")
 
@@ -291,3 +292,11 @@ def test_plan_without_components_selects_all_subjects(tmp_path: Path) -> None:
     doc = assessment_plan(b, map_findings(b, []), NOW, PINS)
     validate(doc, "oscal_assessment-plan_schema.json")
     assert doc["assessment-plan"]["assessment-subjects"][0]["include-all"] == {}
+
+
+def test_plan_records_the_files_conftest_checks(bundle: Bundle, mapping: dict) -> None:
+    plan = assessment_plan(bundle, mapping, NOW, PINS, "app", ROOT)["assessment-plan"]
+    (activity,) = [a for a in plan["local-definitions"]["activities"] if a["title"] == "Conftest policy check"]
+    (run,) = [r for r in scanner_runs("app", conftest_inputs(ROOT, "app")) if r.tool == "conftest"]
+    assert f"`{' '.join(run.argv)}`" in activity["steps"][0]["description"]
+    assert "*" not in activity["steps"][0]["description"]
