@@ -75,6 +75,11 @@ def test_accepted_risk_is_marked_while_in_force(mapping: dict, seed: dict) -> No
     assert marks == ({None} if sid in mapping.get("expired_suppressions", []) else {sid})
 
 
+def test_every_finding_target_is_under_the_scan_target(mapping: dict) -> None:
+    findings = json.loads((OUT / "findings.json").read_text())
+    assert [f["target"] for f in findings if not f["target"].startswith("app/")] == []
+
+
 def test_no_suppression_is_unused(mapping: dict) -> None:
     assert mapping.get("unused_suppressions", []) == []
 

@@ -152,7 +152,8 @@ def test_oscal_records_accepted_risk_as_deviation_approved(tmp_path: Path) -> No
     (result,) = doc["assessment-results"]["results"]
     (accepted,) = [r for r in result["risks"] if r["status"] == "deviation-approved"]
     assert accepted["title"] == "Accepted risk: trivy CVE-2024-0001"
-    assert "cc7.1" in {f["target"]["target-id"] for f in result["findings"]}
+    (cc71,) = [f for f in result["findings"] if f["target"]["target-id"] == "cc7.1"]
+    assert cc71["description"] == "0 open finding(s), 1 accepted risk(s)."
     assert "Suppressed as false positives (reviewed; see the bundle): suppressions/fp" in result["remarks"]
     assert any(o["title"] == "checkov CKV_TEST_99" for o in result["observations"])
     assert not any(r["title"] == "Coverage gap: checkov CKV_TEST_99" for r in result["risks"])

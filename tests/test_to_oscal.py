@@ -7,7 +7,7 @@ from map_findings import map_findings
 from okf_lib import Bundle, load_bundle
 from oscal_schema import validate
 from run_scan import conftest_inputs, load_pins, scanner_runs
-from to_oscal import AP_HREF, NO_SSP_HREF, assessment_plan, assessment_results, component_definition
+from to_oscal import AP_HREF, NO_SSP_HREF, PROP_NS, assessment_plan, assessment_results, component_definition
 
 FIXTURES = Path(__file__).parent / "fixtures"
 ROOT = Path(__file__).parent.parent
@@ -102,6 +102,21 @@ def test_per_resource_findings_keep_separate_observations(bundle: Bundle) -> Non
     assert len(result["observations"]) == 2
     (finding,) = result["findings"]
     assert len({o["observation-uuid"] for o in finding["related-observations"]}) == 2
+
+
+def _severities(item: dict) -> list[str]:
+    return [p["value"] for p in item.get("props", []) if (p["name"], p.get("ns")) == ("severity", PROP_NS)]
+
+
+def test_severity_is_a_structured_prop(bundle: Bundle) -> None:
+    base = {"tool": "conftest", "rule_id": "require_non_root", "target": "app/k8s/deployment.yaml", "tags": []}
+    findings = [{**base, "severity": sev, "message": sev} for sev in ("low", "critical")]
+    doc = assessment_results(bundle, map_findings(bundle, findings), NOW)
+    validate(doc, "oscal_assessment-results_schema.json")
+    (result,) = doc["assessment-results"]["results"]
+    assert sorted(s for o in result["observations"] for s in _severities(o)) == ["critical", "low"]
+    (finding,) = result["findings"]
+    assert _severities(finding) == ["critical"]  # the highest among its observations
 
 
 def test_component_claims_only_controls_with_declared_rules(tmp_path: Path) -> None:

@@ -41,8 +41,8 @@ runs share one tool name, so each lists every control a Trivy rule evidences.
 |---|---|
 | `import-ap.href` | `assessment-plan.json`, the plan written next to it (relative, so the files travel together) |
 | `results[0].reviewed-controls` | one `control-selection` per framework, described by the framework's source title; includes every control whose status is not `not-assessed` or `not-applicable` (always a subset of the plan's) |
-| `results[0].observations[]` | one per scanner finding; `methods: [TEST]` |
-| `results[0].findings[]` | one per control with open violations; `target.status.state` is always `not-satisfied` |
+| `results[0].observations[]` | one per scanner finding; `methods: [TEST]`; a namespaced `severity` prop (`critical` … `unknown`) |
+| `results[0].findings[]` | one per control with open violations; `target.status.state` is always `not-satisfied`; a namespaced `severity` prop holding the highest severity among its observations; the description counts open findings and accepted risks apart |
 | `results[0].risks[]` | one per unmapped finding, titled "Coverage gap: …", `status: open`; and one per accepted-risk suppression, titled "Accepted risk: …", `status: deviation-approved`, with the owner, expiry, and reason in its description |
 | `results[0].remarks` | lists controls with no violations detected, controls not assessed, controls not applicable at the declared AI risk tier (by `framework:code` key), and false-positive suppressions (by suppression id) |
 

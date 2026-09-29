@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, MAX_SUPPRESSION_DAYS, Bundle, Concept, load_bundle
-from run_scan import conftest_inputs, load_pins, scanner_runs
+from run_scan import SEVERITIES, conftest_inputs, load_pins, scanner_runs
 
 OSCAL_VERSION = "1.2.3"
 DOC_VERSION = "0.1.0"
@@ -238,11 +238,16 @@ def assessment_plan(
     return {"assessment-plan": plan}
 
 
+def _severity(level: str) -> Json:
+    return {"name": "severity", "ns": PROP_NS, "value": level}
+
+
 def _observation(f: Json, now: str) -> Json:
     return {
         "uuid": _uuid("observation", _finding_key(f)),
         "title": f"{f['tool']} {f['rule_id']}",
         "description": f"{f['message']} ({f['target']}, severity {f['severity']})",
+        "props": [_severity(f["severity"])],
         "methods": ["TEST"],
         "collected": now,
     }
@@ -294,11 +299,14 @@ def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
         if entry["status"] != "not-satisfied":
             continue
         control = bundle.control(key)
+        accepted = sum(1 for f in entry["findings"] if "accepted" in f)
+        description = f"{len(entry['findings']) - accepted} open finding(s)"
         findings.append(
             {
                 "uuid": _uuid("finding", key),
                 "title": control.title if control else key,
-                "description": f"{len(entry['findings'])} open finding(s).",
+                "description": f"{description}, {accepted} accepted risk(s)." if accepted else f"{description}.",
+                "props": [_severity(min((f["severity"] for f in entry["findings"]), key=SEVERITIES.index))],
                 "target": {
                     "type": "objective-id",
                     "target-id": key.partition(":")[2],
