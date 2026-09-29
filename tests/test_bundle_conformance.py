@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from map_findings import RISK_TIERS
 from okf_lib import FRAMEWORK_TYPES, load_bundle
 
 KNOWLEDGE = Path(__file__).parent.parent / "knowledge"
@@ -14,7 +15,6 @@ TYPES = {
     *FRAMEWORK_TYPES.values(), "Crosswalk", "Stack Component", "Rego Policy", "Semgrep Rule", "Scanner", "Reference",
     "Suppression",
 }
-RISK_TIERS = {"minimal", "limited", "high"}
 BUNDLE = load_bundle(KNOWLEDGE)  # raises BundleError on a missing or empty `type` (OKF §11)
 
 
@@ -29,7 +29,7 @@ def test_applies_when_uses_known_fields_and_tiers() -> None:
     for control in BUNDLE.controls():
         applies_when = control.frontmatter.get("applies_when") or {}
         assert set(applies_when) <= {"risk_tier"}, control.path
-        assert set(applies_when.get("risk_tier", [])) <= RISK_TIERS, control.path
+        assert set(applies_when.get("risk_tier", [])) <= set(RISK_TIERS), control.path
 
 
 def test_high_risk_articles_declare_their_tier() -> None:
