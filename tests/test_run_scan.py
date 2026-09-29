@@ -8,6 +8,7 @@ import pytest
 from run_scan import (
     CONFTEST_PATTERNS,
     ScanError,
+    conftest_inputs,
     dedupe,
     load_pins,
     normalize_checkov,
@@ -95,6 +96,13 @@ def test_dedupe_collapses_identical_findings_only() -> None:
     other_resource = {**a, "message": "container b"}
     other_tool = {**a, "tool": "checkov"}
     assert dedupe([a, dict(a), other_resource, other_tool]) == [a, other_resource, other_tool]
+
+
+def test_conftest_inputs_require_a_file_to_check(tmp_path: Path) -> None:
+    (tmp_path / "svc").mkdir()
+    (tmp_path / "svc" / "main.py").write_text("x = 1\n", encoding="utf-8")
+    with pytest.raises(ScanError, match="conftest: no files under 'svc' match k8s/"):
+        conftest_inputs(tmp_path, "svc")
 
 
 def test_run_tool_missing_binary(tmp_path: Path) -> None:

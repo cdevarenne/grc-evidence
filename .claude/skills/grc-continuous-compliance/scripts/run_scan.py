@@ -148,9 +148,15 @@ def load_pins(lock: Path) -> dict[str, str]:
 
 
 def conftest_inputs(repo: Path, target_dir: str) -> list[str]:
-    """The files Conftest checks: CONFTEST_PATTERNS under the target, repo-relative and sorted."""
+    """The files Conftest checks: CONFTEST_PATTERNS under the target, repo-relative and sorted.
+
+    None is an error: Conftest given no files prints its usage instead of JSON.
+    """
     target = repo / target_dir
-    return sorted(p.relative_to(repo).as_posix() for pattern in CONFTEST_PATTERNS for p in target.glob(pattern))
+    inputs = sorted(p.relative_to(repo).as_posix() for pattern in CONFTEST_PATTERNS for p in target.glob(pattern))
+    if not inputs:
+        raise ScanError(f"conftest: no files under {target_dir!r} match {', '.join(CONFTEST_PATTERNS)}")
+    return inputs
 
 
 def scan(repo: Path, target_dir: str) -> list[Finding]:

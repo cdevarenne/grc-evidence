@@ -287,7 +287,8 @@ Built with an AI coding agent under a written process; the record is in the repo
 - **Sized for the sample app.** Scanner JSON is read in memory, and the
   scanner set is fixed in `run_scan.py`.
 - **Fixed scan layout.** Conftest reads `k8s/**/*.{yaml,yml}`,
-  `infra/**/*.tf`, and `ai-inventory.yaml` under the target; manifests or Terraform elsewhere are not policy-checked.
+  `infra/**/*.tf`, and `ai-inventory.yaml` under the target; manifests or Terraform elsewhere are not policy-checked,
+  and a target with none of these files stops the scan with an error.
 - **LLM eval is small and single-run.** The triage eval has 65 labeled cases,
   labeled by the implementing agent and reviewed by the maintainer, not by an
   independent second labeler. Most configurations were run once; the two final
