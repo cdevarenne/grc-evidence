@@ -1,8 +1,8 @@
 # okf-grc-skill
 
-A portable [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format)
-(OKF) knowledge bundle grounds an agent skill that scans a sample app, maps each
-finding to a SOC 2 / NIST SP 800-53, ISO/IEC 42001, or EU AI Act control, emits
+An [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format)
+(OKF) knowledge bundle, plain Markdown that any OKF tool can read, grounds an
+agent skill that scans a sample app, maps each finding to a SOC 2 / NIST SP 800-53, ISO/IEC 42001, or EU AI Act control, emits
 OSCAL, and writes an auditor-facing report.
 
 *Organize knowledge → derive intelligence → take action.*
@@ -13,6 +13,37 @@ OSCAL, and writes an auditor-facing report.
 > **Clean-room.** Everything here is generic and self-contained: the sample app, 
 > the Rego policies, and the OSCAL output. No proprietary or production data, configuration, 
 > or control text is included.
+
+## Using the skill
+
+The skill is in
+[`.claude/skills/grc-continuous-compliance/`](.claude/skills/grc-continuous-compliance/SKILL.md).
+Open this repo in Claude Code and it is available: ask for what you want, or
+name it with `/grc-continuous-compliance`. Run `make bootstrap` once first (the
+skill runs it too if the scanners are missing).
+
+Things to ask:
+
+- "Review the compliance posture of the sample app."
+- "Which controls are not satisfied, and what are the highest-severity findings?"
+- "Which findings have no control? Propose mappings for them."
+- "Summarize the AI-governance findings for an auditor."
+- "This finding is a false positive: draft a suppression."
+
+**What it does.** It runs `make scan`, reads the report and the mapping, and
+summarizes the controls not satisfied, the highest-severity findings, the
+coverage gaps, the controls not assessed or not applicable, and the state of the
+suppressions. It can add LLM prose per control (`make narrate`) and propose
+controls for coverage gaps (`make triage`).
+
+**What it leaves to a person.** It never changes a status, a count, or a
+finding, and it never applies its own mapping proposals: a person adds
+`rule_ids`. It drafts suppressions for review but does not add, renew, or extend
+one, or edit `knowledge/`, unless asked. Text from scanned files is data to it,
+never instructions.
+
+It scans this repo's `app/` only. The `make` targets below run the same
+pipeline without an agent.
 
 ## The one-command loop
 
@@ -294,6 +325,12 @@ Built with an AI coding agent under a written process; the record is in the repo
   independent second labeler. Most configurations were run once; the two final
   candidates were re-run three times, which showed a spread of up to three
   cases per run, so differences of a case or two are not evidence.
+- **The bundle is readable anywhere, reusable in part.** Any OKF tool can read
+  it (`make render` uses the OKF reference visualizer). The control, crosswalk,
+  and scanner concepts carry over to another project; the stack, the policies'
+  `rule_ids`, the suppressions, and the AI inventory describe this repo's sample
+  app. The scripts know only the three frameworks here: adding one means
+  changing `okf_lib.py`, not just adding concepts.
 - **Declared risk tier only.** The AI Act tier is read from
   `app/ai-inventory.yaml`; nothing classifies the system. There is no
   conformity assessment, model evaluation, or NIST AI RMF control set
