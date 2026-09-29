@@ -89,14 +89,15 @@ def normalize_conftest(doc: list[dict[str, Any]], target_dir: str) -> list[Findi
 
 
 def dedupe(findings: list[Finding]) -> list[Finding]:
-    """Collapse identical findings, keeping first-occurrence order.
+    """Collapse identical findings, sorted by tool, rule id, target, and message.
 
     The message is part of the key: one rule can fire on several resources in one file.
+    Sorting makes the output independent of the order a scanner reports in.
     """
     seen: dict[tuple[str, str, str, str], Finding] = {}
     for f in findings:
         seen.setdefault((f["tool"], f["rule_id"], f["target"], f["message"]), f)
-    return list(seen.values())
+    return [seen[key] for key in sorted(seen)]
 
 
 def run_tool(tool: str, argv: list[str], cwd: Path) -> Any:

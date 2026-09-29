@@ -1,4 +1,5 @@
 import json
+import random
 import sys
 from pathlib import Path
 from typing import Any
@@ -95,7 +96,17 @@ def test_dedupe_collapses_identical_findings_only() -> None:
     a = {"tool": "trivy", "rule_id": "X", "target": "t", "severity": "low", "message": "container a", "tags": []}
     other_resource = {**a, "message": "container b"}
     other_tool = {**a, "tool": "checkov"}
-    assert dedupe([a, dict(a), other_resource, other_tool]) == [a, other_resource, other_tool]
+    assert dedupe([a, dict(a), other_resource, other_tool]) == [other_tool, a, other_resource]
+
+
+def test_dedupe_output_does_not_depend_on_input_order() -> None:
+    base = {"severity": "high", "tags": []}
+    findings = [
+        {**base, "tool": tool, "rule_id": rule, "target": target, "message": message}
+        for tool in ("trivy", "conftest") for rule in ("B", "A") for target in ("t2", "t1") for message in ("m2", "m1")
+    ]
+    shuffled = random.Random(7).sample(findings, len(findings))
+    assert dedupe(shuffled) == dedupe(findings) == sorted(findings, key=lambda f: (f["tool"], f["rule_id"], f["target"], f["message"]))
 
 
 def test_conftest_inputs_require_a_file_to_check(tmp_path: Path) -> None:
