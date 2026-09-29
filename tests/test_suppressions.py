@@ -105,12 +105,17 @@ def test_a_false_positive_can_clear_a_control(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize(
     ("today", "applies"),
-    [(date(2026, 9, 27), False), (date(2026, 9, 28), True), (date(2026, 12, 27), True), (date(2026, 12, 28), False)],
+    [(date(2026, 9, 28), True), (date(2026, 12, 27), True), (date(2026, 12, 28), False)],
 )
 def test_suppression_applies_from_approval_through_expiry(tmp_path: Path, today: date, applies: bool) -> None:
     m = _mapping(tmp_path, today=today, fp=FALSE_POSITIVE)
     assert bool(m["suppressed"]) is applies
     assert ("suppressions/fp" in m["expired_suppressions"]) is (today > date(2026, 12, 27))
+
+
+def test_suppression_approved_after_today_is_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="suppressions/fp"):
+        _mapping(tmp_path, today=date(2026, 9, 27), fp=FALSE_POSITIVE)
 
 
 def test_expired_suppression_puts_the_finding_back(tmp_path: Path) -> None:
