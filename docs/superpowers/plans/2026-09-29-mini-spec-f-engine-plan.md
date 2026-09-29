@@ -49,17 +49,13 @@ the interfaces, the tests, and the acceptance checks, not the final code.
 - **Human gates:** any new or edited concept needs a `verified` entry from a
   person before `test_every_concept_is_human_verified` passes (T3, T5, T6).
 
-## Decisions needed before T1
+## Decisions (2026-09-29)
 
-1. **Version.** The repo is tagged `v1.0`; `pyproject.toml` says `0.1.0`. C2
-   requires the package version to equal the release tag. Proposed: the package
-   becomes `1.1.0` and the first engine release is tagged `v1.1.0`.
-2. **`findings.json` shape (T4).** It is a bare JSON list, so it cannot carry a
-   `schema_version`. Proposed: wrap it as
-   `{"schema_version": "1.0", "findings": [...]}` now, while the contract is
-   new; readers in this repo change in the same task. The alternative (keep the
-   list; record its schema version only in `run.json`) avoids the change but
-   leaves the file unversioned.
+1. **Version:** the package becomes `1.1.0`; the first engine release is tagged
+   `v1.1.0` (the repo is tagged `v1.0`; `pyproject.toml` said `0.1.0`).
+2. **`findings.json` shape (T4):** wrapped now as
+   `{"schema_version": "1.0", "findings": [...]}`, while the contract is new;
+   readers in this repo change in the same task.
 
 ## Task order
 
