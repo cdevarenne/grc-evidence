@@ -1,7 +1,7 @@
 # Mini Spec F — A Reusable Engine and an Adopter Repo
 
 - **Date:** 2026-09-29
-- **Status:** draft; needs review before a plan.
+- **Status:** reviewed; decisions in §6. Next: a plan.
 - **Depends on:** v1.0 (Specs A–D). Independent of Spec E.
 - **LLM cost:** none. CI runs the deterministic pipeline only.
 
@@ -168,7 +168,7 @@ I get the same results through the skill as a pipeline gets through the CLI.
   skill locations). No engine code lives in the packaging.
 - Tests: `SKILL.md` references only commands `grc` provides.
 
-### Part B — the adopter repo (`okf-grc-demo-boutique`, name open)
+### Part B — the adopter repo (`okf-grc-demo-boutique`)
 
 **F8. Repo setup.** `microservices-demo` as a git submodule at the pinned
 commit under `upstream/`; the repo adds only `grc.yaml`, `knowledge/`,
@@ -230,7 +230,7 @@ one still means changing `okf_lib.py`); Semgrep rules for Go, C#, Node.js, or
 Java services (they get Trivy and Checkov coverage only; the report says so);
 LLM steps in CI; SSP and POA&M; the Spec E data layer; deploying the demo app.
 
-## 6. Decisions and open questions
+## 6. Decisions
 
 Decided 2026-09-29:
 
@@ -254,11 +254,8 @@ Decided 2026-09-29:
 7. **The shopping assistant's AI Act risk tier:** `limited` (it talks to
    people, so Art. 50 transparency applies; it is not an Annex III high-risk
    use), with the reasoning recorded in the adopter's `ai-inventory.yaml`.
-
-Open:
-
-8. **Names:** the engine package, the CLI (`grc` is the working name), and the
-   adopter repo (`okf-grc-demo-boutique` is the working name).
+8. **Names:** the engine package is `okf-grc`, its CLI is `grc`, and the
+   adopter repo is `okf-grc-demo-boutique`.
 
 ## 7. After Spec F (not specified)
 
