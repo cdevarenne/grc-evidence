@@ -1,9 +1,9 @@
 {
   "assessment-results": {
-    "uuid": "77bda19f-5dd4-532f-8f88-faf39afde378",
+    "uuid": "c7184cfe-7dfe-51a3-b6ed-0ce463f7f6fd",
     "metadata": {
       "title": "okf-grc-skill automated assessment",
-      "last-modified": "2026-09-29T21:01:43+00:00",
+      "last-modified": "2026-09-29T22:15:09+00:00",
       "version": "0.1.0",
       "oscal-version": "1.2.3"
     },
@@ -15,7 +15,7 @@
         "uuid": "a3d2ee76-497d-5228-8d76-6c8d85a84146",
         "title": "Automated compliance scan",
         "description": "Scanner findings mapped to in-bundle controls through the OKF knowledge bundle.",
-        "start": "2026-09-29T21:01:43+00:00",
+        "start": "2026-09-29T22:15:09+00:00",
         "reviewed-controls": {
           "control-selections": [
             {
@@ -61,84 +61,20 @@
         },
         "observations": [
           {
-            "uuid": "a33b9555-03f8-52d6-8867-8296c0714e08",
-            "title": "semgrep llm-hardcoded-key",
-            "description": "An API key is assigned from a string literal; read it from the environment or a secret store. (app/assistant/settings.py, severity high)",
+            "uuid": "b0ed7a47-50d3-5a35-9b8d-1e16995430de",
+            "title": "checkov CKV_DOCKER_3",
+            "description": "Ensure that a user for the container has been created (/Dockerfile.) (app/Dockerfile, severity unknown)",
             "props": [
               {
                 "name": "severity",
                 "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
+                "value": "unknown"
               }
             ],
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "be0b1f29-5207-59b5-befd-daadc33d7ae7",
-            "title": "semgrep drf-allowany",
-            "description": "DRF view allows unauthenticated access (AllowAny); require an authenticated permission class. (app/widgets/views.py, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "09a3111e-8a8e-59e2-96f2-59c9ef034215",
-            "title": "trivy DS-0002",
-            "description": "Image user should not be 'root': Specify at least 1 USER command in Dockerfile with non-root user as argument (app/Dockerfile, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "70b36e06-3b58-5c82-958b-9e80d6173fbc",
-            "title": "trivy KSV-0012",
-            "description": "Runs as root user: Container 'api' of Deployment 'widgets-api' should set 'securityContext.runAsNonRoot' to true (app/k8s/deployment.yaml, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "ef3609a5-542b-5688-832b-d204f68ef57a",
-            "title": "trivy KSV-0105",
-            "description": "Containers must not set runAsUser to 0: securityContext.runAsUser should be set to a value greater than 0 (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "92193a55-9a6d-57a4-8bfc-965a21613c97",
@@ -154,23 +90,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "b0ed7a47-50d3-5a35-9b8d-1e16995430de",
-            "title": "checkov CKV_DOCKER_3",
-            "description": "Ensure that a user for the container has been created (/Dockerfile.) (app/Dockerfile, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "213f4ddf-ac49-59ff-8123-ba8e1ba33b9d",
@@ -186,12 +106,12 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
-            "uuid": "bf101f24-4a22-51c0-91ed-4f75b7a02357",
-            "title": "trivy GCP-0001",
-            "description": "Ensure that Cloud Storage bucket is not anonymously or publicly accessible.: Bucket allows public access. (app/infra/main.tf, severity high)",
+            "uuid": "be0b1f29-5207-59b5-befd-daadc33d7ae7",
+            "title": "semgrep drf-allowany",
+            "description": "DRF view allows unauthenticated access (AllowAny); require an authenticated permission class. (app/widgets/views.py, severity high)",
             "props": [
               {
                 "name": "severity",
@@ -202,7 +122,71 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "a33b9555-03f8-52d6-8867-8296c0714e08",
+            "title": "semgrep llm-hardcoded-key",
+            "description": "An API key is assigned from a string literal; read it from the environment or a secret store. (app/assistant/settings.py, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "09a3111e-8a8e-59e2-96f2-59c9ef034215",
+            "title": "trivy DS-0002",
+            "description": "Image user should not be 'root': Specify at least 1 USER command in Dockerfile with non-root user as argument (app/Dockerfile, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "70b36e06-3b58-5c82-958b-9e80d6173fbc",
+            "title": "trivy KSV-0012",
+            "description": "Runs as root user: Container 'api' of Deployment 'widgets-api' should set 'securityContext.runAsNonRoot' to true (app/k8s/deployment.yaml, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "ef3609a5-542b-5688-832b-d204f68ef57a",
+            "title": "trivy KSV-0105",
+            "description": "Containers must not set runAsUser to 0: securityContext.runAsUser should be set to a value greater than 0 (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "0acbd080-4521-5e44-b77d-53708306bdfe",
@@ -218,7 +202,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "a8c0c8cf-1c40-5b64-8687-b40804fd237a",
@@ -234,7 +218,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "39207410-8aa8-521f-ad23-39dfc759731d",
@@ -250,7 +234,23 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "bf101f24-4a22-51c0-91ed-4f75b7a02357",
+            "title": "trivy GCP-0001",
+            "description": "Ensure that Cloud Storage bucket is not anonymously or publicly accessible.: Bucket allows public access. (app/infra/main.tf, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "3b8e3f01-7c27-5a11-83f6-82d812febfc0",
@@ -266,39 +266,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "0e31ca1f-bedc-524c-b121-85d51a6d8dad",
-            "title": "trivy CVE-2024-42005",
-            "description": "Django 4.2.0: python-django: Potential SQL injection in QuerySet.values() and values_list() (app/requirements.txt, severity critical)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "critical"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "1b4fadce-9af3-5952-8c89-639faeb4350a",
-            "title": "trivy CVE-2025-64459",
-            "description": "Django 4.2.0: django: Django SQL injection (app/requirements.txt, severity critical)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "critical"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "88bd7508-2b41-5430-96a9-7e9adbab9cf3",
@@ -314,247 +282,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "d3a80a2c-bd7c-57ec-a4b0-f6d3b4185e33",
-            "title": "trivy CVE-2023-43665",
-            "description": "Django 4.2.0: python-django: Denial-of-service possibility in django.utils.text.Truncator (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "e06e2ce6-fa19-5905-a395-b03c928934a2",
-            "title": "trivy CVE-2023-46695",
-            "description": "Django 4.2.0: python-django: Potential denial of service vulnerability in UsernameField on Windows (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "9726fcc4-4556-5a4a-ac75-4cadccd59976",
-            "title": "trivy CVE-2024-24680",
-            "description": "Django 4.2.0: Django: denial-of-service in ``intcomma`` template filter (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "d31b7943-2985-56e1-b39b-f52245e33b75",
-            "title": "trivy CVE-2024-38875",
-            "description": "Django 4.2.0: python-django: Potential denial-of-service in django.utils.html.urlize() (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "fd2027c2-e05e-5cf2-a78a-9758c49d4260",
-            "title": "trivy CVE-2024-39330",
-            "description": "Django 4.2.0: python-django: Potential directory-traversal in django.core.files.storage.Storage.save() (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "7878879a-7814-5882-80a3-412a2c6b8e50",
-            "title": "trivy CVE-2024-39614",
-            "description": "Django 4.2.0: python-django: Potential denial-of-service in django.utils.translation.get_supported_language_variant() (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "dadd5dad-9fee-526a-aeae-18711b3212f1",
-            "title": "trivy CVE-2024-53908",
-            "description": "Django 4.2.0: django: Potential SQL injection in HasKey(lhs, rhs) on Oracle (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "919f86a9-d7ba-5760-86a7-8afe100c7492",
-            "title": "trivy CVE-2025-57833",
-            "description": "Django 4.2.0: django: Django SQL injection in FilteredRelation column aliases (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "170a05b5-5505-5475-8288-0b252c5b484f",
-            "title": "trivy CVE-2025-59681",
-            "description": "Django 4.2.0: django: Potential SQL injection in QuerySet.annotate(), alias(), aggregate(), and extra() on MySQL and MariaDB1 (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "36f99aee-cc92-5ed7-a242-87eb3f0151df",
-            "title": "trivy CVE-2025-64458",
-            "description": "Django 4.2.0: Django: Denial-of-service vulnerability in Django on Windows (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "6691020f-bd7b-509a-964f-c536ddb00bdc",
-            "title": "trivy CVE-2026-1207",
-            "description": "Django 4.2.0: Django: Django: SQL Injection via RasterField band index parameter (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "939cf9fb-3b6f-52d2-9a6c-cf11fabb179c",
-            "title": "trivy CVE-2026-1287",
-            "description": "Django 4.2.0: Django: Django: SQL Injection via crafted column aliases (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "8df15e0a-8eb8-5369-86c5-ec3c47199e38",
-            "title": "trivy CVE-2026-25673",
-            "description": "Django 4.2.0: django: Django: Denial of Service via slow URL normalization on Windows (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "7c2fca53-9206-5fa2-8b77-0d7d9533a782",
-            "title": "trivy CVE-2026-33034",
-            "description": "Django 4.2.0: Django: Django: Denial of Service via missing or understated Content-Length header in ASGI requests (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "f888b327-ca1b-5cf8-b0d2-ac9dbfe2cf13",
-            "title": "trivy CVE-2026-3902",
-            "description": "Django 4.2.0: Django: Django: Header spoofing via ambiguous header mapping (app/requirements.txt, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "f95fa138-4bf0-5497-b683-c636897a6430",
@@ -570,7 +298,55 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "d3a80a2c-bd7c-57ec-a4b0-f6d3b4185e33",
+            "title": "trivy CVE-2023-43665",
+            "description": "Django 4.2.0: python-django: Denial-of-service possibility in django.utils.text.Truncator (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "e06e2ce6-fa19-5905-a395-b03c928934a2",
+            "title": "trivy CVE-2023-46695",
+            "description": "Django 4.2.0: python-django: Potential denial of service vulnerability in UsernameField on Windows (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "9726fcc4-4556-5a4a-ac75-4cadccd59976",
+            "title": "trivy CVE-2024-24680",
+            "description": "Django 4.2.0: Django: denial-of-service in ``intcomma`` template filter (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "01aad5c6-f2c1-5d40-b8b5-3a20167ff7ad",
@@ -586,7 +362,23 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "d31b7943-2985-56e1-b39b-f52245e33b75",
+            "title": "trivy CVE-2024-38875",
+            "description": "Django 4.2.0: python-django: Potential denial-of-service in django.utils.html.urlize() (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "aca3f776-88f8-5f21-b497-d24e585c4b6b",
@@ -602,7 +394,39 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "fd2027c2-e05e-5cf2-a78a-9758c49d4260",
+            "title": "trivy CVE-2024-39330",
+            "description": "Django 4.2.0: python-django: Potential directory-traversal in django.core.files.storage.Storage.save() (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "7878879a-7814-5882-80a3-412a2c6b8e50",
+            "title": "trivy CVE-2024-39614",
+            "description": "Django 4.2.0: python-django: Potential denial-of-service in django.utils.translation.get_supported_language_variant() (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "8b0a394e-ca0e-5b48-841f-944c0ddd80c0",
@@ -618,7 +442,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "addf620c-c4cc-5af5-ac3c-20730e930333",
@@ -634,7 +458,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "56769539-5acf-5e4a-b66b-2d9da06067f2",
@@ -650,7 +474,23 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "0e31ca1f-bedc-524c-b121-85d51a6d8dad",
+            "title": "trivy CVE-2024-42005",
+            "description": "Django 4.2.0: python-django: Potential SQL injection in QuerySet.values() and values_list() (app/requirements.txt, severity critical)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "critical"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "b1db479f-f6d6-5bc9-9888-bf913670f58c",
@@ -666,7 +506,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "f045e15d-8da3-53d5-ae8a-5c5b29007eea",
@@ -682,7 +522,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "e729e0fc-6e7d-5c6e-ada2-787a52facae9",
@@ -698,7 +538,23 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "dadd5dad-9fee-526a-aeae-18711b3212f1",
+            "title": "trivy CVE-2024-53908",
+            "description": "Django 4.2.0: django: Potential SQL injection in HasKey(lhs, rhs) on Oracle (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "d458e024-4f13-53a9-a47b-a6137048e19d",
@@ -714,7 +570,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "ab896209-1b6f-5fd5-b072-f78f7ea44c78",
@@ -730,135 +586,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "78484ed3-4c1f-57d4-9ff2-81716825bb6a",
-            "title": "trivy CVE-2025-26699",
-            "description": "Django 4.2.0: django: Potential denial-of-service vulnerability in django.utils.text.wrap() (app/requirements.txt, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "696fc74d-796d-5eef-9469-db7e95c9cb6c",
-            "title": "trivy CVE-2025-32873",
-            "description": "Django 4.2.0: django: Django StripTags Denial of Service (app/requirements.txt, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "5c7f2349-51a8-529f-95e8-66f9cb31a0a6",
-            "title": "trivy CVE-2025-48432",
-            "description": "Django 4.2.0: django: Django Path Injection Vulnerability (app/requirements.txt, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "908b8c7e-b82e-5c6c-af0f-1636d90de754",
-            "title": "trivy CVE-2025-64460",
-            "description": "Django 4.2.0: Django: Django: Algorithmic complexity in XML Deserializer leads to denial of service (app/requirements.txt, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "b22d543c-9738-5966-a704-2463f328fc39",
-            "title": "trivy CVE-2026-1312",
-            "description": "Django 4.2.0: Django: Django: SQL injection via crafted column aliases in QuerySet.order_by() (app/requirements.txt, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "dc5fedbf-aeea-5abd-a4fe-6c8c4245baa0",
-            "title": "trivy CVE-2026-33033",
-            "description": "Django 4.2.0: Django: Django: Performance degradation via excessive whitespace in multipart uploads (app/requirements.txt, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "a4c46f15-41e9-543b-bc9f-f76af9cc17f3",
-            "title": "trivy CVE-2026-53877",
-            "description": "Django 4.2.0: django: Django: Information disclosure via heap buffer over-read in GDALRaster (app/requirements.txt, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "d9f2920b-2c1c-5edc-9a06-09546344d3f0",
-            "title": "trivy CVE-2026-53878",
-            "description": "Django 4.2.0: django: Django: HTTP header injection via DomainNameValidator accepting newlines (app/requirements.txt, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "4e69bdf0-2503-5589-b107-e8a4411fd470",
@@ -874,7 +602,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "a4ad6b9d-01cb-5690-a84d-4de1acd2de03",
@@ -890,7 +618,87 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "78484ed3-4c1f-57d4-9ff2-81716825bb6a",
+            "title": "trivy CVE-2025-26699",
+            "description": "Django 4.2.0: django: Potential denial-of-service vulnerability in django.utils.text.wrap() (app/requirements.txt, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "696fc74d-796d-5eef-9469-db7e95c9cb6c",
+            "title": "trivy CVE-2025-32873",
+            "description": "Django 4.2.0: django: Django StripTags Denial of Service (app/requirements.txt, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "5c7f2349-51a8-529f-95e8-66f9cb31a0a6",
+            "title": "trivy CVE-2025-48432",
+            "description": "Django 4.2.0: django: Django Path Injection Vulnerability (app/requirements.txt, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "919f86a9-d7ba-5760-86a7-8afe100c7492",
+            "title": "trivy CVE-2025-57833",
+            "description": "Django 4.2.0: django: Django SQL injection in FilteredRelation column aliases (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "170a05b5-5505-5475-8288-0b252c5b484f",
+            "title": "trivy CVE-2025-59681",
+            "description": "Django 4.2.0: django: Potential SQL injection in QuerySet.annotate(), alias(), aggregate(), and extra() on MySQL and MariaDB1 (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "222d834b-0876-5686-8d16-2b787e176303",
@@ -906,7 +714,71 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "36f99aee-cc92-5ed7-a242-87eb3f0151df",
+            "title": "trivy CVE-2025-64458",
+            "description": "Django 4.2.0: Django: Denial-of-service vulnerability in Django on Windows (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "1b4fadce-9af3-5952-8c89-639faeb4350a",
+            "title": "trivy CVE-2025-64459",
+            "description": "Django 4.2.0: django: Django SQL injection (app/requirements.txt, severity critical)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "critical"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "908b8c7e-b82e-5c6c-af0f-1636d90de754",
+            "title": "trivy CVE-2025-64460",
+            "description": "Django 4.2.0: Django: Django: Algorithmic complexity in XML Deserializer leads to denial of service (app/requirements.txt, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "6691020f-bd7b-509a-964f-c536ddb00bdc",
+            "title": "trivy CVE-2026-1207",
+            "description": "Django 4.2.0: Django: Django: SQL Injection via RasterField band index parameter (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "c2f4ebd0-953e-5239-a0a7-71e889f4e53a",
@@ -922,7 +794,55 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "939cf9fb-3b6f-52d2-9a6c-cf11fabb179c",
+            "title": "trivy CVE-2026-1287",
+            "description": "Django 4.2.0: Django: Django: SQL Injection via crafted column aliases (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "b22d543c-9738-5966-a704-2463f328fc39",
+            "title": "trivy CVE-2026-1312",
+            "description": "Django 4.2.0: Django: Django: SQL injection via crafted column aliases in QuerySet.order_by() (app/requirements.txt, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "8df15e0a-8eb8-5369-86c5-ec3c47199e38",
+            "title": "trivy CVE-2026-25673",
+            "description": "Django 4.2.0: django: Django: Denial of Service via slow URL normalization on Windows (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "5bcc5790-ce1d-549b-bddb-2f84cf1e5236",
@@ -938,7 +858,55 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "dc5fedbf-aeea-5abd-a4fe-6c8c4245baa0",
+            "title": "trivy CVE-2026-33033",
+            "description": "Django 4.2.0: Django: Django: Performance degradation via excessive whitespace in multipart uploads (app/requirements.txt, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "7c2fca53-9206-5fa2-8b77-0d7d9533a782",
+            "title": "trivy CVE-2026-33034",
+            "description": "Django 4.2.0: Django: Django: Denial of Service via missing or understated Content-Length header in ASGI requests (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "f888b327-ca1b-5cf8-b0d2-ac9dbfe2cf13",
+            "title": "trivy CVE-2026-3902",
+            "description": "Django 4.2.0: Django: Django: Header spoofing via ambiguous header mapping (app/requirements.txt, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "4f037f83-cf0c-5712-bd78-1063043c6888",
@@ -954,7 +922,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "82a595c1-937e-540e-9c96-c2bdd11738c7",
@@ -970,7 +938,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "8ec725cf-2684-5ee4-8240-3fad78f895a7",
@@ -986,7 +954,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "b2eb9483-783e-5d9d-8e72-b7d29a560add",
@@ -1002,7 +970,39 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "a4c46f15-41e9-543b-bc9f-f76af9cc17f3",
+            "title": "trivy CVE-2026-53877",
+            "description": "Django 4.2.0: django: Django: Information disclosure via heap buffer over-read in GDALRaster (app/requirements.txt, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "d9f2920b-2c1c-5edc-9a06-09546344d3f0",
+            "title": "trivy CVE-2026-53878",
+            "description": "Django 4.2.0: django: Django: HTTP header injection via DomainNameValidator accepting newlines (app/requirements.txt, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "edeaca40-9872-50f6-9a17-be7f2c3267ca",
@@ -1018,23 +1018,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "dcda5216-f75e-5532-88bc-2f659ee5ccdb",
-            "title": "trivy CVE-2026-8404",
-            "description": "Django 4.2.0: Django: Django: Information disclosure due to improper handling of Cache-Control directives (app/requirements.txt, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "05aaf9fc-9164-59e5-ab90-f9795844d94c",
@@ -1050,7 +1034,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "ead0758b-7c78-5a78-91b9-dfea4ee7e143",
@@ -1066,23 +1050,23 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
-            "uuid": "59d0b81d-a37f-5107-a5de-85bb0c5f6cbe",
-            "title": "trivy KSV-0013",
-            "description": "Image tag \":latest\" used: Container 'api' of Deployment 'widgets-api' should specify an image tag (app/k8s/deployment.yaml, severity medium)",
+            "uuid": "dcda5216-f75e-5532-88bc-2f659ee5ccdb",
+            "title": "trivy CVE-2026-8404",
+            "description": "Django 4.2.0: Django: Django: Information disclosure due to improper handling of Cache-Control directives (app/requirements.txt, severity low)",
             "props": [
               {
                 "name": "severity",
                 "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
+                "value": "low"
               }
             ],
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "24ec9e22-acd0-519f-a067-4810dc6b9800",
@@ -1098,7 +1082,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "6dfae41a-2890-5da6-85cb-7b3affe30e3b",
@@ -1114,7 +1098,23 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "59d0b81d-a37f-5107-a5de-85bb0c5f6cbe",
+            "title": "trivy KSV-0013",
+            "description": "Image tag \":latest\" used: Container 'api' of Deployment 'widgets-api' should specify an image tag (app/k8s/deployment.yaml, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "886f8644-c98d-537a-8d99-d3f2d1c5d40b",
@@ -1130,7 +1130,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "d002851d-90d7-5d4b-b699-4f78591b180f",
@@ -1146,7 +1146,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "a351e4ab-4245-525b-90cb-220423337749",
@@ -1162,7 +1162,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "f6d20613-5e0d-58c6-8dcd-c2480a736760",
@@ -1178,631 +1178,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "c29dd972-67b6-5267-beca-db36b611b5fd",
-            "title": "semgrep llm-output-unreviewed-write",
-            "description": "Model output is written to a record with no human-review flag checked first. (app/assistant/views.py, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "df9904bd-49f6-532d-8635-924dd7ac39c9",
-            "title": "trivy DS-0026",
-            "description": "No HEALTHCHECK defined: Add HEALTHCHECK instruction in your Dockerfile (app/Dockerfile, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "97cfc830-8b46-5f8e-a433-ba2c91fa7909",
-            "title": "trivy GCP-0066",
-            "description": "Cloud Storage buckets should be encrypted with a customer-managed key.: Storage bucket encryption does not use a customer-managed key. (app/infra/main.tf, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "7b02f749-483b-5efd-8a53-9ef981f1314f",
-            "title": "trivy GCP-0077",
-            "description": "Cloud Storage Bucket Logging Not Enabled: Storage bucket logging is not configured with a target log bucket. (app/infra/main.tf, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "f027fc67-940f-591e-b419-8f23aae7e31c",
-            "title": "trivy GCP-0078",
-            "description": "Cloud Storage Bucket Versioning Disabled: Storage bucket versioning is not enabled. (app/infra/main.tf, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "ad005cca-1bb3-57b7-90bc-4b2a177b2bfb",
-            "title": "trivy KSV-0001",
-            "description": "Can elevate its own privileges: Container 'api' of Deployment 'widgets-api' should set 'securityContext.allowPrivilegeEscalation' to false (app/k8s/deployment.yaml, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "f761cdf2-1562-54c7-8841-5d497b47cd97",
-            "title": "trivy KSV-0003",
-            "description": "Default capabilities: some containers do not drop all: Container 'api' of Deployment 'widgets-api' should add 'ALL' to 'securityContext.capabilities.drop' (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "b006511d-3244-5202-8898-9f51f8a3baa2",
-            "title": "trivy KSV-0004",
-            "description": "Default capabilities: some containers do not drop any: Container 'api' of 'deployment' 'widgets-api' in 'default' namespace should set securityContext.capabilities.drop (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "0535c1e0-96c6-5ff8-8602-04e4d1a1df8f",
-            "title": "trivy KSV-0011",
-            "description": "CPU not limited: Container 'api' of Deployment 'widgets-api' should set 'resources.limits.cpu' (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "91fa4e8d-48f5-5316-8dee-7e0e3f656987",
-            "title": "trivy KSV-0014",
-            "description": "Root file system is not read-only: Container 'api' of Deployment 'widgets-api' should set 'securityContext.readOnlyRootFilesystem' to true (app/k8s/deployment.yaml, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "a3036b54-c941-5210-b4ad-360c0bac79b6",
-            "title": "trivy KSV-0015",
-            "description": "CPU requests not specified: Container 'api' of Deployment 'widgets-api' should set 'resources.requests.cpu' (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "93d72818-40f8-5c95-a83d-89c59cb066cb",
-            "title": "trivy KSV-0016",
-            "description": "Memory requests not specified: Container 'api' of Deployment 'widgets-api' should set 'resources.requests.memory' (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "b169db54-e06a-5216-bd0f-84dc23d2c9aa",
-            "title": "trivy KSV-0018",
-            "description": "Memory not limited: Container 'api' of Deployment 'widgets-api' should set 'resources.limits.memory' (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "1c8e0209-f97c-5e07-9927-50b5d33652a5",
-            "title": "trivy KSV-0020",
-            "description": "Runs with UID <= 10000: Container 'api' of Deployment 'widgets-api' should set 'securityContext.runAsUser' > 10000 (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "46179b5f-0008-5d10-978a-44cf624238c9",
-            "title": "trivy KSV-0021",
-            "description": "Runs with GID <= 10000: Container 'api' of Deployment 'widgets-api' should set 'securityContext.runAsGroup' > 10000 (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "d4d1d549-d94c-5fd2-866b-dc5f2d06eccd",
-            "title": "trivy KSV-0030",
-            "description": "Runtime/Default Seccomp profile not set: Either Pod or Container should set 'securityContext.seccompProfile.type' to 'RuntimeDefault' (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "73d0eed1-a451-5276-8c02-4f1027d50dd3",
-            "title": "trivy KSV-0104",
-            "description": "Seccomp policies disabled: container \"api\" of deployment \"widgets-api\" in \"default\" namespace should specify a seccomp profile (app/k8s/deployment.yaml, severity medium)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "medium"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "f2f8c85b-da20-5df6-9ace-6ea27d5ee55e",
-            "title": "trivy KSV-0106",
-            "description": "Container capabilities must only include NET_BIND_SERVICE: container should drop all (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "66b0faaa-65c4-5c50-89c2-b5a184257859",
-            "title": "trivy KSV-0110",
-            "description": "Workloads in the default namespace: deployment widgets-api in default namespace should set metadata.namespace to a non-default namespace (app/k8s/deployment.yaml, severity low)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "low"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "1590e426-b044-5723-814d-e6e249451475",
-            "title": "trivy KSV-0118",
-            "description": "Default security context configured: deployment widgets-api in default namespace is using the default security context, which allows root privileges (app/k8s/deployment.yaml, severity high)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "high"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "776383d0-412c-5885-994f-30a5fa8c6a72",
-            "title": "checkov CKV_GCP_62",
-            "description": "Bucket should log access (google_storage_bucket.widgets_assets) (app/infra/main.tf, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "73f8e005-6ca9-5d08-a37f-31b61e9f5abf",
-            "title": "checkov CKV_GCP_78",
-            "description": "Ensure Cloud storage has versioning enabled (google_storage_bucket.widgets_assets) (app/infra/main.tf, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "5b2360dc-7171-5b51-8202-fbc2442fcc84",
-            "title": "checkov CKV_K8S_37",
-            "description": "Minimize the admission of containers with capabilities assigned (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "228c5777-47c6-55a3-99da-f24c09762a9a",
-            "title": "checkov CKV_K8S_31",
-            "description": "Ensure that the seccomp profile is set to docker/default or runtime/default (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "b5d91846-83d0-59fb-a834-372d4df8447c",
-            "title": "checkov CKV_K8S_8",
-            "description": "Liveness Probe Should be Configured (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "3e454fec-bfe8-521a-a74e-2490e1c31086",
-            "title": "checkov CKV_K8S_12",
-            "description": "Memory requests should be set (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "9794c81a-7a0c-5cfb-82c8-4939d77e9f58",
-            "title": "checkov CKV_K8S_20",
-            "description": "Containers should not run with allowPrivilegeEscalation (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "1e8fdf4b-5a8d-542d-8645-100dda309344",
-            "title": "checkov CKV_K8S_13",
-            "description": "Memory limits should be set (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "a1b9d4ea-4cc3-5f97-9c38-5e71dab777a5",
-            "title": "checkov CKV_K8S_40",
-            "description": "Containers should run as a high UID to avoid host conflict (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "cc10480b-f93f-526c-b39c-69523e1eae56",
-            "title": "checkov CKV_K8S_10",
-            "description": "CPU requests should be set (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "dcb18012-1275-5aee-adf1-2adeada67ae0",
-            "title": "checkov CKV_K8S_22",
-            "description": "Use read-only filesystem for containers where possible (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "4d725942-3681-5e6b-9506-6a38b8c65541",
-            "title": "checkov CKV_K8S_9",
-            "description": "Readiness Probe Should be Configured (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "d57c12a5-e244-591e-b2ab-2f00a683dd68",
-            "title": "checkov CKV_K8S_28",
-            "description": "Minimize the admission of containers with the NET_RAW capability (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "675ed57d-c11b-59fe-8ad6-57bc7d1258fa",
-            "title": "checkov CKV_K8S_29",
-            "description": "Apply security context to your pods and containers (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "f3da2228-5923-5817-97c3-59d33f84571a",
-            "title": "checkov CKV_K8S_38",
-            "description": "Ensure that Service Account Tokens are only mounted where necessary (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "b88a9347-e883-58e4-ac8e-ab3b58fd81fc",
-            "title": "checkov CKV_K8S_21",
-            "description": "The default namespace should not be used (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "f58a158a-2bd9-5081-814e-6aa6c98ed5b6",
-            "title": "checkov CKV_K8S_43",
-            "description": "Image should use digest (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "89795c38-c03b-5417-bb5d-d406f2c43a1d",
-            "title": "checkov CKV_K8S_11",
-            "description": "CPU limits should be set (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
-          },
-          {
-            "uuid": "c4700423-c76f-58e2-8191-e112338b9b22",
-            "title": "checkov CKV_K8S_21",
-            "description": "The default namespace should not be used (Service.default.widgets-api) (app/k8s/service.yaml, severity unknown)",
-            "props": [
-              {
-                "name": "severity",
-                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
-                "value": "unknown"
-              }
-            ],
-            "methods": [
-              "TEST"
-            ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "27f12ef2-ae76-5901-8dfe-5e24c7dfc184",
@@ -1818,7 +1194,7 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "d92eeafb-1675-5e40-8990-12e9f6b6fc80",
@@ -1834,7 +1210,631 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "776383d0-412c-5885-994f-30a5fa8c6a72",
+            "title": "checkov CKV_GCP_62",
+            "description": "Bucket should log access (google_storage_bucket.widgets_assets) (app/infra/main.tf, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "73f8e005-6ca9-5d08-a37f-31b61e9f5abf",
+            "title": "checkov CKV_GCP_78",
+            "description": "Ensure Cloud storage has versioning enabled (google_storage_bucket.widgets_assets) (app/infra/main.tf, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "cc10480b-f93f-526c-b39c-69523e1eae56",
+            "title": "checkov CKV_K8S_10",
+            "description": "CPU requests should be set (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "89795c38-c03b-5417-bb5d-d406f2c43a1d",
+            "title": "checkov CKV_K8S_11",
+            "description": "CPU limits should be set (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "3e454fec-bfe8-521a-a74e-2490e1c31086",
+            "title": "checkov CKV_K8S_12",
+            "description": "Memory requests should be set (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "1e8fdf4b-5a8d-542d-8645-100dda309344",
+            "title": "checkov CKV_K8S_13",
+            "description": "Memory limits should be set (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "9794c81a-7a0c-5cfb-82c8-4939d77e9f58",
+            "title": "checkov CKV_K8S_20",
+            "description": "Containers should not run with allowPrivilegeEscalation (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "b88a9347-e883-58e4-ac8e-ab3b58fd81fc",
+            "title": "checkov CKV_K8S_21",
+            "description": "The default namespace should not be used (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "c4700423-c76f-58e2-8191-e112338b9b22",
+            "title": "checkov CKV_K8S_21",
+            "description": "The default namespace should not be used (Service.default.widgets-api) (app/k8s/service.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "dcb18012-1275-5aee-adf1-2adeada67ae0",
+            "title": "checkov CKV_K8S_22",
+            "description": "Use read-only filesystem for containers where possible (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "d57c12a5-e244-591e-b2ab-2f00a683dd68",
+            "title": "checkov CKV_K8S_28",
+            "description": "Minimize the admission of containers with the NET_RAW capability (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "675ed57d-c11b-59fe-8ad6-57bc7d1258fa",
+            "title": "checkov CKV_K8S_29",
+            "description": "Apply security context to your pods and containers (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "228c5777-47c6-55a3-99da-f24c09762a9a",
+            "title": "checkov CKV_K8S_31",
+            "description": "Ensure that the seccomp profile is set to docker/default or runtime/default (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "5b2360dc-7171-5b51-8202-fbc2442fcc84",
+            "title": "checkov CKV_K8S_37",
+            "description": "Minimize the admission of containers with capabilities assigned (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "f3da2228-5923-5817-97c3-59d33f84571a",
+            "title": "checkov CKV_K8S_38",
+            "description": "Ensure that Service Account Tokens are only mounted where necessary (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "a1b9d4ea-4cc3-5f97-9c38-5e71dab777a5",
+            "title": "checkov CKV_K8S_40",
+            "description": "Containers should run as a high UID to avoid host conflict (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "f58a158a-2bd9-5081-814e-6aa6c98ed5b6",
+            "title": "checkov CKV_K8S_43",
+            "description": "Image should use digest (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "b5d91846-83d0-59fb-a834-372d4df8447c",
+            "title": "checkov CKV_K8S_8",
+            "description": "Liveness Probe Should be Configured (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "4d725942-3681-5e6b-9506-6a38b8c65541",
+            "title": "checkov CKV_K8S_9",
+            "description": "Readiness Probe Should be Configured (Deployment.default.widgets-api) (app/k8s/deployment.yaml, severity unknown)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "unknown"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "c29dd972-67b6-5267-beca-db36b611b5fd",
+            "title": "semgrep llm-output-unreviewed-write",
+            "description": "Model output is written to a record with no human-review flag checked first. (app/assistant/views.py, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "df9904bd-49f6-532d-8635-924dd7ac39c9",
+            "title": "trivy DS-0026",
+            "description": "No HEALTHCHECK defined: Add HEALTHCHECK instruction in your Dockerfile (app/Dockerfile, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "97cfc830-8b46-5f8e-a433-ba2c91fa7909",
+            "title": "trivy GCP-0066",
+            "description": "Cloud Storage buckets should be encrypted with a customer-managed key.: Storage bucket encryption does not use a customer-managed key. (app/infra/main.tf, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "7b02f749-483b-5efd-8a53-9ef981f1314f",
+            "title": "trivy GCP-0077",
+            "description": "Cloud Storage Bucket Logging Not Enabled: Storage bucket logging is not configured with a target log bucket. (app/infra/main.tf, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "f027fc67-940f-591e-b419-8f23aae7e31c",
+            "title": "trivy GCP-0078",
+            "description": "Cloud Storage Bucket Versioning Disabled: Storage bucket versioning is not enabled. (app/infra/main.tf, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "ad005cca-1bb3-57b7-90bc-4b2a177b2bfb",
+            "title": "trivy KSV-0001",
+            "description": "Can elevate its own privileges: Container 'api' of Deployment 'widgets-api' should set 'securityContext.allowPrivilegeEscalation' to false (app/k8s/deployment.yaml, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "f761cdf2-1562-54c7-8841-5d497b47cd97",
+            "title": "trivy KSV-0003",
+            "description": "Default capabilities: some containers do not drop all: Container 'api' of Deployment 'widgets-api' should add 'ALL' to 'securityContext.capabilities.drop' (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "b006511d-3244-5202-8898-9f51f8a3baa2",
+            "title": "trivy KSV-0004",
+            "description": "Default capabilities: some containers do not drop any: Container 'api' of 'deployment' 'widgets-api' in 'default' namespace should set securityContext.capabilities.drop (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "0535c1e0-96c6-5ff8-8602-04e4d1a1df8f",
+            "title": "trivy KSV-0011",
+            "description": "CPU not limited: Container 'api' of Deployment 'widgets-api' should set 'resources.limits.cpu' (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "91fa4e8d-48f5-5316-8dee-7e0e3f656987",
+            "title": "trivy KSV-0014",
+            "description": "Root file system is not read-only: Container 'api' of Deployment 'widgets-api' should set 'securityContext.readOnlyRootFilesystem' to true (app/k8s/deployment.yaml, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "a3036b54-c941-5210-b4ad-360c0bac79b6",
+            "title": "trivy KSV-0015",
+            "description": "CPU requests not specified: Container 'api' of Deployment 'widgets-api' should set 'resources.requests.cpu' (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "93d72818-40f8-5c95-a83d-89c59cb066cb",
+            "title": "trivy KSV-0016",
+            "description": "Memory requests not specified: Container 'api' of Deployment 'widgets-api' should set 'resources.requests.memory' (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "b169db54-e06a-5216-bd0f-84dc23d2c9aa",
+            "title": "trivy KSV-0018",
+            "description": "Memory not limited: Container 'api' of Deployment 'widgets-api' should set 'resources.limits.memory' (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "1c8e0209-f97c-5e07-9927-50b5d33652a5",
+            "title": "trivy KSV-0020",
+            "description": "Runs with UID <= 10000: Container 'api' of Deployment 'widgets-api' should set 'securityContext.runAsUser' > 10000 (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "46179b5f-0008-5d10-978a-44cf624238c9",
+            "title": "trivy KSV-0021",
+            "description": "Runs with GID <= 10000: Container 'api' of Deployment 'widgets-api' should set 'securityContext.runAsGroup' > 10000 (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "d4d1d549-d94c-5fd2-866b-dc5f2d06eccd",
+            "title": "trivy KSV-0030",
+            "description": "Runtime/Default Seccomp profile not set: Either Pod or Container should set 'securityContext.seccompProfile.type' to 'RuntimeDefault' (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "73d0eed1-a451-5276-8c02-4f1027d50dd3",
+            "title": "trivy KSV-0104",
+            "description": "Seccomp policies disabled: container \"api\" of deployment \"widgets-api\" in \"default\" namespace should specify a seccomp profile (app/k8s/deployment.yaml, severity medium)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "medium"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "f2f8c85b-da20-5df6-9ace-6ea27d5ee55e",
+            "title": "trivy KSV-0106",
+            "description": "Container capabilities must only include NET_BIND_SERVICE: container should drop all (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "66b0faaa-65c4-5c50-89c2-b5a184257859",
+            "title": "trivy KSV-0110",
+            "description": "Workloads in the default namespace: deployment widgets-api in default namespace should set metadata.namespace to a non-default namespace (app/k8s/deployment.yaml, severity low)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "low"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
+          },
+          {
+            "uuid": "1590e426-b044-5723-814d-e6e249451475",
+            "title": "trivy KSV-0118",
+            "description": "Default security context configured: deployment widgets-api in default namespace is using the default security context, which allows root privileges (app/k8s/deployment.yaml, severity high)",
+            "props": [
+              {
+                "name": "severity",
+                "ns": "https://github.com/cdevarenne/okf-grc-skill/ns/oscal",
+                "value": "high"
+              }
+            ],
+            "methods": [
+              "TEST"
+            ],
+            "collected": "2026-09-29T22:15:09+00:00"
           },
           {
             "uuid": "20891336-37ad-5dc6-ac4a-0c15049057ae",
@@ -1850,10 +1850,262 @@
             "methods": [
               "TEST"
             ],
-            "collected": "2026-09-29T21:01:43+00:00"
+            "collected": "2026-09-29T22:15:09+00:00"
           }
         ],
         "risks": [
+          {
+            "uuid": "d85742cd-decc-5058-8744-cd7f19787dda",
+            "title": "Coverage gap: checkov CKV2_K8S_6",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Minimize the admission of pods which lack an associated NetworkPolicy (Pod.default.widgets-api.app-widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "27f12ef2-ae76-5901-8dfe-5e24c7dfc184"
+              }
+            ]
+          },
+          {
+            "uuid": "be3fe530-1423-5e93-9092-77dab7cd1cea",
+            "title": "Coverage gap: checkov CKV_DOCKER_2",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Ensure that HEALTHCHECK instructions have been added to container images (/Dockerfile.)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "d92eeafb-1675-5e40-8990-12e9f6b6fc80"
+              }
+            ]
+          },
+          {
+            "uuid": "c1ff3381-5c00-5723-9fa3-5cfd58881bfc",
+            "title": "Coverage gap: checkov CKV_GCP_62",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Bucket should log access (google_storage_bucket.widgets_assets)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "776383d0-412c-5885-994f-30a5fa8c6a72"
+              }
+            ]
+          },
+          {
+            "uuid": "ab950655-d1f1-5441-9b4c-48c609556ab7",
+            "title": "Coverage gap: checkov CKV_GCP_78",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Ensure Cloud storage has versioning enabled (google_storage_bucket.widgets_assets)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "73f8e005-6ca9-5d08-a37f-31b61e9f5abf"
+              }
+            ]
+          },
+          {
+            "uuid": "a7915319-37f0-5c20-a28d-8a1d61cf7b15",
+            "title": "Coverage gap: checkov CKV_K8S_10",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "CPU requests should be set (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "cc10480b-f93f-526c-b39c-69523e1eae56"
+              }
+            ]
+          },
+          {
+            "uuid": "8cbe0431-ec51-5dd5-9366-b43809baf3fa",
+            "title": "Coverage gap: checkov CKV_K8S_11",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "CPU limits should be set (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "89795c38-c03b-5417-bb5d-d406f2c43a1d"
+              }
+            ]
+          },
+          {
+            "uuid": "3d8f9797-69fb-5a2c-828b-7090c121ea60",
+            "title": "Coverage gap: checkov CKV_K8S_12",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Memory requests should be set (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "3e454fec-bfe8-521a-a74e-2490e1c31086"
+              }
+            ]
+          },
+          {
+            "uuid": "cbb9729c-919d-5994-b357-08ed58b91655",
+            "title": "Coverage gap: checkov CKV_K8S_13",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Memory limits should be set (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "1e8fdf4b-5a8d-542d-8645-100dda309344"
+              }
+            ]
+          },
+          {
+            "uuid": "66f9fa58-dc06-50e0-afac-0c1e85739b79",
+            "title": "Coverage gap: checkov CKV_K8S_20",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Containers should not run with allowPrivilegeEscalation (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "9794c81a-7a0c-5cfb-82c8-4939d77e9f58"
+              }
+            ]
+          },
+          {
+            "uuid": "0c610398-7d7c-515c-bb91-e094c76b1469",
+            "title": "Coverage gap: checkov CKV_K8S_21",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "The default namespace should not be used (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "b88a9347-e883-58e4-ac8e-ab3b58fd81fc"
+              }
+            ]
+          },
+          {
+            "uuid": "fe3183ec-16b8-57f1-8d90-7ed4f51b9382",
+            "title": "Coverage gap: checkov CKV_K8S_21",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "The default namespace should not be used (Service.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "c4700423-c76f-58e2-8191-e112338b9b22"
+              }
+            ]
+          },
+          {
+            "uuid": "29cd679d-0a48-5587-b78d-f34e55cc7b36",
+            "title": "Coverage gap: checkov CKV_K8S_22",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Use read-only filesystem for containers where possible (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "dcb18012-1275-5aee-adf1-2adeada67ae0"
+              }
+            ]
+          },
+          {
+            "uuid": "6be2e27e-a112-5d2d-985d-6642c8e6dff1",
+            "title": "Coverage gap: checkov CKV_K8S_28",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Minimize the admission of containers with the NET_RAW capability (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "d57c12a5-e244-591e-b2ab-2f00a683dd68"
+              }
+            ]
+          },
+          {
+            "uuid": "f8f09406-0de4-5bf1-823b-aa7b7d17192e",
+            "title": "Coverage gap: checkov CKV_K8S_29",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Apply security context to your pods and containers (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "675ed57d-c11b-59fe-8ad6-57bc7d1258fa"
+              }
+            ]
+          },
+          {
+            "uuid": "b4156d45-2506-5bee-8c84-7af8ac9a1286",
+            "title": "Coverage gap: checkov CKV_K8S_31",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Ensure that the seccomp profile is set to docker/default or runtime/default (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "228c5777-47c6-55a3-99da-f24c09762a9a"
+              }
+            ]
+          },
+          {
+            "uuid": "6aae09cc-86c6-5073-85d6-b34a64170971",
+            "title": "Coverage gap: checkov CKV_K8S_37",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Minimize the admission of containers with capabilities assigned (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "5b2360dc-7171-5b51-8202-fbc2442fcc84"
+              }
+            ]
+          },
+          {
+            "uuid": "af4dbe71-c254-5ab0-9beb-d22b89cc7bdd",
+            "title": "Coverage gap: checkov CKV_K8S_38",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Ensure that Service Account Tokens are only mounted where necessary (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "f3da2228-5923-5817-97c3-59d33f84571a"
+              }
+            ]
+          },
+          {
+            "uuid": "ede61f86-8e2e-5d45-adaf-db3f9564117f",
+            "title": "Coverage gap: checkov CKV_K8S_40",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Containers should run as a high UID to avoid host conflict (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "a1b9d4ea-4cc3-5f97-9c38-5e71dab777a5"
+              }
+            ]
+          },
+          {
+            "uuid": "e4b650ea-6605-5042-85f2-4887a42197a3",
+            "title": "Coverage gap: checkov CKV_K8S_43",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Image should use digest (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "f58a158a-2bd9-5081-814e-6aa6c98ed5b6"
+              }
+            ]
+          },
+          {
+            "uuid": "abe0fb7b-3c22-5e54-b8d8-d734ad4e5b9e",
+            "title": "Coverage gap: checkov CKV_K8S_8",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Liveness Probe Should be Configured (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "b5d91846-83d0-59fb-a834-372d4df8447c"
+              }
+            ]
+          },
+          {
+            "uuid": "1201246e-51a3-53b4-899a-935521f73388",
+            "title": "Coverage gap: checkov CKV_K8S_9",
+            "description": "No in-bundle control covers this finding (no-rule-match).",
+            "statement": "Readiness Probe Should be Configured (Deployment.default.widgets-api)",
+            "status": "open",
+            "related-observations": [
+              {
+                "observation-uuid": "4d725942-3681-5e6b-9506-6a38b8c65541"
+              }
+            ]
+          },
           {
             "uuid": "b6fa6f7e-b166-5d06-b962-d361fca74d26",
             "title": "Coverage gap: semgrep llm-output-unreviewed-write",
@@ -2095,258 +2347,6 @@
             ]
           },
           {
-            "uuid": "c1ff3381-5c00-5723-9fa3-5cfd58881bfc",
-            "title": "Coverage gap: checkov CKV_GCP_62",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Bucket should log access (google_storage_bucket.widgets_assets)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "776383d0-412c-5885-994f-30a5fa8c6a72"
-              }
-            ]
-          },
-          {
-            "uuid": "ab950655-d1f1-5441-9b4c-48c609556ab7",
-            "title": "Coverage gap: checkov CKV_GCP_78",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Ensure Cloud storage has versioning enabled (google_storage_bucket.widgets_assets)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "73f8e005-6ca9-5d08-a37f-31b61e9f5abf"
-              }
-            ]
-          },
-          {
-            "uuid": "6aae09cc-86c6-5073-85d6-b34a64170971",
-            "title": "Coverage gap: checkov CKV_K8S_37",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Minimize the admission of containers with capabilities assigned (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "5b2360dc-7171-5b51-8202-fbc2442fcc84"
-              }
-            ]
-          },
-          {
-            "uuid": "b4156d45-2506-5bee-8c84-7af8ac9a1286",
-            "title": "Coverage gap: checkov CKV_K8S_31",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Ensure that the seccomp profile is set to docker/default or runtime/default (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "228c5777-47c6-55a3-99da-f24c09762a9a"
-              }
-            ]
-          },
-          {
-            "uuid": "abe0fb7b-3c22-5e54-b8d8-d734ad4e5b9e",
-            "title": "Coverage gap: checkov CKV_K8S_8",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Liveness Probe Should be Configured (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "b5d91846-83d0-59fb-a834-372d4df8447c"
-              }
-            ]
-          },
-          {
-            "uuid": "3d8f9797-69fb-5a2c-828b-7090c121ea60",
-            "title": "Coverage gap: checkov CKV_K8S_12",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Memory requests should be set (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "3e454fec-bfe8-521a-a74e-2490e1c31086"
-              }
-            ]
-          },
-          {
-            "uuid": "66f9fa58-dc06-50e0-afac-0c1e85739b79",
-            "title": "Coverage gap: checkov CKV_K8S_20",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Containers should not run with allowPrivilegeEscalation (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "9794c81a-7a0c-5cfb-82c8-4939d77e9f58"
-              }
-            ]
-          },
-          {
-            "uuid": "cbb9729c-919d-5994-b357-08ed58b91655",
-            "title": "Coverage gap: checkov CKV_K8S_13",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Memory limits should be set (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "1e8fdf4b-5a8d-542d-8645-100dda309344"
-              }
-            ]
-          },
-          {
-            "uuid": "ede61f86-8e2e-5d45-adaf-db3f9564117f",
-            "title": "Coverage gap: checkov CKV_K8S_40",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Containers should run as a high UID to avoid host conflict (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "a1b9d4ea-4cc3-5f97-9c38-5e71dab777a5"
-              }
-            ]
-          },
-          {
-            "uuid": "a7915319-37f0-5c20-a28d-8a1d61cf7b15",
-            "title": "Coverage gap: checkov CKV_K8S_10",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "CPU requests should be set (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "cc10480b-f93f-526c-b39c-69523e1eae56"
-              }
-            ]
-          },
-          {
-            "uuid": "29cd679d-0a48-5587-b78d-f34e55cc7b36",
-            "title": "Coverage gap: checkov CKV_K8S_22",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Use read-only filesystem for containers where possible (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "dcb18012-1275-5aee-adf1-2adeada67ae0"
-              }
-            ]
-          },
-          {
-            "uuid": "1201246e-51a3-53b4-899a-935521f73388",
-            "title": "Coverage gap: checkov CKV_K8S_9",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Readiness Probe Should be Configured (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "4d725942-3681-5e6b-9506-6a38b8c65541"
-              }
-            ]
-          },
-          {
-            "uuid": "6be2e27e-a112-5d2d-985d-6642c8e6dff1",
-            "title": "Coverage gap: checkov CKV_K8S_28",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Minimize the admission of containers with the NET_RAW capability (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "d57c12a5-e244-591e-b2ab-2f00a683dd68"
-              }
-            ]
-          },
-          {
-            "uuid": "f8f09406-0de4-5bf1-823b-aa7b7d17192e",
-            "title": "Coverage gap: checkov CKV_K8S_29",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Apply security context to your pods and containers (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "675ed57d-c11b-59fe-8ad6-57bc7d1258fa"
-              }
-            ]
-          },
-          {
-            "uuid": "af4dbe71-c254-5ab0-9beb-d22b89cc7bdd",
-            "title": "Coverage gap: checkov CKV_K8S_38",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Ensure that Service Account Tokens are only mounted where necessary (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "f3da2228-5923-5817-97c3-59d33f84571a"
-              }
-            ]
-          },
-          {
-            "uuid": "0c610398-7d7c-515c-bb91-e094c76b1469",
-            "title": "Coverage gap: checkov CKV_K8S_21",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "The default namespace should not be used (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "b88a9347-e883-58e4-ac8e-ab3b58fd81fc"
-              }
-            ]
-          },
-          {
-            "uuid": "e4b650ea-6605-5042-85f2-4887a42197a3",
-            "title": "Coverage gap: checkov CKV_K8S_43",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Image should use digest (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "f58a158a-2bd9-5081-814e-6aa6c98ed5b6"
-              }
-            ]
-          },
-          {
-            "uuid": "8cbe0431-ec51-5dd5-9366-b43809baf3fa",
-            "title": "Coverage gap: checkov CKV_K8S_11",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "CPU limits should be set (Deployment.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "89795c38-c03b-5417-bb5d-d406f2c43a1d"
-              }
-            ]
-          },
-          {
-            "uuid": "fe3183ec-16b8-57f1-8d90-7ed4f51b9382",
-            "title": "Coverage gap: checkov CKV_K8S_21",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "The default namespace should not be used (Service.default.widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "c4700423-c76f-58e2-8191-e112338b9b22"
-              }
-            ]
-          },
-          {
-            "uuid": "d85742cd-decc-5058-8744-cd7f19787dda",
-            "title": "Coverage gap: checkov CKV2_K8S_6",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Minimize the admission of pods which lack an associated NetworkPolicy (Pod.default.widgets-api.app-widgets-api)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "27f12ef2-ae76-5901-8dfe-5e24c7dfc184"
-              }
-            ]
-          },
-          {
-            "uuid": "be3fe530-1423-5e93-9092-77dab7cd1cea",
-            "title": "Coverage gap: checkov CKV_DOCKER_2",
-            "description": "No in-bundle control covers this finding (no-rule-match).",
-            "statement": "Ensure that HEALTHCHECK instructions have been added to container images (/Dockerfile.)",
-            "status": "open",
-            "related-observations": [
-              {
-                "observation-uuid": "d92eeafb-1675-5e40-8990-12e9f6b6fc80"
-              }
-            ]
-          },
-          {
             "uuid": "a344143e-14f9-5a0a-b9bc-9fc52565c29c",
             "title": "Accepted risk: trivy CVE-2023-31047",
             "description": "CVE-2023-31047 lets a single form field upload several files and bypass the\nvalidation meant for one. The sample API exposes no file-upload field: widgets\ncarry a name and a text description only. The vulnerability stays on\n[CC7.1 \u2014 Vulnerability Detection](../controls/cc7.1.md) as a known, accepted\nrisk until the Django upgrade lands. Accepted by human:cdevarenne until 2026-12-27 (suppressions/django-cve-2023-31047).",
@@ -2479,10 +2479,19 @@
             },
             "related-observations": [
               {
-                "observation-uuid": "a33b9555-03f8-52d6-8867-8296c0714e08"
+                "observation-uuid": "b0ed7a47-50d3-5a35-9b8d-1e16995430de"
+              },
+              {
+                "observation-uuid": "92193a55-9a6d-57a4-8bfc-965a21613c97"
+              },
+              {
+                "observation-uuid": "213f4ddf-ac49-59ff-8123-ba8e1ba33b9d"
               },
               {
                 "observation-uuid": "be0b1f29-5207-59b5-befd-daadc33d7ae7"
+              },
+              {
+                "observation-uuid": "a33b9555-03f8-52d6-8867-8296c0714e08"
               },
               {
                 "observation-uuid": "09a3111e-8a8e-59e2-96f2-59c9ef034215"
@@ -2492,15 +2501,6 @@
               },
               {
                 "observation-uuid": "ef3609a5-542b-5688-832b-d204f68ef57a"
-              },
-              {
-                "observation-uuid": "92193a55-9a6d-57a4-8bfc-965a21613c97"
-              },
-              {
-                "observation-uuid": "b0ed7a47-50d3-5a35-9b8d-1e16995430de"
-              },
-              {
-                "observation-uuid": "213f4ddf-ac49-59ff-8123-ba8e1ba33b9d"
               }
             ]
           },
@@ -2524,9 +2524,6 @@
             },
             "related-observations": [
               {
-                "observation-uuid": "bf101f24-4a22-51c0-91ed-4f75b7a02357"
-              },
-              {
                 "observation-uuid": "0acbd080-4521-5e44-b77d-53708306bdfe"
               },
               {
@@ -2534,6 +2531,9 @@
               },
               {
                 "observation-uuid": "39207410-8aa8-521f-ad23-39dfc759731d"
+              },
+              {
+                "observation-uuid": "bf101f24-4a22-51c0-91ed-4f75b7a02357"
               }
             ]
           },
@@ -2560,13 +2560,10 @@
                 "observation-uuid": "3b8e3f01-7c27-5a11-83f6-82d812febfc0"
               },
               {
-                "observation-uuid": "0e31ca1f-bedc-524c-b121-85d51a6d8dad"
-              },
-              {
-                "observation-uuid": "1b4fadce-9af3-5952-8c89-639faeb4350a"
-              },
-              {
                 "observation-uuid": "88bd7508-2b41-5430-96a9-7e9adbab9cf3"
+              },
+              {
+                "observation-uuid": "f95fa138-4bf0-5497-b683-c636897a6430"
               },
               {
                 "observation-uuid": "d3a80a2c-bd7c-57ec-a4b0-f6d3b4185e33"
@@ -2578,49 +2575,19 @@
                 "observation-uuid": "9726fcc4-4556-5a4a-ac75-4cadccd59976"
               },
               {
+                "observation-uuid": "01aad5c6-f2c1-5d40-b8b5-3a20167ff7ad"
+              },
+              {
                 "observation-uuid": "d31b7943-2985-56e1-b39b-f52245e33b75"
+              },
+              {
+                "observation-uuid": "aca3f776-88f8-5f21-b497-d24e585c4b6b"
               },
               {
                 "observation-uuid": "fd2027c2-e05e-5cf2-a78a-9758c49d4260"
               },
               {
                 "observation-uuid": "7878879a-7814-5882-80a3-412a2c6b8e50"
-              },
-              {
-                "observation-uuid": "dadd5dad-9fee-526a-aeae-18711b3212f1"
-              },
-              {
-                "observation-uuid": "919f86a9-d7ba-5760-86a7-8afe100c7492"
-              },
-              {
-                "observation-uuid": "170a05b5-5505-5475-8288-0b252c5b484f"
-              },
-              {
-                "observation-uuid": "36f99aee-cc92-5ed7-a242-87eb3f0151df"
-              },
-              {
-                "observation-uuid": "6691020f-bd7b-509a-964f-c536ddb00bdc"
-              },
-              {
-                "observation-uuid": "939cf9fb-3b6f-52d2-9a6c-cf11fabb179c"
-              },
-              {
-                "observation-uuid": "8df15e0a-8eb8-5369-86c5-ec3c47199e38"
-              },
-              {
-                "observation-uuid": "7c2fca53-9206-5fa2-8b77-0d7d9533a782"
-              },
-              {
-                "observation-uuid": "f888b327-ca1b-5cf8-b0d2-ac9dbfe2cf13"
-              },
-              {
-                "observation-uuid": "f95fa138-4bf0-5497-b683-c636897a6430"
-              },
-              {
-                "observation-uuid": "01aad5c6-f2c1-5d40-b8b5-3a20167ff7ad"
-              },
-              {
-                "observation-uuid": "aca3f776-88f8-5f21-b497-d24e585c4b6b"
               },
               {
                 "observation-uuid": "8b0a394e-ca0e-5b48-841f-944c0ddd80c0"
@@ -2632,6 +2599,9 @@
                 "observation-uuid": "56769539-5acf-5e4a-b66b-2d9da06067f2"
               },
               {
+                "observation-uuid": "0e31ca1f-bedc-524c-b121-85d51a6d8dad"
+              },
+              {
                 "observation-uuid": "b1db479f-f6d6-5bc9-9888-bf913670f58c"
               },
               {
@@ -2641,10 +2611,19 @@
                 "observation-uuid": "e729e0fc-6e7d-5c6e-ada2-787a52facae9"
               },
               {
+                "observation-uuid": "dadd5dad-9fee-526a-aeae-18711b3212f1"
+              },
+              {
                 "observation-uuid": "d458e024-4f13-53a9-a47b-a6137048e19d"
               },
               {
                 "observation-uuid": "ab896209-1b6f-5fd5-b072-f78f7ea44c78"
+              },
+              {
+                "observation-uuid": "4e69bdf0-2503-5589-b107-e8a4411fd470"
+              },
+              {
+                "observation-uuid": "a4ad6b9d-01cb-5690-a84d-4de1acd2de03"
               },
               {
                 "observation-uuid": "78484ed3-4c1f-57d4-9ff2-81716825bb6a"
@@ -2656,34 +2635,49 @@
                 "observation-uuid": "5c7f2349-51a8-529f-95e8-66f9cb31a0a6"
               },
               {
-                "observation-uuid": "908b8c7e-b82e-5c6c-af0f-1636d90de754"
+                "observation-uuid": "919f86a9-d7ba-5760-86a7-8afe100c7492"
               },
               {
-                "observation-uuid": "b22d543c-9738-5966-a704-2463f328fc39"
-              },
-              {
-                "observation-uuid": "dc5fedbf-aeea-5abd-a4fe-6c8c4245baa0"
-              },
-              {
-                "observation-uuid": "a4c46f15-41e9-543b-bc9f-f76af9cc17f3"
-              },
-              {
-                "observation-uuid": "d9f2920b-2c1c-5edc-9a06-09546344d3f0"
-              },
-              {
-                "observation-uuid": "4e69bdf0-2503-5589-b107-e8a4411fd470"
-              },
-              {
-                "observation-uuid": "a4ad6b9d-01cb-5690-a84d-4de1acd2de03"
+                "observation-uuid": "170a05b5-5505-5475-8288-0b252c5b484f"
               },
               {
                 "observation-uuid": "222d834b-0876-5686-8d16-2b787e176303"
               },
               {
+                "observation-uuid": "36f99aee-cc92-5ed7-a242-87eb3f0151df"
+              },
+              {
+                "observation-uuid": "1b4fadce-9af3-5952-8c89-639faeb4350a"
+              },
+              {
+                "observation-uuid": "908b8c7e-b82e-5c6c-af0f-1636d90de754"
+              },
+              {
+                "observation-uuid": "6691020f-bd7b-509a-964f-c536ddb00bdc"
+              },
+              {
                 "observation-uuid": "c2f4ebd0-953e-5239-a0a7-71e889f4e53a"
               },
               {
+                "observation-uuid": "939cf9fb-3b6f-52d2-9a6c-cf11fabb179c"
+              },
+              {
+                "observation-uuid": "b22d543c-9738-5966-a704-2463f328fc39"
+              },
+              {
+                "observation-uuid": "8df15e0a-8eb8-5369-86c5-ec3c47199e38"
+              },
+              {
                 "observation-uuid": "5bcc5790-ce1d-549b-bddb-2f84cf1e5236"
+              },
+              {
+                "observation-uuid": "dc5fedbf-aeea-5abd-a4fe-6c8c4245baa0"
+              },
+              {
+                "observation-uuid": "7c2fca53-9206-5fa2-8b77-0d7d9533a782"
+              },
+              {
+                "observation-uuid": "f888b327-ca1b-5cf8-b0d2-ac9dbfe2cf13"
               },
               {
                 "observation-uuid": "4f037f83-cf0c-5712-bd78-1063043c6888"
@@ -2698,16 +2692,22 @@
                 "observation-uuid": "b2eb9483-783e-5d9d-8e72-b7d29a560add"
               },
               {
-                "observation-uuid": "edeaca40-9872-50f6-9a17-be7f2c3267ca"
+                "observation-uuid": "a4c46f15-41e9-543b-bc9f-f76af9cc17f3"
               },
               {
-                "observation-uuid": "dcda5216-f75e-5532-88bc-2f659ee5ccdb"
+                "observation-uuid": "d9f2920b-2c1c-5edc-9a06-09546344d3f0"
+              },
+              {
+                "observation-uuid": "edeaca40-9872-50f6-9a17-be7f2c3267ca"
               },
               {
                 "observation-uuid": "05aaf9fc-9164-59e5-ab90-f9795844d94c"
               },
               {
                 "observation-uuid": "ead0758b-7c78-5a78-91b9-dfea4ee7e143"
+              },
+              {
+                "observation-uuid": "dcda5216-f75e-5532-88bc-2f659ee5ccdb"
               }
             ]
           },
@@ -2731,13 +2731,13 @@
             },
             "related-observations": [
               {
-                "observation-uuid": "59d0b81d-a37f-5107-a5de-85bb0c5f6cbe"
-              },
-              {
                 "observation-uuid": "24ec9e22-acd0-519f-a067-4810dc6b9800"
               },
               {
                 "observation-uuid": "6dfae41a-2890-5da6-85cb-7b3affe30e3b"
+              },
+              {
+                "observation-uuid": "59d0b81d-a37f-5107-a5de-85bb0c5f6cbe"
               }
             ]
           }
