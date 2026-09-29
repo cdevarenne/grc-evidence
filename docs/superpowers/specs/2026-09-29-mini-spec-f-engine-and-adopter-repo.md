@@ -230,28 +230,35 @@ one still means changing `okf_lib.py`); Semgrep rules for Go, C#, Node.js, or
 Java services (they get Trivy and Checkov coverage only; the report says so);
 LLM steps in CI; SSP and POA&M; the Spec E data layer; deploying the demo app.
 
-## 6. Open questions for review
+## 6. Decisions and open questions
 
-1. **Distribution. Decided 2026-09-29:** a Python package installed from a git
-   tag; the scanners stay pinned by `tools.lock`. A container image with the
-   scanners inside was the alternative (hermetic for CI, heavier to build and
-   publish).
-2. **Base bundle delivery.** Copy into the adopter's `knowledge/` on `init`
-   with a version stamp (recommended: one self-contained bundle that the OKF
-   visualizer renders and an auditor reads at the scanned commit), or load the
-   base from the engine at run time next to the adopter's bundle (always
-   current, but split across two places).
-3. **Upstream inclusion.** Submodule (recommended: nothing copied, pin bumps
-   become reviewable pull requests) or a fork (closest to "a team adds this to
-   its own repo", but it carries upstream's nine workflows and GCP deploy
-   setup).
-4. **Gate conditions** for C4.
-5. **CI cost.** CI is off on these repos for cost. Public repositories get
-   standard GitHub-hosted runners without charge, which I believe covers C1,
-   C3, and C5; to confirm before enabling.
-6. **The shopping assistant's AI Act risk tier** (`limited` is the likely
-   reading for a shopping chatbot; a person decides and records why).
-7. **Names:** the engine package, the CLI, and the adopter repo.
+Decided 2026-09-29:
+
+1. **Distribution:** a Python package installed from a git tag; the scanners
+   stay pinned by `tools.lock`. (Alternative: a container image with the
+   scanners inside, hermetic for CI but heavier to build and publish.)
+2. **Python:** 3.14 for the engine and for adopters' pipelines
+   (`requires-python = ">=3.14"`, as today); GitHub-hosted runners provide it.
+3. **Base bundle delivery:** copied into the adopter's `knowledge/` on `init`
+   with a version stamp: one self-contained bundle that the OKF visualizer
+   renders and an auditor reads at the scanned commit. (Alternative: load the
+   base from the engine at run time, always current but split across two
+   places.)
+4. **Upstream inclusion:** a git submodule, so nothing is copied and pin bumps
+   become reviewable pull requests. (Alternative: a fork, which carries
+   upstream's nine workflows and GCP deploy setup.)
+5. **Gate conditions (C4):** a control moving to `not-satisfied`, an expired
+   suppression, or a scanner or config error fails the job; controls already
+   `not-satisfied` in the baseline do not.
+6. **CI:** enabled on GitHub for this repo and the adopter repo (C1, C3, C5).
+7. **The shopping assistant's AI Act risk tier:** `limited` (it talks to
+   people, so Art. 50 transparency applies; it is not an Annex III high-risk
+   use), with the reasoning recorded in the adopter's `ai-inventory.yaml`.
+
+Open:
+
+8. **Names:** the engine package, the CLI (`grc` is the working name), and the
+   adopter repo (`okf-grc-demo-boutique` is the working name).
 
 ## 7. After Spec F (not specified)
 
