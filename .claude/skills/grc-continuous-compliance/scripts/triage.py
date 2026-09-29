@@ -17,7 +17,7 @@ GAPS_PER_CALL = 8  # ~100 output tokens per proposal keeps each call under MAX_T
 CONFIDENCE = ("low", "medium", "high")
 VARIANTS = ("baseline", "scoped")  # baseline: the first eval's input, byte for byte; scoped: issue #32
 # Default configuration (issue #32): Haiku 4.5, scoped input, `low` and `medium` confidence treated as
-# `none`. A single confirm run first favoured Sonnet 5; three fresh runs each showed the two overlap on
+# `none`. A single confirm run first favored Sonnet 5; three fresh runs each showed the two overlap on
 # accuracy while Haiku was steadier on AI cases at about a fifth of the cost.
 TRIAGE_MODEL = "claude-haiku-4-5"
 ABSTAIN = {"none": (), "low": ("low",), "low+medium": ("low", "medium")}

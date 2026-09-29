@@ -218,7 +218,7 @@ right answer is not an AI control:
 
 Both cleared the pre-registered bar (≥ 0.75 on `none` recall and on AI cases);
 Sonnet 5 led by three cases, more than the one-case margin that would have
-favoured the cheaper Haiku, so it became `make triage`'s default at first.
+favored the cheaper Haiku, so it became `make triage`'s default at first.
 
 **Run-to-run variance** ([`triage-eval-variance-haiku.json`](examples/triage-eval-variance-haiku.json),
 [`triage-eval-variance-sonnet.json`](examples/triage-eval-variance-sonnet.json), $0.10):

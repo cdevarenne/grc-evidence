@@ -39,7 +39,7 @@ Tasks 1 → 3 are sequential (each consumes the previous). Task 4 is docs.
 
 **Interfaces:**
 - Produces: `CONFTEST_PATTERNS` (target-relative globs Conftest checks); `ScannerRun` (frozen dataclass: `tool, title, argv, in_target, pin, normalize`); `scanner_runs(target_dir, conftest_inputs) -> list[ScannerRun]` in execution order; `load_pins(lock: Path) -> dict[str, str]`.
-- `scan()` behaviour is unchanged: same argv, same working directories, same findings.
+- `scan()` behavior is unchanged: same argv, same working directories, same findings.
 
 - [ ] **Step 1: Vendor the schema.**
 

@@ -150,7 +150,7 @@ I get AI-governance evidence, not a false clean result.
 - Extend the `llm-*` Semgrep rules (or add siblings) to LangChain chat-model
   calls: unbounded calls (no timeout or token limit), prompts logged, output
   written without review, keys in code. Semgrep rule tests with clean-room
-  fixtures modelled on common LangChain usage (no code copied from upstream).
+  fixtures modeled on common LangChain usage (no code copied from upstream).
 - A rule's concept declares the SDKs it understands. A control whose only
   evidence is a rule that does not cover the adopter's AI component reads
   `not-assessed`, not `no-violations-detected`. This needs a new inventory
