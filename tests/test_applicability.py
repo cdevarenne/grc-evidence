@@ -1,10 +1,12 @@
 """`applies_when` + the AI inventory decide which controls are in scope; `not-applicable` is never a pass."""
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
 
+import map_findings as map_findings_module
 from map_findings import load_context, map_findings
 from okf_lib import applies, load_bundle
 
@@ -59,3 +61,24 @@ def test_load_context(tmp_path: Path) -> None:
     assert load_context(inventory) == {}
     inventory.write_text("risk_tier: limited\nsystems: []\n", encoding="utf-8")
     assert load_context(inventory) == {"risk_tier": "limited"}
+
+
+@pytest.mark.parametrize("tier", ["hgih", "HIGH", "null", "[high]"])
+def test_load_context_rejects_an_unknown_risk_tier(tmp_path: Path, tier: str) -> None:
+    inventory = tmp_path / "ai-inventory.yaml"
+    inventory.write_text(f"risk_tier: {tier}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="risk_tier"):
+        load_context(inventory)
+
+
+def test_main_reads_the_inventory_of_the_scan_target(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    target, out = tmp_path / "svc", tmp_path / "out"
+    target.mkdir()
+    out.mkdir()
+    (target / "ai-inventory.yaml").write_text("risk_tier: high\n", encoding="utf-8")  # app/ declares limited
+    (out / "findings.json").write_text(json.dumps(FINDINGS), encoding="utf-8")
+    argv = ["map_findings", "--knowledge", str(FIXTURES / "ai_bundle"), "--target", str(target), "--out", str(out)]
+    monkeypatch.setattr(sys, "argv", argv)
+    map_findings_module.main()
+    mapping = json.loads((out / "mapping.json").read_text())
+    assert mapping["controls"]["eu-ai-act:art-12"]["status"] == "not-satisfied"

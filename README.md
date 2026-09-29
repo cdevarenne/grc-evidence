@@ -214,7 +214,8 @@ EU AI Act articles through the same `rule_ids` declarations, keyed
 `framework:code` (`iso42001:a.6`, `eu-ai-act:art-50`).
 
 - **Risk-tier applicability.** `app/ai-inventory.yaml` declares the EU AI Act
-  risk tier (`limited`). Articles that apply only to high-risk systems carry
+  risk tier (`limited`); it is read from the scan target's `ai-inventory.yaml`, and a
+  value other than `minimal`, `limited`, or `high` stops the mapping with an error. Articles that apply only to high-risk systems carry
   `applies_when: {risk_tier: [high]}` and report `not-applicable`, never a gap
   and never `no-violations-detected`. Their findings stay listed.
 - **Crosswalks are navigation.** `knowledge/crosswalk/` links related controls

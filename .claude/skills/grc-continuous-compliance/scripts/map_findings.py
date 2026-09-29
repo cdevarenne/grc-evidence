@@ -14,6 +14,7 @@ from okf_lib import EXPIRY_WARNING_DAYS, GUARDRAIL_TYPES, SCANNER_TYPE, Bundle, 
 
 Finding = dict[str, Any]
 CONTEXT_FIELDS = ("risk_tier",)  # inventory fields that `applies_when` may name
+RISK_TIERS = ("minimal", "limited", "high")  # EU AI Act risk classes the inventory may declare
 
 
 def _controls_for(bundle: Bundle, finding: Finding) -> tuple[list[str], str | None]:
@@ -35,10 +36,15 @@ def _evidence(bundle: Bundle, key: str) -> tuple[list[str], list[str]]:
 
 
 def load_context(inventory: Path) -> dict[str, Any]:
-    """Applicability context from the AI inventory file; empty when there is none."""
+    """Applicability context from the AI inventory file; empty when there is none.
+
+    An unknown `risk_tier` is an error: it would otherwise exclude every tier-gated control.
+    """
     if not inventory.is_file():
         return {}
     doc = yaml.safe_load(inventory.read_text(encoding="utf-8")) or {}
+    if "risk_tier" in doc and doc["risk_tier"] not in RISK_TIERS:
+        raise ValueError(f"{inventory}: risk_tier {doc['risk_tier']!r} is not one of {RISK_TIERS}")
     return {field: doc[field] for field in CONTEXT_FIELDS if field in doc}
 
 
@@ -119,12 +125,12 @@ def map_findings(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
-    parser.add_argument("--inventory", type=Path, default=Path("app/ai-inventory.yaml"))
+    parser.add_argument("--target", type=Path, default=Path("app"), help="scan target; its ai-inventory.yaml sets the risk tier")
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--today", type=date.fromisoformat, default=None, help="date for suppression expiry")
     args = parser.parse_args()
     findings = json.loads((args.out / "findings.json").read_text(encoding="utf-8"))
-    mapping = map_findings(load_bundle(args.knowledge), findings, load_context(args.inventory), args.today)
+    mapping = map_findings(load_bundle(args.knowledge), findings, load_context(args.target / "ai-inventory.yaml"), args.today)
     (args.out / "mapping.json").write_text(json.dumps(mapping, indent=2) + "\n", encoding="utf-8")
 
 
