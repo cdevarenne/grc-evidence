@@ -81,7 +81,7 @@ layout in one file instead of moving my files.
   `conftest.inputs` (globs), `checkov.frameworks`, `checkov.skip_paths`,
   `semgrep.configs`, `rego`. Unknown keys and non-list values are errors; every
   path is checked to stay inside the repo (as `_check_target` does now).
-- Defaults equal today's constants, so no config means v1.0 behaviour.
+- Defaults equal today's constants, so no config means v1.0 behavior.
 - `run_scan`, `map_findings`, and `to_oscal` read the same loaded config; the
   assessment plan records the resolved inputs (as A4 does now).
 - The "no Conftest inputs" error names `conftest.inputs`.
@@ -259,7 +259,7 @@ Each builds on F4's contract and is proven on the adopter repo:
 - **An MCP server** over the engine, so any agent that speaks MCP can run a
   scan, read control status, list gaps, and draft mappings or suppressions.
 - **GRC platform connectors** that push results (OSCAL or `mapping.json` with
-  the run manifest) to a platform such as Vanta, with a dry run and idempotent
+  the run manifest) to a GRC platform, with a dry run and idempotent
   writes. Whether a platform takes writes through its MCP server or its API,
   and whether it ingests OSCAL, is to check per platform.
 - **An agentic pipeline** that runs this engine alongside other tools,
