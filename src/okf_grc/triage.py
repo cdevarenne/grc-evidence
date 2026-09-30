@@ -7,9 +7,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-from digest import bundle_digest, dumps, scan_digest
-from llm import LLM, LLMError, Request
-from okf_lib import load_bundle
+from okf_grc.digest import bundle_digest, dumps, scan_digest
+from okf_grc.llm import LLM, LLMError, Request
+from okf_grc.okf_lib import load_bundle
 
 Json = dict[str, Any]
 MAX_TOKENS = 1000
@@ -161,7 +161,7 @@ def triage(
     return parse(outputs, chunks, set(bundle_doc))
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
     parser.add_argument("--out", type=Path, default=Path("out"))
@@ -172,7 +172,7 @@ def main() -> None:
     parser.add_argument(
         "--batch", action="store_true", help="send as one Message Batch: half price, results in minutes, not seconds"
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
     scoped = args.variant == "scoped"
     gaps = scan_digest(mapping, targets=scoped)["gaps"]

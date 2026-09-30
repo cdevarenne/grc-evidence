@@ -9,8 +9,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, MAX_SUPPRESSION_DAYS, Bundle, Concept, load_bundle
-from run_scan import SEVERITIES, conftest_inputs, load_pins, scanner_runs
+from okf_grc.okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, MAX_SUPPRESSION_DAYS, Bundle, Concept, load_bundle
+from okf_grc import data
+from okf_grc.run_scan import SEVERITIES, conftest_inputs, load_pins, scanner_runs
 
 OSCAL_VERSION = "1.2.3"
 DOC_VERSION = "0.1.0"
@@ -369,21 +370,21 @@ def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
     }
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
-    parser.add_argument("--lock", type=Path, default=Path("tools.lock"), help="pinned scanner versions")
+    parser.add_argument("--lock", type=Path, default=None, help="pinned scanner versions (default: the packaged tools.lock)")
     parser.add_argument("--target", default="app", help="scan target, relative to the repo root")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     bundle = load_bundle(args.knowledge)
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
     oscal_dir = args.out / "oscal"
     oscal_dir.mkdir(parents=True, exist_ok=True)
     for name, doc in (
         ("component-definition.json", component_definition(bundle, args.now)),
-        ("assessment-plan.json", assessment_plan(bundle, mapping, args.now, load_pins(args.lock), args.target)),
+        ("assessment-plan.json", assessment_plan(bundle, mapping, args.now, load_pins(args.lock or data.path("tools.lock")), args.target)),
         ("assessment-results.json", assessment_results(bundle, mapping, args.now)),
     ):
         (oscal_dir / name).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")

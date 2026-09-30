@@ -8,9 +8,9 @@ import re
 from pathlib import Path
 from typing import Any
 
-from digest import bundle_digest, dumps, scan_digest
-from llm import LLM, LLMError, Request
-from okf_lib import load_bundle
+from okf_grc.digest import bundle_digest, dumps, scan_digest
+from okf_grc.llm import LLM, LLMError, Request
+from okf_grc.okf_lib import load_bundle
 
 Json = dict[str, Any]
 MAX_TOKENS = 2000
@@ -86,11 +86,11 @@ def narrate(llm: LLM, bundle_doc: Json, mapping: Json) -> tuple[Json, list[str]]
     return ({}, errors) if errors else (output, [])
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
     parser.add_argument("--out", type=Path, default=Path("out"))
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
     narratives, errors = narrate(LLM.from_env(args.out), bundle_digest(load_bundle(args.knowledge)), mapping)
     (args.out / "narratives.json").write_text(json.dumps(narratives, indent=2) + "\n", encoding="utf-8")

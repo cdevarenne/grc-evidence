@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from map_findings import map_findings
-from okf_lib import load_bundle
+from okf_grc.map_findings import map_findings
+from okf_grc.okf_lib import load_bundle
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

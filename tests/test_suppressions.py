@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from digest import scan_digest
-from map_findings import map_findings
-from okf_lib import BundleError, load_bundle
+from okf_grc.digest import scan_digest
+from okf_grc.map_findings import map_findings
+from okf_grc.okf_lib import BundleError, load_bundle
 from oscal_schema import validate
-from render_report import render_report
-from to_oscal import assessment_results
+from okf_grc.render_report import render_report
+from okf_grc.to_oscal import assessment_results
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FINDINGS = json.loads((FIXTURES / "findings.json").read_text())

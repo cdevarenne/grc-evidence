@@ -3,7 +3,7 @@
 import json
 from typing import Any
 
-from llm import CUSTOM_ID, LLMError, Request
+from okf_grc.llm import CUSTOM_ID, LLMError, Request
 
 
 class StubLLM:

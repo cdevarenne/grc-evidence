@@ -333,7 +333,7 @@ Built with an AI coding agent under a written process; the record is in the repo
   it (`make render` uses the OKF reference visualizer). The control, crosswalk,
   and scanner concepts carry over to another project; the stack, the policies'
   `rule_ids`, the suppressions, and the AI inventory describe this repo's sample
-  app. The scripts know only the three frameworks here: adding one means
+  app. The engine knows only the three frameworks here: adding one means
   changing `okf_lib.py`, not just adding concepts.
 - **Declared risk tier only** The AI Act tier is read from
   `app/ai-inventory.yaml`; nothing classifies the system. There is no
@@ -368,7 +368,7 @@ definition, assessment plan, and assessment results. Deliberately left out:
 
 ## Pins
 
-All external versions are pinned in [`tools.lock`](tools.lock): Semgrep, Checkov,
+All external versions are pinned in [`tools.lock`](src/okf_grc/data/tools.lock): Semgrep, Checkov,
 Trivy, Conftest, the OKF spec (v0.2, by commit), and OSCAL 1.2.3. The OSCAL
 output is a documented subset: see [`docs/oscal-subset.md`](docs/oscal-subset.md).
 
@@ -379,7 +379,8 @@ output is a documented subset: see [`docs/oscal-subset.md`](docs/oscal-subset.md
 | `app/` | clean-room Django/DRF sample app, Dockerfile, Kubernetes, Terraform |
 | `knowledge/` | the OKF bundle: controls, stack, guardrail policies, scanners |
 | `policies/` | Rego guardrails (+ tests) and a vendored Semgrep rule |
-| `.claude/skills/grc-continuous-compliance/` | the skill (`SKILL.md`) and its scripts |
+| `.claude/skills/grc-continuous-compliance/` | the skill (`SKILL.md`) |
+| `src/okf_grc/` | the engine: the `okf-grc` package and its `grc` CLI; `data/` holds `tools.lock` and the scanner bootstrap |
 | `docs/` | design spec, implementation plan, OSCAL subset |
 | `examples/` | a sample report and OSCAL documents produced by `make examples`; triage eval results |
 

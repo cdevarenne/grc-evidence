@@ -3,16 +3,16 @@ from pathlib import Path
 
 import pytest
 
-from map_findings import map_findings
-from okf_lib import Bundle, load_bundle
+from okf_grc.map_findings import map_findings
+from okf_grc.okf_lib import Bundle, load_bundle
 from oscal_schema import validate
-from run_scan import conftest_inputs, load_pins, scanner_runs
-from to_oscal import AP_HREF, NO_SSP_HREF, PROP_NS, assessment_plan, assessment_results, component_definition
+from okf_grc.run_scan import conftest_inputs, load_pins, scanner_runs
+from okf_grc.to_oscal import AP_HREF, NO_SSP_HREF, PROP_NS, assessment_plan, assessment_results, component_definition
 
 FIXTURES = Path(__file__).parent / "fixtures"
 ROOT = Path(__file__).parent.parent
 NOW = "2026-09-25T12:00:00+00:00"
-PINS = load_pins(Path(__file__).parent.parent / "tools.lock")
+PINS = load_pins(Path(__file__).parent.parent / "src" / "okf_grc" / "data" / "tools.lock")
 
 
 @pytest.fixture

@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from map_findings import RISK_TIERS
-from okf_lib import FRAMEWORK_TYPES, load_bundle
+from okf_grc.map_findings import RISK_TIERS
+from okf_grc.okf_lib import FRAMEWORK_TYPES, load_bundle
 
 KNOWLEDGE = Path(__file__).parent.parent / "knowledge"
 TOOLS = {"semgrep", "trivy", "checkov", "conftest"}

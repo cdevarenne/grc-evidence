@@ -2,7 +2,7 @@
 type: Stack Component
 title: GRC agent LLM step
 description: The optional Claude API step of this tool (narrate, triage, eval) and its usage ledger.
-resource: ../../.claude/skills/grc-continuous-compliance/scripts/llm.py
+resource: ../../src/okf_grc/llm.py
 tags: [ai, llm, grc-agent, self-evidence]
 generated:
   by: claude-code/claude-opus-5-5
@@ -43,5 +43,5 @@ logged, only their hash. The report footer summarizes the run.
 # Scanned by
 
 - [Semgrep](../scanners/semgrep.md): the `llm-*` rules report no findings on
-  `llm.py` (`semgrep scan --config policies/semgrep .claude/skills/grc-continuous-compliance/scripts`).
+  `llm.py` (`semgrep scan --config policies/semgrep src/okf_grc`).
   They are not part of `make scan`, which targets `app/` only.

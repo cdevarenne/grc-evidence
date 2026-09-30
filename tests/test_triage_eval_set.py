@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from okf_lib import load_bundle
+from okf_grc.okf_lib import load_bundle
 
 ROOT = Path(__file__).parent.parent
 CASES = yaml.safe_load((ROOT / "tests" / "fixtures" / "triage_eval.yaml").read_text())

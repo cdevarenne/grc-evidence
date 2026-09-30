@@ -5,12 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from digest import bundle_digest, scan_digest
-from llm import LLMError
+from okf_grc.digest import bundle_digest, scan_digest
+from okf_grc.llm import LLMError
 from llm_stub import StubLLM
-from map_findings import map_findings
-from narrate import narrate, validate
-from okf_lib import load_bundle
+from okf_grc.map_findings import map_findings
+from okf_grc.narrate import narrate, validate
+from okf_grc.okf_lib import load_bundle
 
 FIXTURES = Path(__file__).parent / "fixtures"
 BUNDLE = load_bundle(FIXTURES / "bundle")

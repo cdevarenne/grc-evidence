@@ -1,8 +1,7 @@
-include tools.lock
+include src/okf_grc/data/tools.lock
 
-SCRIPTS := .claude/skills/grc-continuous-compliance/scripts
-PY := uv run python
-PY_LLM := uv run --extra llm python
+GRC := uv run grc
+PY_LLM := uv run --extra llm python -m
 TOOLBIN := $(CURDIR)/.tools/bin
 export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
@@ -12,23 +11,20 @@ OKF := reference-agent @ git+https://github.com/GoogleCloudPlatform/open-knowled
 
 bootstrap:
 	uv sync
-	./scripts/bootstrap.sh
+	$(GRC) bootstrap
 
 scan:
-	$(PY) $(SCRIPTS)/run_scan.py --target app --out out
-	$(PY) $(SCRIPTS)/map_findings.py --knowledge knowledge --out out --target app
-	$(PY) $(SCRIPTS)/to_oscal.py --knowledge knowledge --out out --target app
-	$(PY) $(SCRIPTS)/render_report.py --knowledge knowledge --out out
+	$(GRC) run --target app --knowledge knowledge --out out
 
 narrate:
-	$(PY_LLM) $(SCRIPTS)/narrate.py --knowledge knowledge --out out
-	$(PY) $(SCRIPTS)/render_report.py --knowledge knowledge --out out
+	$(PY_LLM) okf_grc.narrate --knowledge knowledge --out out
+	$(GRC) report --knowledge knowledge --out out
 
 triage:
-	$(PY_LLM) $(SCRIPTS)/triage.py --knowledge knowledge --out out $(TRIAGE_ARGS)
+	$(PY_LLM) okf_grc.triage --knowledge knowledge --out out $(TRIAGE_ARGS)
 
 eval-triage:
-	$(PY_LLM) $(SCRIPTS)/eval_triage.py --knowledge knowledge --out out $(EVAL_ARGS)
+	$(PY_LLM) okf_grc.eval_triage --knowledge knowledge --out out $(EVAL_ARGS)
 
 render:
 	mkdir -p out

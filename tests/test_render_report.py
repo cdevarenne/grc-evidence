@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 
-from map_findings import map_findings
-from okf_lib import load_bundle
-from render_report import render_report
+from okf_grc.map_findings import map_findings
+from okf_grc.okf_lib import load_bundle
+from okf_grc.render_report import render_report
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

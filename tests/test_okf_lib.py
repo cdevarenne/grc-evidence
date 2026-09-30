@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from okf_lib import BundleError, load_bundle
+from okf_grc.okf_lib import BundleError, load_bundle
 
 FIXTURE = Path(__file__).parent / "fixtures" / "bundle"
 

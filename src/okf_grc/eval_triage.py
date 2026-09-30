@@ -15,10 +15,10 @@ from typing import Any
 
 import yaml
 
-from digest import bundle_digest
-from llm import LLM, LLMError
-from okf_lib import Bundle, load_bundle
-from triage import VARIANTS, apply_cutoff, chunk_requests, parse
+from okf_grc.digest import bundle_digest
+from okf_grc.llm import LLM, LLMError
+from okf_grc.okf_lib import Bundle, load_bundle
+from okf_grc.triage import VARIANTS, apply_cutoff, chunk_requests, parse
 
 Json = dict[str, Any]
 SPLITS = ("tune", "holdout", "confirm")  # confirm: a fresh holdout for the default decision
@@ -138,7 +138,7 @@ def spread(values: list[float | None]) -> str:
     return f"{sum(nums) / len(nums):.3f} [{min(nums)}-{max(nums)}]"
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
     parser.add_argument("--cases", type=Path, default=Path("tests/fixtures/triage_eval.yaml"))
@@ -147,7 +147,7 @@ def main() -> None:
     parser.add_argument("--splits", default=",".join(SPLITS), help="comma-separated: tune,holdout,confirm")
     parser.add_argument("--repeats", type=int, default=1, help="send each request N times (requires --no-cache)")
     parser.add_argument("--no-cache", action="store_true", help="call the API even for cached requests")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     splits = tuple(args.splits.split(","))
     if unknown_splits := set(splits) - set(SPLITS):
         parser.error(f"unknown split(s): {sorted(unknown_splits)}")

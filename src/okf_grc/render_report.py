@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from okf_lib import FRAMEWORK_TITLES, Bundle, load_bundle
+from okf_grc.okf_lib import FRAMEWORK_TITLES, Bundle, load_bundle
 
 Json = dict[str, Any]
 
@@ -256,12 +256,12 @@ def render_report(
     return "\n".join(lines) + "\n"
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
     narratives_path, ledger = args.out / "narratives.json", args.out / "llm-usage.jsonl"
     narratives = json.loads(narratives_path.read_text(encoding="utf-8")) if narratives_path.is_file() else {}

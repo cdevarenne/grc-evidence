@@ -8,6 +8,7 @@ import shutil
 import subprocess
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Any
 
@@ -142,7 +143,7 @@ def scanner_runs(target_dir: str, conftest_inputs: Sequence[str]) -> list[Scanne
     ]
 
 
-def load_pins(lock: Path) -> dict[str, str]:
+def load_pins(lock: Traversable) -> dict[str, str]:
     """`KEY=value` lines of tools.lock; comments and blank lines are skipped."""
     lines = [ln for ln in lock.read_text(encoding="utf-8").splitlines() if ln.strip() and not ln.startswith("#")]
     return dict(ln.split("=", 1) for ln in lines)
@@ -170,11 +171,11 @@ def scan(repo: Path, target_dir: str) -> list[Finding]:
     return dedupe(findings)
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", default="app", help="scan target, relative to the repo root")
     parser.add_argument("--out", type=Path, default=Path("out"))
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     findings = scan(Path.cwd(), args.target)
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "findings.json").write_text(json.dumps(findings, indent=2) + "\n", encoding="utf-8")

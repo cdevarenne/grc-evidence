@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-import map_findings as map_findings_module
-from map_findings import load_context, map_findings
-from okf_lib import applies, load_bundle
+from okf_grc import map_findings as map_findings_module
+from okf_grc.map_findings import load_context, map_findings
+from okf_grc.okf_lib import applies, load_bundle
 
 FIXTURES = Path(__file__).parent / "fixtures"
 AI = load_bundle(FIXTURES / "ai_bundle")

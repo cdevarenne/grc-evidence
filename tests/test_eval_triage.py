@@ -2,9 +2,9 @@
 
 from pathlib import Path
 
-from eval_triage import CUTOFFS, apply_cutoff, evaluate, gap, score, select_cutoff, spread
+from okf_grc.eval_triage import CUTOFFS, apply_cutoff, evaluate, gap, score, select_cutoff, spread
 from llm_stub import StubLLM
-from okf_lib import load_bundle
+from okf_grc.okf_lib import load_bundle
 
 
 def test_score_measures_accuracy_and_abstention() -> None:

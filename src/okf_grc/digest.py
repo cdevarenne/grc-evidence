@@ -6,7 +6,7 @@ import json
 from collections import Counter
 from typing import Any
 
-from okf_lib import FRAMEWORK_SCOPES, Bundle
+from okf_grc.okf_lib import FRAMEWORK_SCOPES, Bundle
 
 Json = dict[str, Any]
 MESSAGE_CHARS = 160

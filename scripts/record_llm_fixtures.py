@@ -13,12 +13,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / ".claude" / "skills" / "grc-continuous-compliance" / "scripts"))
 
-from digest import bundle_digest, scan_digest  # noqa: E402
-from llm import LLM  # noqa: E402
-from map_findings import map_findings  # noqa: E402
-from narrate import narrate  # noqa: E402
-from okf_lib import load_bundle  # noqa: E402
-from triage import triage  # noqa: E402
+from okf_grc.digest import bundle_digest, scan_digest  # noqa: E402
+from okf_grc.llm import LLM  # noqa: E402
+from okf_grc.map_findings import map_findings  # noqa: E402
+from okf_grc.narrate import narrate  # noqa: E402
+from okf_grc.okf_lib import load_bundle  # noqa: E402
+from okf_grc.triage import triage  # noqa: E402
 
 FIXTURES = ROOT / "tests" / "fixtures"
 

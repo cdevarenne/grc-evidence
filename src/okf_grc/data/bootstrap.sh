@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Install the pinned scanners into ./.tools (repo-local, git-ignored) and verify their versions.
+# Install the pinned scanners into ./.tools of the current directory (git-ignored) and verify their versions.
+# The pins come from the tools.lock shipped next to this script.
 set -euo pipefail
-cd "$(dirname "$0")/.."
-source tools.lock
+source "$(dirname "$0")/tools.lock"
 TOOLS="$PWD/.tools"
 BIN="$TOOLS/bin"
 mkdir -p "$BIN"
