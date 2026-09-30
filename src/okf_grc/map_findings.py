@@ -10,6 +10,7 @@ from typing import Any
 
 import yaml
 
+from okf_grc.config import load_config
 from okf_grc.okf_lib import EXPIRY_WARNING_DAYS, GUARDRAIL_TYPES, SCANNER_TYPE, Bundle, Suppression, applies, load_bundle
 
 Finding = dict[str, Any]
@@ -127,13 +128,16 @@ def map_findings(
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
-    parser.add_argument("--target", type=Path, default=Path("app"), help="scan target; its ai-inventory.yaml sets the risk tier")
+    parser.add_argument("--config", type=Path, default=None, help="scan layout (default: grc.yaml if present)")
+    parser.add_argument("--knowledge", default=None, help="knowledge bundle (overrides the config)")
+    parser.add_argument("--target", default=None, help="scan target, whose inventory sets the risk tier (overrides the config)")
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--today", type=date.fromisoformat, default=None, help="date for suppression expiry")
     args = parser.parse_args(argv)
+    config = load_config(Path.cwd(), args.config, target=args.target, knowledge=args.knowledge)
     findings = json.loads((args.out / "findings.json").read_text(encoding="utf-8"))
-    mapping = map_findings(load_bundle(args.knowledge), findings, load_context(args.target / "ai-inventory.yaml"), args.today)
+    inventory = Path(config.target) / config.inventory
+    mapping = map_findings(load_bundle(Path(config.knowledge)), findings, load_context(inventory), args.today)
     (args.out / "mapping.json").write_text(json.dumps(mapping, indent=2) + "\n", encoding="utf-8")
 
 

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from okf_grc.config import Config
 from okf_grc.map_findings import map_findings
 from okf_grc.okf_lib import Bundle, load_bundle
 from oscal_schema import validate
@@ -310,8 +311,8 @@ def test_plan_without_components_selects_all_subjects(tmp_path: Path) -> None:
 
 
 def test_plan_records_the_files_conftest_checks(bundle: Bundle, mapping: dict) -> None:
-    plan = assessment_plan(bundle, mapping, NOW, PINS, "app", ROOT)["assessment-plan"]
+    plan = assessment_plan(bundle, mapping, NOW, PINS, Config(), ROOT)["assessment-plan"]
     (activity,) = [a for a in plan["local-definitions"]["activities"] if a["title"] == "Conftest policy check"]
-    (run,) = [r for r in scanner_runs("app", conftest_inputs(ROOT, "app")) if r.tool == "conftest"]
+    (run,) = [r for r in scanner_runs(Config(), conftest_inputs(ROOT, Config())) if r.tool == "conftest"]
     assert f"`{' '.join(run.argv)}`" in activity["steps"][0]["description"]
     assert "*" not in activity["steps"][0]["description"]

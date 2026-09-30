@@ -24,15 +24,22 @@ def bootstrap() -> None:
 def run(argv: list[str]) -> None:
     """All four steps over one target, as `make scan` runs them."""
     parser = argparse.ArgumentParser(prog="grc run", description=run.__doc__)
-    parser.add_argument("--target", default="app", help="scan target, relative to the repo root")
-    parser.add_argument("--knowledge", default="knowledge")
+    parser.add_argument("--config", help="scan layout (default: grc.yaml if present)")
+    parser.add_argument("--target", help="scan target, relative to the repo root (overrides the config)")
+    parser.add_argument("--knowledge", help="knowledge bundle (overrides the config)")
     parser.add_argument("--out", default="out")
     args = parser.parse_args(argv)
-    common = ["--out", args.out]
-    STEPS["scan"].main(["--target", args.target, *common])
-    STEPS["map"].main(["--knowledge", args.knowledge, "--target", args.target, *common])
-    STEPS["oscal"].main(["--knowledge", args.knowledge, "--target", args.target, *common])
-    STEPS["report"].main(["--knowledge", args.knowledge, *common])
+    common = [*_flag(args, "config"), "--out", args.out]
+    STEPS["scan"].main([*_flag(args, "target"), *common])
+    STEPS["map"].main([*_flag(args, "knowledge"), *_flag(args, "target"), *common])
+    STEPS["oscal"].main([*_flag(args, "knowledge"), *_flag(args, "target"), *common])
+    STEPS["report"].main([*_flag(args, "knowledge"), *common])
+
+
+def _flag(args: argparse.Namespace, name: str) -> list[str]:
+    """`--name value` when the flag was given; passing nothing lets the config decide."""
+    value = getattr(args, name)
+    return [f"--{name}", value] if value is not None else []
 
 
 def main(argv: list[str] | None = None) -> None:

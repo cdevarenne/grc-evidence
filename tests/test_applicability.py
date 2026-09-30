@@ -1,6 +1,7 @@
 """`applies_when` + the AI inventory decide which controls are in scope; `not-applicable` is never a pass."""
 
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -75,10 +76,11 @@ def test_main_reads_the_inventory_of_the_scan_target(tmp_path: Path, monkeypatch
     target, out = tmp_path / "svc", tmp_path / "out"
     target.mkdir()
     out.mkdir()
+    shutil.copytree(FIXTURES / "ai_bundle", tmp_path / "kb")
     (target / "ai-inventory.yaml").write_text("risk_tier: high\n", encoding="utf-8")  # app/ declares limited
     (out / "findings.json").write_text(json.dumps(FINDINGS), encoding="utf-8")
-    argv = ["map_findings", "--knowledge", str(FIXTURES / "ai_bundle"), "--target", str(target), "--out", str(out)]
-    monkeypatch.setattr(sys, "argv", argv)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["map_findings", "--knowledge", "kb", "--target", "svc", "--out", "out"])
     map_findings_module.main()
     mapping = json.loads((out / "mapping.json").read_text())
     assert mapping["controls"]["eu-ai-act:art-12"]["status"] == "not-satisfied"

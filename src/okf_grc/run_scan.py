@@ -12,11 +12,11 @@ from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Any
 
+from okf_grc.config import Config, load_config
+
 Finding = dict[str, Any]
 SEVERITIES = ("critical", "high", "medium", "low", "info", "unknown")
 _SEMGREP_SEVERITY = {"ERROR": "high", "WARNING": "medium", "INFO": "low"}
-# Files Conftest checks, relative to the scan target.
-CONFTEST_PATTERNS = ("k8s/**/*.yaml", "k8s/**/*.yml", "infra/**/*.tf", "ai-inventory.yaml")
 
 
 class ScanError(RuntimeError):
@@ -132,14 +132,19 @@ class ScannerRun:
     normalize: Callable[[Any, str], list[Finding]]
 
 
-def scanner_runs(target_dir: str, conftest_inputs: Sequence[str]) -> list[ScannerRun]:
-    """The five scanner runs over `target_dir`, in execution order."""
+def scanner_runs(config: Config, conftest_inputs: Sequence[str]) -> list[ScannerRun]:
+    """The five scanner runs over `config.target`, in execution order."""
+    target_dir = config.target
+    semgrep_configs = [arg for c in config.semgrep_configs for arg in ("--config", c)]
+    frameworks = ("--framework", *config.checkov_frameworks)
+    skip_paths = [arg for p in config.checkov_skip_paths for arg in ("--skip-path", p)]
+    rego = [arg for r in config.rego for arg in ("-p", r)]
     return [
-        ScannerRun("semgrep", "Semgrep code scan", ("semgrep", "scan", "--config", "policies/semgrep", "--metrics=off", "--json", "--quiet", target_dir), False, "SEMGREP_VERSION", normalize_semgrep),
+        ScannerRun("semgrep", "Semgrep code scan", ("semgrep", "scan", *semgrep_configs, "--metrics=off", "--json", "--quiet", target_dir), False, "SEMGREP_VERSION", normalize_semgrep),
         ScannerRun("trivy", "Trivy misconfiguration scan", ("trivy", "config", "--quiet", "--format", "json", target_dir), False, "TRIVY_VERSION", normalize_trivy),
         ScannerRun("trivy", "Trivy dependency vulnerability scan", ("trivy", "fs", "--quiet", "--scanners", "vuln", "--format", "json", target_dir), False, "TRIVY_VERSION", normalize_trivy),
-        ScannerRun("checkov", "Checkov infrastructure-as-code scan", ("checkov", "-d", ".", "--framework", "terraform", "kubernetes", "dockerfile", "-o", "json", "--quiet", "--compact"), True, "CHECKOV_VERSION", normalize_checkov),
-        ScannerRun("conftest", "Conftest policy check", ("conftest", "test", "--all-namespaces", "--no-color", "-o", "json", "-p", "policies/rego", *conftest_inputs), False, "CONFTEST_VERSION", normalize_conftest),
+        ScannerRun("checkov", "Checkov infrastructure-as-code scan", ("checkov", "-d", ".", *frameworks, *skip_paths, "-o", "json", "--quiet", "--compact"), True, "CHECKOV_VERSION", normalize_checkov),
+        ScannerRun("conftest", "Conftest policy check", ("conftest", "test", "--all-namespaces", "--no-color", "-o", "json", *rego, *conftest_inputs), False, "CONFTEST_VERSION", normalize_conftest),
     ]
 
 
@@ -149,34 +154,40 @@ def load_pins(lock: Traversable) -> dict[str, str]:
     return dict(ln.split("=", 1) for ln in lines)
 
 
-def conftest_inputs(repo: Path, target_dir: str) -> list[str]:
-    """The files Conftest checks: CONFTEST_PATTERNS under the target, repo-relative and sorted.
+def conftest_inputs(repo: Path, config: Config) -> list[str]:
+    """The files Conftest checks: `conftest.inputs` globs under the target, repo-relative and sorted.
 
     None is an error: Conftest given no files prints its usage instead of JSON.
     """
-    target = repo / target_dir
-    inputs = sorted(p.relative_to(repo).as_posix() for pattern in CONFTEST_PATTERNS for p in target.glob(pattern))
+    target, patterns = repo / config.target, config.conftest_inputs
+    inputs = sorted({p.relative_to(repo).as_posix() for pattern in patterns for p in target.glob(pattern)})
     if not inputs:
-        raise ScanError(f"conftest: no files under {target_dir!r} match {', '.join(CONFTEST_PATTERNS)}")
+        raise ScanError(f"conftest: no files under {config.target!r} match conftest.inputs ({', '.join(patterns)})")
     return inputs
 
 
-def scan(repo: Path, target_dir: str) -> list[Finding]:
-    """Run all four scanners over `repo/target_dir` and return deduplicated findings."""
-    _check_target(repo, target_dir)
-    target = repo / target_dir
+def scan(repo: Path, config: Config) -> list[Finding]:
+    """Run all four scanners over `repo/config.target` and return deduplicated findings."""
+    _check_target(repo, config.target)
+    # A missing path would not fail loudly: Semgrep reads a name like `p/python` as a registry ruleset.
+    for key, paths in (("semgrep.configs", config.semgrep_configs), ("rego", config.rego)):
+        if missing := [rel for rel in paths if not (repo / rel).exists()]:
+            raise ScanError(f"{key}: {missing} do not exist")
+    target = repo / config.target
     findings: list[Finding] = []
-    for run in scanner_runs(target_dir, conftest_inputs(repo, target_dir)):
-        findings += run.normalize(run_tool(run.tool, list(run.argv), target if run.in_target else repo), target_dir)
+    for run in scanner_runs(config, conftest_inputs(repo, config)):
+        findings += run.normalize(run_tool(run.tool, list(run.argv), target if run.in_target else repo), config.target)
     return dedupe(findings)
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--target", default="app", help="scan target, relative to the repo root")
+    parser.add_argument("--config", type=Path, default=None, help="scan layout (default: grc.yaml if present)")
+    parser.add_argument("--target", default=None, help="scan target, relative to the repo root (overrides the config)")
     parser.add_argument("--out", type=Path, default=Path("out"))
     args = parser.parse_args(argv)
-    findings = scan(Path.cwd(), args.target)
+    repo = Path.cwd()
+    findings = scan(repo, load_config(repo, args.config, target=args.target))
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "findings.json").write_text(json.dumps(findings, indent=2) + "\n", encoding="utf-8")
 

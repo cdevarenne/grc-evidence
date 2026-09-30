@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from okf_grc.config import load_config
 from okf_grc.okf_lib import FRAMEWORK_TITLES, Bundle, load_bundle
 
 Json = dict[str, Any]
@@ -258,7 +259,8 @@ def render_report(
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
+    parser.add_argument("--config", type=Path, default=None, help="scan layout (default: grc.yaml if present)")
+    parser.add_argument("--knowledge", default=None, help="knowledge bundle (overrides the config)")
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
     args = parser.parse_args(argv)
@@ -267,7 +269,8 @@ def main(argv: list[str] | None = None) -> None:
     narratives = json.loads(narratives_path.read_text(encoding="utf-8")) if narratives_path.is_file() else {}
     usage = [json.loads(ln) for ln in ledger.read_text(encoding="utf-8").splitlines()] if ledger.is_file() else []
     last_run = [e for e in usage if usage and e["run_id"] == usage[-1]["run_id"]]
-    report = render_report(load_bundle(args.knowledge), mapping, args.now, narratives, last_run)
+    config = load_config(Path.cwd(), args.config, knowledge=args.knowledge)
+    report = render_report(load_bundle(Path(config.knowledge)), mapping, args.now, narratives, last_run)
     (args.out / "report.md").write_text(report, encoding="utf-8")
 
 

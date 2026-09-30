@@ -6,8 +6,8 @@ from typing import Any
 
 import pytest
 
+from okf_grc.config import Config
 from okf_grc.run_scan import (
-    CONFTEST_PATTERNS,
     ScanError,
     conftest_inputs,
     dedupe,
@@ -112,8 +112,8 @@ def test_dedupe_output_does_not_depend_on_input_order() -> None:
 def test_conftest_inputs_require_a_file_to_check(tmp_path: Path) -> None:
     (tmp_path / "svc").mkdir()
     (tmp_path / "svc" / "main.py").write_text("x = 1\n", encoding="utf-8")
-    with pytest.raises(ScanError, match="conftest: no files under 'svc' match k8s/"):
-        conftest_inputs(tmp_path, "svc")
+    with pytest.raises(ScanError, match="conftest: no files under 'svc' match conftest.inputs \\(k8s/"):
+        conftest_inputs(tmp_path, Config(target="svc"))
 
 
 def test_run_tool_missing_binary(tmp_path: Path) -> None:
@@ -155,11 +155,11 @@ def test_semgrep_errors_fail_the_scan() -> None:
 @pytest.mark.parametrize("target", ["-rf", "../outside", "/etc", "app/../../x"])
 def test_scan_rejects_targets_outside_the_repo(tmp_path: Path, target: str) -> None:
     with pytest.raises(ScanError, match="--target"):
-        scan(tmp_path, target)
+        scan(tmp_path, Config(target=target))
 
 
 def test_scanner_runs_cover_every_tool_with_a_pin() -> None:
-    runs = scanner_runs("app", ["app/k8s/deployment.yaml"])
+    runs = scanner_runs(Config(), ["app/k8s/deployment.yaml"])
     assert [r.tool for r in runs] == ["semgrep", "trivy", "trivy", "checkov", "conftest"]
     pins = load_pins(Path(__file__).parent.parent / "src" / "okf_grc" / "data" / "tools.lock")
     assert all(r.pin in pins for r in runs)
@@ -168,7 +168,7 @@ def test_scanner_runs_cover_every_tool_with_a_pin() -> None:
 
 
 def test_conftest_patterns_include_the_ai_inventory() -> None:
-    assert "ai-inventory.yaml" in CONFTEST_PATTERNS
+    assert "ai-inventory.yaml" in Config().conftest_inputs
 
 
 def test_load_pins_skips_comments_and_blank_lines(tmp_path: Path) -> None:

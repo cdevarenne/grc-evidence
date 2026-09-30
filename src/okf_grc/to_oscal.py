@@ -11,6 +11,7 @@ from typing import Any
 
 from okf_grc.okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, MAX_SUPPRESSION_DAYS, Bundle, Concept, load_bundle
 from okf_grc import data
+from okf_grc.config import Config, load_config
 from okf_grc.run_scan import SEVERITIES, conftest_inputs, load_pins, scanner_runs
 
 OSCAL_VERSION = "1.2.3"
@@ -137,7 +138,7 @@ def _evidenced_by(bundle: Bundle, key: str) -> set[str]:
 
 
 def assessment_plan(
-    bundle: Bundle, mapping: Json, now: str, pins: dict[str, str], target: str = "app", repo: Path = Path()
+    bundle: Bundle, mapping: Json, now: str, pins: dict[str, str], config: Config = Config(), repo: Path = Path()
 ) -> Json:
     """What the automated scan intends to assess: every applicable control, the scanner runs, the components.
 
@@ -146,7 +147,8 @@ def assessment_plan(
     """
     in_scope = sorted(key for key, c in mapping["controls"].items() if c["status"] != "not-applicable")
     excluded = sorted(key for key, c in mapping["controls"].items() if c["status"] == "not-applicable")
-    runs = scanner_runs(target, conftest_inputs(repo, target))
+    target = config.target
+    runs = scanner_runs(config, conftest_inputs(repo, config))
     activities = []
     for run in runs:
         command = " ".join(run.argv)
@@ -372,19 +374,21 @@ def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
+    parser.add_argument("--config", type=Path, default=None, help="scan layout (default: grc.yaml if present)")
+    parser.add_argument("--knowledge", default=None, help="knowledge bundle (overrides the config)")
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
     parser.add_argument("--lock", type=Path, default=None, help="pinned scanner versions (default: the packaged tools.lock)")
-    parser.add_argument("--target", default="app", help="scan target, relative to the repo root")
+    parser.add_argument("--target", default=None, help="scan target, relative to the repo root (overrides the config)")
     args = parser.parse_args(argv)
-    bundle = load_bundle(args.knowledge)
+    config = load_config(Path.cwd(), args.config, target=args.target, knowledge=args.knowledge)
+    bundle = load_bundle(Path(config.knowledge))
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
     oscal_dir = args.out / "oscal"
     oscal_dir.mkdir(parents=True, exist_ok=True)
     for name, doc in (
         ("component-definition.json", component_definition(bundle, args.now)),
-        ("assessment-plan.json", assessment_plan(bundle, mapping, args.now, load_pins(args.lock or data.path("tools.lock")), args.target)),
+        ("assessment-plan.json", assessment_plan(bundle, mapping, args.now, load_pins(args.lock or data.path("tools.lock")), config)),
         ("assessment-results.json", assessment_results(bundle, mapping, args.now)),
     ):
         (oscal_dir / name).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
