@@ -383,7 +383,7 @@ output is a documented subset: see [`docs/oscal-subset.md`](docs/oscal-subset.md
 | `knowledge/` | the OKF bundle: controls, stack, guardrail policies, scanners |
 | `policies/` | Rego guardrails (+ tests) and a vendored Semgrep rule |
 | `.claude/skills/grc-continuous-compliance/` | the skill (`SKILL.md`) |
-| `src/okf_grc/` | the engine: the `okf-grc` package and its `grc` CLI; `data/` holds `tools.lock` and the scanner bootstrap |
+| `src/okf_grc/` | the engine: the `okf-grc` package and its `grc` CLI; `data/` holds `tools.lock`, the scanner bootstrap, and the base bundle and policies that `knowledge/` and `policies/` copy |
 | `docs/` | design spec, implementation plan, OSCAL subset |
 | `examples/` | a sample report and OSCAL documents produced by `make examples`; triage eval results |
 

@@ -144,8 +144,11 @@ generic guardrail concepts) and `src/okf_grc/data/policies/{rego,semgrep}`
 - `data/base/` is the source of truth for reusable concepts. Per decision 3,
   this repo's `knowledge/` keeps copies of them next to its sample-app concepts;
   `knowledge/index.md` gains `base_version` in its frontmatter.
-- The engine's rules run by default; the config's `semgrep_configs` and `rego`
-  add the adopter's own.
+- Rules are copied like concepts: this repo's `policies/` holds copies of
+  `data/policies/` next to its own `drf-allowany`, and the config points at the
+  repo copies. (Changed while prototyping: running rules from the installed
+  package would put the install path, different on every machine, into the
+  assessment plan's recorded commands.)
 - Base concepts lose sample-app text (e.g. `controls/eu-ai-act/art-12.md:24`).
 
 **Tests:** conformance on `data/base/` alone and on `knowledge/`; no base

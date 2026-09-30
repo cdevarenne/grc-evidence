@@ -1,0 +1,13 @@
+rules:
+  - id: llm-output-unreviewed-write
+    languages: [python]
+    severity: WARNING
+    message: Model output is written to a record with no human-review flag checked first.
+    patterns:
+      - pattern: $OBJ.$ATTR = $OUT.content[$I].text
+      - pattern-not-inside: |
+          if <... human_reviewed ...>:
+              ...
+      - pattern-not-inside: |
+          if <... "human_reviewed" ...>:
+              ...

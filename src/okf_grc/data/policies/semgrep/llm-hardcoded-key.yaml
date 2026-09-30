@@ -1,0 +1,10 @@
+rules:
+  - id: llm-hardcoded-key
+    languages: [python]
+    severity: ERROR
+    message: An API key is assigned from a string literal; read it from the environment or a secret store.
+    patterns:
+      - pattern: $NAME = "..."
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: ^[A-Z0-9_]*_API_KEY$

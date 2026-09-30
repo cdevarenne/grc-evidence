@@ -43,5 +43,5 @@ logged, only their hash. The report footer summarizes the run.
 # Scanned by
 
 - [Semgrep](../scanners/semgrep.md): the `llm-*` rules report no findings on
-  `llm.py` (`semgrep scan --config policies/semgrep src/okf_grc`).
+  `llm.py` (`semgrep scan --config policies/semgrep --exclude data src/okf_grc`; `data/` holds the rules' own test fixtures).
   They are not part of `make scan`, which targets `app/` only.

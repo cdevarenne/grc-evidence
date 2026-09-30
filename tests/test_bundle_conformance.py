@@ -1,6 +1,7 @@
 """The real knowledge/ bundle: OKF v0.2 conformance plus this repo's grounding conventions."""
 
 import re
+from importlib.metadata import version
 from pathlib import Path
 
 import pytest
@@ -99,7 +100,7 @@ def test_index_files_have_no_frontmatter_except_root_version() -> None:
         text = index.read_text(encoding="utf-8")
         if index.parent == KNOWLEDGE:
             fm = yaml.safe_load(text.split("---\n")[1])
-            assert fm == {"okf_version": "0.2"}
+            assert fm == {"okf_version": "0.2", "base_version": version("okf-grc")}
         else:
             assert not text.startswith("---"), index
 
