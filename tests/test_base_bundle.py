@@ -18,7 +18,11 @@ SAMPLE_ONLY = re.compile(r"app/|sample app|\.\./stack/(?!index\.md)|suppressions
 
 
 def _files(root: Path, pattern: str) -> list[Path]:
-    return sorted(p.relative_to(root) for p in root.rglob(pattern) if "__pycache__" not in p.parts)
+    """Files under `root`, skipping caches and hidden files such as `.DS_Store`."""
+    return sorted(
+        p.relative_to(root) for p in root.rglob(pattern)
+        if "__pycache__" not in p.parts and not any(part.startswith(".") for part in p.relative_to(root).parts)
+    )
 
 
 def test_base_is_a_standalone_bundle() -> None:
