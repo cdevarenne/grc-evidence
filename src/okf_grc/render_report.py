@@ -94,7 +94,7 @@ def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json], suppre
     Accepted risks keep their control `not-satisfied` but are counted apart from open findings.
     """
     total = dict.fromkeys((*SEVERITIES, UNCLASSIFIED), 0)
-    open_findings = not_satisfied = not_assessed = not_applicable = clean = 0
+    open_findings = not_satisfied = accepted_only = not_assessed = not_applicable = clean = 0
     for _key, entry in controls:
         status = entry["status"]
         if status == "not-applicable":
@@ -103,8 +103,10 @@ def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json], suppre
         if status == "not-assessed":
             not_assessed += 1
         elif status == "not-satisfied":
-            # counts controls with open findings; a control whose findings are all accepted risks does not
-            not_satisfied += any(not f.get("accepted") for f in entry["findings"])
+            # a control whose findings are all accepted risks is counted apart, so every applicable control is counted once
+            has_open = any(not f.get("accepted") for f in entry["findings"])
+            not_satisfied += has_open
+            accepted_only += not has_open
         else:
             clean += 1
         for f in entry["findings"]:
@@ -118,6 +120,11 @@ def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json], suppre
     applicable = len(controls) - not_applicable
     controls_word = "control" if applicable == 1 else "controls"
     na_clause = f" {not_applicable} not applicable." if not_applicable else ""
+    accepted_clause = (
+        f" {accepted_only} {'control has' if accepted_only == 1 else 'controls have'} only accepted risks."
+        if accepted_only
+        else ""
+    )
     accepted = sum(s["kind"] == "accepted-risk" for s in suppressed)
     false_pos = len(suppressed) - accepted
     suppressed_clause = (
@@ -131,7 +138,7 @@ def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json], suppre
         "",
         f"{open_findings} open {findings_word} across {not_satisfied} of {applicable} {controls_word}: "
         f"{_breakdown(total)}.",
-        f"{clean} {clean_clause} no violations. {not_assessed} not assessed.{na_clause} "
+        f"{clean} {clean_clause} no violations.{accepted_clause} {not_assessed} not assessed.{na_clause} "
         f"{len(unmapped)} {gaps_word} to triage.{suppressed_clause}",
         "",
     ]

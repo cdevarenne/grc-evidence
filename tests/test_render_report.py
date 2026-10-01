@@ -1,4 +1,6 @@
 import json
+import re
+from datetime import date
 from pathlib import Path
 
 from okf_grc.map_findings import map_findings
@@ -87,3 +89,17 @@ def test_footer_reports_the_llm_run_cost() -> None:
     footer = render_report(bundle, mapping, "2026-09-25T12:00:00+00:00", usage=usage).splitlines()[-1]
     assert footer.startswith("LLM step: 2 call(s), 1 billed, model claude-haiku-4-5, mode anthropic.")
     assert "Tokens: 1800 in, 800 out, 3000 cache read. Cost $0.0032." in footer
+
+
+def test_posture_counts_a_control_whose_only_findings_are_accepted_risks() -> None:
+    """#65: every applicable control appears once in the summary, accepted-only ones included."""
+    bundle = load_bundle(Path(__file__).parent.parent / "knowledge")
+    s = next(s for s in bundle.suppressions() if s.kind == "accepted-risk")
+    finding = {"tool": s.tool, "rule_id": s.rule_id, "severity": "high", "target": s.target,
+               "message": s.message_contains or "m", "tags": []}
+    mapping = map_findings(bundle, [finding], {"risk_tier": "limited"}, today=date(2026, 10, 1))
+    report = render_report(bundle, mapping, "2026-10-01T12:00:00+00:00")
+    assert "1 control has only accepted risks." in report
+    head = re.search(r"across (\d+) of (\d+) controls", report)
+    rest = re.search(r"(\d+) controls? shows? no violations\. (\d+) controls? ha(?:s|ve) only accepted risks\. (\d+) not assessed", report)
+    assert int(head[1]) + sum(int(n) for n in rest.groups()) == int(head[2])
