@@ -198,12 +198,15 @@ class LLM:
     def _parse(self, message: Any, task: str) -> tuple[Json, Json]:
         if message.stop_reason != "end_turn":
             raise LLMError(f"{task}: stop_reason {message.stop_reason!r}; output rejected")
-        text = next(b.text for b in message.content if b.type == "text")
+        try:
+            output = json.loads(next(b.text for b in message.content if b.type == "text"))
+        except (StopIteration, json.JSONDecodeError) as e:  # no text block, or text that is not JSON
+            raise LLMError(f"{task}: response is not one JSON text block ({type(e).__name__}); output rejected") from e
         usage = {
             k: getattr(message.usage, k, 0) or 0
             for k in ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")
         }
-        return json.loads(text), usage
+        return output, usage
 
     def _call_api(self, request: Request) -> tuple[Json, Json]:
         message = self._client().messages.create(
@@ -249,8 +252,11 @@ class LLM:
         proc = self.runner(argv, input=request.user, capture_output=True, text=True, check=False)
         if proc.returncode != 0:
             raise LLMError(f"{request.task}: claude exited {proc.returncode}: {proc.stderr.strip()[-300:]}")
-        doc = json.loads(proc.stdout)
-        output = doc.get("structured_output") or json.loads(doc["result"])
+        try:
+            doc = json.loads(proc.stdout)
+            output = doc.get("structured_output") or json.loads(doc["result"])
+        except (json.JSONDecodeError, KeyError, TypeError, AttributeError) as e:
+            raise LLMError(f"{request.task}: claude returned no JSON result ({type(e).__name__}); output rejected") from e
         usage = {k: doc.get("usage", {}).get(k, 0) for k in ("input_tokens", "output_tokens",
                  "cache_creation_input_tokens", "cache_read_input_tokens")}
         usage["cost_usd"] = 0.0  # plan usage, not API credit; the plan's own limits apply

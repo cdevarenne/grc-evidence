@@ -208,3 +208,25 @@ def test_no_cache_always_calls_and_leaves_the_cache_alone(tmp_path: Path) -> Non
     llm.complete(REQ)
     assert len(client.calls) == 2
     assert not (tmp_path / "cache").exists()
+
+
+@pytest.mark.parametrize(
+    ("content", "error"),
+    [([], "StopIteration"), ([SimpleNamespace(type="text", text="not json")], "JSONDecodeError")],
+    ids=["no-text-block", "not-json"],
+)
+def test_a_malformed_api_response_is_an_llm_error(tmp_path: Path, content: list, error: str) -> None:
+    """#67: callers catch LLMError and fall back; any other exception would crash the run."""
+    client = FakeClient()
+    client.message.content = content
+    with pytest.raises(LLMError, match=error):
+        _llm(tmp_path, mode="anthropic", client=client).complete(REQ)
+
+
+@pytest.mark.parametrize("stdout", ["not json", '{"usage": {}}', '{"result": "not json"}'], ids=["stdout", "no-result", "result"])
+def test_a_malformed_claude_cli_response_is_an_llm_error(tmp_path: Path, stdout: str) -> None:
+    def runner(argv: list[str], **kw: Any) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(argv, 0, stdout=stdout, stderr="")
+
+    with pytest.raises(LLMError, match="no JSON result"):
+        _llm(tmp_path, mode="claude-cli", runner=runner).complete(REQ)
