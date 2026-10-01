@@ -1,4 +1,5 @@
-# Version updates only (security alerts stay off: app/ is deliberately vulnerable). Root only: never app/,
+# Version updates only (security alerts stay off: app/ is deliberately vulnerable). Never app/, whose old
+# versions are seeded issues (the uv ecosystem also finds app/requirements.txt, so it is excluded by path),
 # and never the scanner locks in src/okf_grc/data/locks/, which `make lock-scanners` regenerates whole.
 version: 2
 updates:
@@ -11,6 +12,9 @@ updates:
         patterns: ["*"]
   - package-ecosystem: uv
     directory: /
+    exclude-paths:
+      - app/**
+      - src/okf_grc/data/locks/**
     schedule:
       interval: weekly
     groups:
