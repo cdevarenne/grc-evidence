@@ -1,4 +1,4 @@
-"""The CI workflow must never run on its own, and must pin third-party actions."""
+"""CI runs every test on each push to main and each pull request, with pinned actions and a read-only token."""
 
 import re
 from pathlib import Path
@@ -13,10 +13,11 @@ def _workflow() -> dict[Any, Any]:
     return yaml.safe_load(WORKFLOW.read_text())
 
 
-def test_workflow_is_manual_only() -> None:
+def test_runs_on_pushes_to_main_and_pull_requests() -> None:
     wf = _workflow()
     triggers = wf.get("on", wf.get(True))  # PyYAML reads a bare `on:` key as True
-    assert set(triggers) == {"workflow_dispatch"}
+    assert set(triggers) == {"push", "pull_request"}
+    assert triggers["push"] == {"branches": ["main"]}
 
 
 def test_actions_are_pinned_to_commits() -> None:
@@ -28,9 +29,15 @@ def test_token_is_read_only() -> None:
     assert _workflow()["permissions"] == {"contents": "read"}
 
 
-def test_runs_bootstrap_then_tests() -> None:
-    steps = [s["run"] for s in _workflow()["jobs"]["test"]["steps"] if "run" in s]
-    assert steps == ["make bootstrap", "make test"]
+def test_runs_bootstrap_then_unit_then_integration_tests() -> None:
+    steps = [s["run"] for s in _workflow()["jobs"]["test"]["steps"] if "run" in s and "GITHUB_OUTPUT" not in s["run"]]
+    assert steps == ["make bootstrap", "make test", "make test-integration"]
+
+
+def test_trivy_database_cache_is_keyed_on_the_pins_and_the_day() -> None:
+    (cache,) = [s for s in _workflow()["jobs"]["test"]["steps"] if "actions/cache" in s.get("uses", "")]
+    assert cache["with"]["path"] == ".tools/trivy-cache"
+    assert "hashFiles('src/okf_grc/data/tools.lock')" in cache["with"]["key"] and "steps.day.outputs.day" in cache["with"]["key"]
 
 
 def test_checkout_does_not_persist_credentials() -> None:

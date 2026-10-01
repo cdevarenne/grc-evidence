@@ -1,8 +1,10 @@
 name: ci
 
-# Manual only: run from the Actions tab ("Run workflow"). Never triggers on its own.
+# Every push to main and every pull request: unit, Rego, and Semgrep tests, then the full scan.
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
 
 permissions:
   contents: read
@@ -15,6 +17,20 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
+      # uv's own cache makes the Semgrep and Checkov installs fast; .tools/ itself is not cached because
+      # those tool environments point at an interpreter outside it.
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7  # v10.2.0
+        with:
+          enable-cache: true
+      # Trivy's vulnerability database, saved once a day (a cache key cannot be updated) and restored
+      # from the latest earlier day otherwise; Trivy refreshes a stale database itself.
+      - id: day
+        run: echo "day=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: .tools/trivy-cache
+          key: trivy-db-${{ hashFiles('src/okf_grc/data/tools.lock') }}-${{ steps.day.outputs.day }}
+          restore-keys: trivy-db-${{ hashFiles('src/okf_grc/data/tools.lock') }}-
       - run: make bootstrap
       - run: make test
+      - run: make test-integration

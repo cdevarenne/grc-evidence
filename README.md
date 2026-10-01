@@ -65,6 +65,9 @@ make clean             # remove out/
 
 Supported platforms: macOS arm64 and Linux x86_64 (the pinned scanner binaries).
 
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs `make bootstrap`,
+`make test`, and `make test-integration` on every push to `main` and every pull request.
+
 ## How grounding works
 
 A finding reaches a control only through a `rule_ids` declaration in the bundle.
@@ -395,9 +398,6 @@ definition, assessment plan, and assessment results. Deliberately left out:
   that applies it to a sample app like Google's `microservices-demo` with CI,
   is specified but not started:
   [Spec F](docs/superpowers/specs/2026-09-29-mini-spec-f-engine-and-adopter-repo.md).
-- **CI runs** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) is
-  manual-only (`workflow_dispatch`) and has not been run; `make test` and
-  `make test-integration` are run locally.
 
 ## Pins
 
