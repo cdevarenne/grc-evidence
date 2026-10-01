@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "run_id": "b5f57dd8-55a4-5c5a-bdc9-872df4fb2bd2",
+  "generated": "2026-10-01T15:50:56+00:00",
+  "repository": {
+    "commit": "804ecdc1a5722ea7f63c0a53e27336f0860c9672",
+    "dirty": false
+  },
+  "engine": {
+    "package": "okf-grc",
+    "version": "1.1.0"
+  },
+  "base_version": "1.1.0",
+  "scanners": {
+    "semgrep": "1.178.0",
+    "trivy": "0.74.0",
+    "checkov": "3.3.19",
+    "conftest": "0.70.1"
+  },
+  "config": {
+    "file": null,
+    "resolved": {
+      "target": "app",
+      "knowledge": "knowledge",
+      "inventory": "ai-inventory.yaml",
+      "conftest_inputs": [
+        "k8s/**/*.yaml",
+        "k8s/**/*.yml",
+        "infra/**/*.tf",
+        "ai-inventory.yaml"
+      ],
+      "checkov_frameworks": [
+        "terraform",
+        "kubernetes",
+        "dockerfile"
+      ],
+      "checkov_skip_paths": [],
+      "semgrep_configs": [
+        "policies/semgrep"
+      ],
+      "rego": [
+        "policies/rego"
+      ]
+    },
+    "sha256": "b9eb2884005a0573fa196a597568fc9e7b51034315320b69863f673023b52ff8"
+  },
+  "outputs": {
+    "findings.json": "8e692ec0dd97ae6863c38e2cc6996783be13bfb19c9ab28bb4635099fd03919c",
+    "mapping.json": "c637305068f08b0a81f04098ef9874755aaafc25c7e0ca83e137259e0883d7dc",
+    "oscal/component-definition.json": "8d7becb11888813c78b2ff5e93d1521fc9f782f132b20b02981eac337ff113e9",
+    "oscal/assessment-plan.json": "f275e0a098dfe81882e89c3eb4413ac30705d73c725224521c42d499482d2919",
+    "oscal/assessment-results.json": "83e3e32b1ea05395f08ee4763039b8c9c5592c13f21c3463f59a8507cfa373ea",
+    "report.md": "7290b5d2bb02f93d3177a2b695f7c9704fde5911c8a98a58a4ebc1378036f07b"
+  }
+}

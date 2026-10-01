@@ -1,13 +1,13 @@
 # Compliance Scan Report
 
-Generated 2026-09-29T22:15:10+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-10-01T15:50:56+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
 
 ## Risk posture
 
-70 open findings across 8 of 12 controls: 2 critical, 26 high, 25 medium, 12 low, 5 unclassified.
+72 open findings across 8 of 12 controls: 2 critical, 27 high, 26 medium, 12 low, 5 unclassified.
 0 controls show no violations. 4 not assessed. 6 not applicable. 41 coverage gaps to triage. 1 accepted risk and 1 false positive suppressed after review.
 
 ## Summary
@@ -16,7 +16,7 @@ it is evidence, not a control attestation.
 |---|---|---|---|---|---|---|---|
 | soc2:cc6.1 | not-satisfied | 0 | 4 | 1 | 1 | 2 | 8 |
 | soc2:cc6.6 | not-satisfied | 0 | 2 | 0 | 0 | 2 | 4 |
-| soc2:cc7.1 | not-satisfied | 3 | 16 | 21 | 11 | 0 | 51 |
+| soc2:cc7.1 | not-satisfied | 3 | 17 | 22 | 11 | 0 | 53 |
 | soc2:cc7.2 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |
 | soc2:cc8.1 | not-satisfied | 0 | 1 | 1 | 0 | 1 | 3 |
 | iso42001:a.4 | not-satisfied | 0 | 1 | 0 | 0 | 0 | 1 |
@@ -93,7 +93,7 @@ accounts only, and enforce public access prevention on the bucket.
 
 **Auditor note (LLM):** Prioritize addressing the 3 critical and 16 high-severity vulnerabilities across source, dependencies, and container images immediately.
 
-**Findings:** 3 critical, 16 high, 21 medium, 11 low
+**Findings:** 3 critical, 17 high, 22 medium, 11 low
 
 **Evidence:** [Trivy](../knowledge/scanners/trivy.md)
 
@@ -135,6 +135,8 @@ accounts only, and enforce public access prevention on the bucket.
 - `trivy` `CVE-2026-1285` (low) — Django 4.2.0: Django: Django: Denial of Service via crafted HTML inputs — `app/requirements.txt`
 - `trivy` `CVE-2026-1287` (high) — Django 4.2.0: Django: Django: SQL Injection via crafted column aliases — `app/requirements.txt`
 - `trivy` `CVE-2026-1312` (medium) — Django 4.2.0: Django: Django: SQL injection via crafted column aliases in QuerySet.order_by() — `app/requirements.txt`
+- `trivy` `CVE-2026-15307` (high) — Django 4.2.0: django: Django: Remote code execution via GeoDjango spatial lookups — `app/requirements.txt`
+- `trivy` `CVE-2026-15830` (medium) — Django 4.2.0: django: Django: Denial of Service via parsing deeply nested geometry collections — `app/requirements.txt`
 - `trivy` `CVE-2026-25673` (high) — Django 4.2.0: django: Django: Denial of Service via slow URL normalization on Windows — `app/requirements.txt`
 - `trivy` `CVE-2026-25674` (low) — Django 4.2.0: django: Django: Incorrect file permissions due to race condition — `app/requirements.txt`
 - `trivy` `CVE-2026-33033` (medium) — Django 4.2.0: Django: Django: Performance degradation via excessive whitespace in multipart uploads — `app/requirements.txt`
