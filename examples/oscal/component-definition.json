@@ -3,7 +3,7 @@
     "uuid": "d0481237-5a87-55cf-a1ba-bc45aacd04b3",
     "metadata": {
       "title": "okf-grc-skill sample app components",
-      "last-modified": "2026-10-01T21:27:48+00:00",
+      "last-modified": "2026-10-01T23:20:34+00:00",
       "version": "0.1.0",
       "oscal-version": "1.2.3"
     },
@@ -164,6 +164,11 @@
                 "uuid": "1e6d511a-2787-55b0-b938-b5bc609d2fa6",
                 "control-id": "cc6.1",
                 "description": "CC6.1 \u2014 Logical Access"
+              },
+              {
+                "uuid": "957d49a4-b9e9-59a1-bcec-47dace4acbfe",
+                "control-id": "cc7.2",
+                "description": "CC7.2 \u2014 Security Monitoring"
               },
               {
                 "uuid": "0e24d4d4-b636-556b-b8a0-d130d6957b8c",

@@ -1,9 +1,9 @@
 {
   "assessment-plan": {
-    "uuid": "1f6713f3-5894-5dca-a1f0-07c72ad96c9c",
+    "uuid": "cc94c09b-4952-5e28-90ec-6f2e6d37955d",
     "metadata": {
       "title": "okf-grc-skill automated assessment plan",
-      "last-modified": "2026-10-01T21:27:48+00:00",
+      "last-modified": "2026-10-01T23:20:34+00:00",
       "version": "0.1.0",
       "oscal-version": "1.2.3"
     },
@@ -95,6 +95,9 @@
                 "description": "AICPA Trust Services Criteria (SOC 2)",
                 "include-controls": [
                   {
+                    "control-id": "a1.1"
+                  },
+                  {
                     "control-id": "cc6.1"
                   },
                   {
@@ -138,6 +141,9 @@
               {
                 "description": "AICPA Trust Services Criteria (SOC 2)",
                 "include-controls": [
+                  {
+                    "control-id": "a1.1"
+                  },
                   {
                     "control-id": "cc6.1"
                   },
@@ -183,10 +189,16 @@
                 "description": "AICPA Trust Services Criteria (SOC 2)",
                 "include-controls": [
                   {
+                    "control-id": "a1.1"
+                  },
+                  {
                     "control-id": "cc6.1"
                   },
                   {
                     "control-id": "cc6.6"
+                  },
+                  {
+                    "control-id": "cc7.2"
                   },
                   {
                     "control-id": "cc8.1"
@@ -323,6 +335,9 @@
         {
           "description": "AICPA Trust Services Criteria (SOC 2)",
           "include-controls": [
+            {
+              "control-id": "a1.1"
+            },
             {
               "control-id": "cc6.1"
             },
