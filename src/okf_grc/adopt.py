@@ -68,6 +68,7 @@ def starter_config(d: Config) -> str:
         "# relative to the target; the other paths are relative to the repo root.\n"
         f"target: {d.target}\nknowledge: {d.knowledge}\ninventory: {d.inventory}\n"
         f"conftest:\n  inputs: {_flow(repr(p) for p in d.conftest_inputs)}\n"
+        f"skip_paths: {_flow(d.skip_paths)}  # directories Trivy and Checkov skip, e.g. helm-chart\n"
         f"checkov:\n  frameworks: {_flow(d.checkov_frameworks)}\n  skip_paths: {_flow(d.checkov_skip_paths)}\n"
         f"semgrep:\n  configs: {_flow(d.semgrep_configs)}\n"
         f"rego: {_flow(d.rego)}\n"

@@ -17,7 +17,8 @@ What okf-grc does not do, or does only partly. Read this before relying on a rep
 - **Scan layout from `grc.yaml`** By default Conftest reads `k8s/**/*.{yaml,yml}`,
   `infra/**/*.tf`, and `ai-inventory.yaml` under the target. An optional
   `grc.yaml` at the repo root changes the target, the knowledge bundle, the AI
-  inventory, Conftest's inputs, Checkov's frameworks and skipped paths, and the
+  inventory, Conftest's inputs, directories Trivy and Checkov skip (`skip_paths`,
+  e.g. a Helm chart whose templates are not rendered), Checkov's frameworks, and the
   Semgrep and Rego policies, and the time each scanner may run (`scanner_timeout`,
   900 seconds by default; a scanner past it is stopped and named). Conftest inputs
   may reach beside the target with `..` (an inventory next to a submodule) but

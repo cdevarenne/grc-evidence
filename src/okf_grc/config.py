@@ -19,6 +19,7 @@ _SHAPE: dict[str, Any] = {
     "target": str,
     "knowledge": str,
     "inventory": str,
+    "skip_paths": list,
     "rego": list,
     "scanner_timeout": int,
     "allow_external_symlinks": bool,
@@ -42,6 +43,7 @@ class Config:
     conftest_inputs: tuple[str, ...] = ("k8s/**/*.yaml", "k8s/**/*.yml", "infra/**/*.tf", "ai-inventory.yaml")
     checkov_frameworks: tuple[str, ...] = ("terraform", "kubernetes", "dockerfile")
     checkov_skip_paths: tuple[str, ...] = ()
+    skip_paths: tuple[str, ...] = ()  # target-relative directories Trivy and Checkov skip (templated or duplicate files)
     semgrep_configs: tuple[str, ...] = ("policies/semgrep",)
     rego: tuple[str, ...] = ("policies/rego",)
     scanner_timeout: int = 900  # seconds per scanner; a hung scanner stops the scan with its name
@@ -111,6 +113,7 @@ def _check_paths(repo: Path, config: Config) -> None:
     for pattern in config.conftest_inputs:
         if PurePosixPath(pattern).is_absolute():
             raise ConfigError(f"conftest.inputs {pattern!r} must be relative to the target")
-    for pattern in config.checkov_skip_paths:
-        if PurePosixPath(pattern).is_absolute() or ".." in PurePosixPath(pattern).parts:
-            raise ConfigError(f"checkov.skip_paths {pattern!r} must stay under the target")
+    for key, patterns in (("skip_paths", config.skip_paths), ("checkov.skip_paths", config.checkov_skip_paths)):
+        for pattern in patterns:
+            if PurePosixPath(pattern).is_absolute() or ".." in PurePosixPath(pattern).parts:
+                raise ConfigError(f"{key} {pattern!r} must stay under the target")

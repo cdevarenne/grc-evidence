@@ -77,6 +77,7 @@ def test_an_explicit_config_file_must_exist(tmp_path: Path) -> None:
         ("rego: [../rules]\n", "rego '../rules' leaves the repo root"),
         ("conftest:\n  inputs: ['/etc/*.yaml']\n", "conftest.inputs '/etc/\\*.yaml' must be relative to the target"),
         ("allow_external_symlinks: 'yes'\n", "'allow_external_symlinks' must be true or false"),
+        ("skip_paths: [../up]\n", "skip_paths '../up' must stay under the target"),
         ("checkov:\n  skip_paths: [/etc]\n", "checkov.skip_paths '/etc' must stay under the target"),
         ("scanner_timeout: '60'\n", "'scanner_timeout' must be a positive whole number of seconds"),
         ("scanner_timeout: true\n", "'scanner_timeout' must be a positive whole number of seconds"),
@@ -163,3 +164,14 @@ def test_a_symlink_out_of_the_repo_needs_the_opt_in(tmp_path: Path) -> None:
         conftest_inputs(repo, Config(target="upstream", conftest_inputs=("k8s/*.yaml",)))
     allowed = Config(target="upstream", conftest_inputs=("k8s/*.yaml",), allow_external_symlinks=True)
     assert conftest_inputs(repo, allowed) == ["upstream/k8s/app.yaml", "upstream/k8s/link.yaml"]
+
+
+def test_skip_paths_apply_to_trivy_and_checkov(tmp_path: Path) -> None:
+    """E3: templated or duplicate directories (a Helm chart, release bundles) are skipped by both IaC scanners."""
+    config = load_config(_repo(tmp_path, "skip_paths: [helm-chart, release]\ncheckov:\n  skip_paths: [docs]\n"))
+    runs = scanner_runs(config, ["app/k8s/a.yaml"])
+    for word in ("config", "fs"):
+        argv = _argv(runs, "trivy", "misconfiguration" if word == "config" else "dependency")
+        assert argv[argv.index("--skip-dirs"):][:4] == ("--skip-dirs", "helm-chart", "--skip-dirs", "release")
+    checkov = _argv(runs, "checkov")
+    assert [checkov[i + 1] for i, a in enumerate(checkov) if a == "--skip-path"] == ["helm-chart", "release", "docs"]
