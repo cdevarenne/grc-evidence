@@ -8,7 +8,7 @@ export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
 OKF := reference-agent @ git+https://github.com/GoogleCloudPlatform/open-knowledge-format@$(OKF_COMMIT)
 
-.PHONY: bootstrap lock-scanners audit scan narrate triage eval-triage render test test-integration examples clean
+.PHONY: bootstrap lock-scanners audit examples-llm scan narrate triage eval-triage render test test-integration examples clean
 
 bootstrap:
 	uv sync
@@ -57,6 +57,13 @@ examples: scan
 	cp out/report.md examples/report.md
 	mkdir -p examples/oscal
 	cp out/oscal/*.json examples/oscal/
+	cp out/run.json examples/run.json
+
+# The examples with LLM prose: narrate the fresh scan (LLM_MODE=anthropic or claude-cli), then copy the
+# report and the run manifest narrate rewrote. A plain `make examples` afterwards would drop the prose again.
+examples-llm: examples
+	$(GRC_LLM) narrate --knowledge knowledge --out out
+	cp out/report.md examples/report.md
 	cp out/run.json examples/run.json
 
 clean:
