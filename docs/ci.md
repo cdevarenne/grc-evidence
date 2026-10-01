@@ -31,6 +31,14 @@ critical vulnerability that has a fixed version, unless
 exact finding, a reason, and an expiry at most 90 days out, after which the audit
 fails again until someone reviews it. CI and the release workflow both run it.
 
+## Dependency updates
+
+[`.github/dependabot.yml`](../.github/dependabot.yml) opens one grouped pull
+request a week for the pinned actions and one for `uv.lock`. Security alerts
+stay off because `app/` is deliberately vulnerable, and Dependabot does not
+touch the scanner locks: change a scanner version in `tools.lock` and run
+`make lock-scanners` instead.
+
 ## Your own pipeline
 
 A starting point for a repository set up with `grc init` (see
