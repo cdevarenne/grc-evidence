@@ -11,6 +11,7 @@ from typing import Any
 
 from okf_grc.config import load_config
 from okf_grc.map_findings import SDK_GAP
+from okf_grc.narrate import read_narratives
 from okf_grc.okf_lib import FRAMEWORK_TITLES, Bundle, load_bundle
 
 Json = dict[str, Any]
@@ -272,8 +273,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
     args = parser.parse_args(argv)
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
-    narratives_path, ledger = args.out / "narratives.json", args.out / "llm-usage.jsonl"
-    narratives = json.loads(narratives_path.read_text(encoding="utf-8")) if narratives_path.is_file() else {}
+    ledger = args.out / "llm-usage.jsonl"
+    narratives, stale = read_narratives(args.out)
+    if stale:
+        print("report: narratives.json was written for another mapping.json; ignored (rerun `grc narrate`)")
     usage = [json.loads(ln) for ln in ledger.read_text(encoding="utf-8").splitlines()] if ledger.is_file() else []
     last_run = [e for e in usage if usage and e["run_id"] == usage[-1]["run_id"]]
     config = load_config(Path.cwd(), args.config, knowledge=args.knowledge)

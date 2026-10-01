@@ -9,7 +9,8 @@ from okf_grc.digest import bundle_digest, scan_digest
 from okf_grc.llm import LLMError
 from llm_stub import StubLLM
 from okf_grc.map_findings import map_findings
-from okf_grc.narrate import narrate, validate
+from okf_grc.narrate import mapping_sha256, narrate, read_narratives, validate
+from okf_grc.render_report import main as render_main
 from okf_grc.okf_lib import load_bundle
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -74,3 +75,41 @@ def test_missing_or_extra_controls_are_rejected() -> None:
 
 def test_llm_failure_falls_back_to_no_narratives() -> None:
     assert narrate(StubLLM(LLMError("no recorded response")), DIGEST, MAPPING) == ({}, ["no recorded response"])
+
+
+def _out_with_mapping(tmp_path: Path, mapping: dict) -> Path:
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "mapping.json").write_text(json.dumps(mapping), encoding="utf-8")
+    return out
+
+
+def test_narratives_are_used_only_for_the_mapping_they_were_written_for(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """#56: after a rescan changes mapping.json, the earlier narratives must not reach the report."""
+    root = Path(__file__).parent.parent
+    mapping = map_findings(load_bundle(root / "knowledge"), [])
+    out = _out_with_mapping(tmp_path, mapping)
+    note = {"soc2:cc6.1": {"summary": "Written for the first scan.", "auditor_note": "Check access."}}
+    doc = {"mapping_sha256": mapping_sha256(out / "mapping.json"), "controls": note}
+    (out / "narratives.json").write_text(json.dumps(doc), encoding="utf-8")
+    monkeypatch.chdir(root)
+    render_main(["--out", str(out), "--now", "2026-10-01T12:00:00+00:00"])
+    assert "Written for the first scan." in (out / "report.md").read_text()
+    gap = {"tool": "checkov", "rule_id": "CKV_NEW", "severity": "low", "target": "app/x.tf", "message": "m", "tags": []}
+    rescan = map_findings(load_bundle(root / "knowledge"), [gap])  # a rescan found something new
+    (out / "mapping.json").write_text(json.dumps(rescan), encoding="utf-8")
+    render_main(["--out", str(out), "--now", "2026-10-01T12:00:00+00:00"])
+    assert "Written for the first scan." not in (out / "report.md").read_text()
+    assert "written for another mapping.json; ignored" in capsys.readouterr().out
+
+
+def test_narratives_without_a_mapping_hash_are_stale(tmp_path: Path) -> None:
+    out = _out_with_mapping(tmp_path, {"controls": {}, "unmapped": []})
+    (out / "narratives.json").write_text(json.dumps({"soc2:cc6.1": {"summary": "s", "auditor_note": "n"}}))
+    assert read_narratives(out) == ({}, True)
+
+
+def test_no_narratives_file_is_not_stale(tmp_path: Path) -> None:
+    assert read_narratives(_out_with_mapping(tmp_path, {"controls": {}, "unmapped": []})) == ({}, False)

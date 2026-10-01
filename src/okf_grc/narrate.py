@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -86,6 +87,23 @@ def narrate(llm: LLM, bundle_doc: Json, mapping: Json) -> tuple[Json, list[str]]
     return ({}, errors) if errors else (output, [])
 
 
+def mapping_sha256(mapping_file: Path) -> str:
+    """sha256 of the mapping.json bytes a set of narratives was written for."""
+    return hashlib.sha256(mapping_file.read_bytes()).hexdigest()
+
+
+def read_narratives(out: Path) -> tuple[Json, bool]:
+    """(narratives, stale): the narratives written for the current mapping.json, or ({}, True) when
+    `narratives.json` describes another mapping or predates the hash; ({}, False) when there is none."""
+    path = out / "narratives.json"
+    if not path.is_file():
+        return {}, False
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(doc, dict) or doc.get("mapping_sha256") != mapping_sha256(out / "mapping.json"):
+        return {}, True
+    return doc["controls"], False
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--knowledge", type=Path, default=Path("knowledge"))
@@ -93,7 +111,8 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
     narratives, errors = narrate(LLM.from_env(args.out), bundle_digest(load_bundle(args.knowledge)), mapping)
-    (args.out / "narratives.json").write_text(json.dumps(narratives, indent=2) + "\n", encoding="utf-8")
+    doc = {"mapping_sha256": mapping_sha256(args.out / "mapping.json"), "controls": narratives}
+    (args.out / "narratives.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
     for error in errors:
         print(f"narrate: rejected: {error}")
     if errors:
