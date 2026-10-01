@@ -14,13 +14,13 @@ from importlib.resources import as_file
 from pathlib import Path
 from types import ModuleType
 
-from okf_grc import adopt, data, manifest, map_findings, narrate, render_report, run_scan, to_oscal, triage
+from okf_grc import adopt, data, gate, manifest, map_findings, narrate, render_report, run_scan, to_oscal, triage
 from okf_grc.config import load_config
 
 # Each step's own options pass through unchanged: `grc scan --target app` is `run_scan.py --target app`.
 STEPS: dict[str, ModuleType] = {
     "scan": run_scan, "map": map_findings, "oscal": to_oscal, "report": render_report, "manifest": manifest,
-    "triage": triage,
+    "triage": triage, "gate": gate,
 }
 COMMANDS = ("bootstrap", "init", "check", "run", "narrate", *STEPS)
 

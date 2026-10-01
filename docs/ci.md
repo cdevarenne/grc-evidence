@@ -67,11 +67,18 @@ jobs:
       - run: grc bootstrap
       - run: grc check
       - run: grc run --require-clean
+      - run: grc gate --summary "$GITHUB_STEP_SUMMARY"  # fails if compliance got worse than expected/
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: compliance
           path: out/
 ```
+
+`grc gate` compares the run with `expected/control-status.json`, a baseline you
+commit (`grc gate --write-baseline` creates it): it fails when a control moves
+to `not-satisfied` or a suppression has expired, and writes the status table to
+the job summary. A control already `not-satisfied` in the baseline does not fail
+again; update the baseline in the same pull request when a change is accepted.
 
 `out/run.json` names the commit, the engine and scanner versions, the layout,
 and the sha256 of every output, so the uploaded artifact is traceable to the
