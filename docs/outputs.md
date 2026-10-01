@@ -6,9 +6,15 @@ What a scan writes to `out/`, and the contract downstream tools can rely on.
 
 `make scan` (`grc run`) writes `out/findings.json` and `out/mapping.json`, each
 with a `schema_version`, and ends with `out/run.json`: the run id, the scanned
-commit (and whether tracked files had uncommitted changes), the engine, base
-bundle, and scanner versions, the resolved scan layout, and the sha256 of every
-output. The OSCAL assessment results carry the same run id. JSON Schemas for
+commit, whether the scan inputs differed from it (`dirty`: changed tracked files,
+or untracked files under the target, which are listed in `untracked`), the
+engine, base bundle, and scanner versions, the resolved scan layout, and the
+sha256 of every output. The OSCAL assessment results carry the same run id.
+
+`grc run` writes into a staging directory and moves the outputs into `out/` only
+after `run.json` exists, so a failed run leaves the previous run whole.
+`grc run --require-clean` refuses to scan inputs that differ from the commit,
+or a directory outside git; CI should use it. JSON Schemas for
 the three files ship with the engine in `src/okf_grc/data/schemas/`; additive
 changes bump the minor version, anything else the major. A sample is in
 [`examples/run.json`](../examples/run.json).

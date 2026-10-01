@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from okf_grc import cli, data
+from okf_grc import cli, data, manifest
 
 ROOT = Path(__file__).parent.parent
 
@@ -37,17 +37,99 @@ def test_a_step_gets_its_own_options(monkeypatch: pytest.MonkeyPatch) -> None:
     assert calls == [("scan", ["--target", "svc", "--out", "o"])]
 
 
-def test_run_calls_every_step_in_order_with_one_time_and_run_id(monkeypatch: pytest.MonkeyPatch) -> None:
-    calls = _record(monkeypatch)
-    cli.main(["run", "--target", "app", "--knowledge", "knowledge", "--out", "o"])
+def _record_writing(monkeypatch: pytest.MonkeyPatch, fail_at: str | None = None) -> list[tuple[str, list[str]]]:
+    """Fake steps that record their argv; `manifest` writes every output into its --out, as the real ones do."""
+    calls: list[tuple[str, list[str]]] = []
+
+    def step(name: str):
+        def main(argv: list[str]) -> None:
+            calls.append((name, argv))
+            if name == fail_at:
+                raise RuntimeError(f"{name} failed")
+            if name == "manifest":
+                staging = Path(argv[argv.index("--out") + 1])
+                for rel in (*manifest.OUTPUTS, "run.json"):
+                    (staging / rel).parent.mkdir(parents=True, exist_ok=True)
+                    (staging / rel).write_text(f"new {rel}")
+        return main
+
+    for name, module in cli.STEPS.items():
+        monkeypatch.setattr(module, "main", step(name))
+    return calls
+
+
+def test_run_calls_every_step_in_order_with_one_time_and_run_id(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    calls = _record_writing(monkeypatch)
+    out = tmp_path / "o"
+    cli.main(["run", "--target", "app", "--knowledge", "knowledge", "--out", str(out)])
     steps = dict(calls)
     assert [name for name, _ in calls] == ["scan", "map", "oscal", "report", "manifest"]
-    layout = ["--knowledge", "knowledge", "--target", "app", "--out", "o"]
-    assert steps["scan"] == ["--target", "app", "--out", "o"]
+    staging = steps["scan"][-1]
+    assert Path(staging).parent == out and Path(staging).name.startswith(".grc-run-")
+    layout = ["--knowledge", "knowledge", "--target", "app", "--out", staging]
+    assert steps["scan"] == ["--target", "app", "--out", staging]
     assert steps["map"] == layout
     now, run_id = steps["oscal"][-3], steps["oscal"][-1]
-    assert steps["oscal"] == steps["manifest"] == [*layout, "--now", now, "--run-id", run_id]
-    assert steps["report"] == ["--knowledge", "knowledge", "--out", "o", "--now", now]
+    assert steps["oscal"] == [*layout, "--now", now, "--run-id", run_id]
+    assert steps["manifest"] == [*layout, "--now", now, "--run-id", run_id, "--exclude", str(out)]
+    assert steps["report"] == ["--knowledge", "knowledge", "--out", staging, "--now", now]
+    assert (out / "run.json").read_text() == "new run.json" and not Path(staging).exists()
+
+
+def test_a_failed_run_leaves_the_previous_outputs_untouched(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    out = tmp_path / "o"
+    (out / "oscal").mkdir(parents=True)
+    for rel in (*manifest.OUTPUTS, "run.json"):
+        (out / rel).write_text(f"old {rel}")
+    _record_writing(monkeypatch, fail_at="oscal")
+    with pytest.raises(RuntimeError, match="oscal failed"):
+        cli.main(["run", "--out", str(out)])
+    assert all((out / rel).read_text() == f"old {rel}" for rel in (*manifest.OUTPUTS, "run.json"))
+    assert not [p for p in out.iterdir() if p.name.startswith(".grc-run-")]
+
+
+def test_run_hands_the_report_its_narratives_and_ledger(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    out = tmp_path / "o"
+    out.mkdir()
+    (out / "narratives.json").write_text("{}")
+    seen: list[str] = []
+    calls = _record_writing(monkeypatch)
+    report = cli.STEPS["report"].main
+    monkeypatch.setattr(cli.STEPS["report"], "main", lambda argv: (seen.extend(
+        p.name for p in Path(argv[argv.index("--out") + 1]).iterdir()), report(argv)))
+    cli.main(["run", "--out", str(out)])
+    assert "narratives.json" in seen and calls
+
+
+def test_require_clean_refuses_untracked_inputs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _git_repo(tmp_path)
+    (tmp_path / "app" / "new.yaml").write_text("x: 1\n")
+    monkeypatch.chdir(tmp_path)
+    calls = _record_writing(monkeypatch)
+    with pytest.raises(SystemExit, match="untracked scan inputs: app/new.yaml"):
+        cli.main(["run", "--require-clean"])
+    assert calls == []
+
+
+def _git_repo(path: Path) -> None:
+    (path / "app").mkdir()
+    (path / "app" / "main.py").write_text("x = 1\n")
+    (path / ".gitignore").write_text("out/\n")
+    for argv in (["init", "-q"], ["add", "-A"], ["-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "c"]):
+        subprocess.run(["git", *argv], cwd=path, check=True)
+
+
+def test_repo_state_lists_untracked_inputs_under_the_target_only(tmp_path: Path) -> None:
+    _git_repo(tmp_path)
+    assert manifest.repo_state(tmp_path, "app") == {"commit": manifest._git(tmp_path, "rev-parse", "HEAD"), "dirty": False, "untracked": []}
+    (tmp_path / "app" / "new file.yaml").write_text("x: 1\n")
+    (tmp_path / "notes.txt").write_text("outside the target\n")
+    (tmp_path / "out").mkdir()
+    (tmp_path / "out" / "report.md").write_text("ignored\n")
+    (tmp_path / "app" / "run").mkdir()
+    (tmp_path / "app" / "run" / "x.json").write_text("{}\n")
+    state = manifest.repo_state(tmp_path, "app", (tmp_path / "app" / "run",))
+    assert state["dirty"] is True and state["untracked"] == ["app/new file.yaml"]
 
 
 def test_packaged_data_is_found() -> None:

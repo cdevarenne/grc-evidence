@@ -49,6 +49,13 @@
             "null"
           ],
           "description": "Tracked files differed from the commit"
+        },
+        "untracked": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Untracked, not-ignored files under the scan target (since 1.1); any makes the run dirty"
         }
       }
     },

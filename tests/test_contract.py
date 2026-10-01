@@ -90,7 +90,7 @@ def test_manifest_hashes_the_outputs_and_names_the_commit(tmp_path: Path) -> Non
 
 def test_manifest_outside_git_has_no_commit(tmp_path: Path) -> None:
     manifest = build_manifest(tmp_path, _outputs(tmp_path / "out"), load_config(tmp_path), "id", NOW)
-    assert manifest["repository"] == {"commit": None, "dirty": None}
+    assert manifest["repository"] == {"commit": None, "dirty": None, "untracked": []}
     assert manifest["base_version"] is None
 
 

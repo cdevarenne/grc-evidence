@@ -4,7 +4,7 @@ from importlib.resources import files
 from importlib.resources.abc import Traversable
 
 # Version of the output contract (schemas/*.schema.json): additive changes bump the minor version.
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"  # 1.1: run.json lists untracked scan inputs
 
 
 def path(name: str) -> Traversable:

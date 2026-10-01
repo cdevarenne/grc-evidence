@@ -47,7 +47,7 @@ jobs:
       - run: uv tool install git+https://github.com/cdevarenne/okf-grc-skill@v1.1.0
       - run: grc bootstrap
       - run: grc check
-      - run: grc run
+      - run: grc run --require-clean
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: compliance

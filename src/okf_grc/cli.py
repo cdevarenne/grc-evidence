@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
 import subprocess
+import tempfile
 from datetime import UTC, datetime
 from importlib.metadata import version
 from importlib.resources import as_file
@@ -35,17 +38,46 @@ def run(argv: list[str]) -> None:
     parser.add_argument("--target", help="scan target, relative to the repo root (overrides the config)")
     parser.add_argument("--knowledge", help="knowledge bundle (overrides the config)")
     parser.add_argument("--out", default="out")
+    parser.add_argument("--require-clean", action="store_true", help="fail if the scan inputs differ from the commit (CI)")
     args = parser.parse_args(argv)
+    repo, out = Path.cwd(), Path(args.out)
     now = datetime.now(UTC).isoformat(timespec="seconds")
-    config = load_config(Path.cwd(), Path(args.config) if args.config else None, target=args.target, knowledge=args.knowledge)
-    stamp = ["--now", now, "--run-id", manifest.run_id(Path.cwd(), config, now)]
-    common = [*_flag(args, "config"), "--out", args.out]
-    layout = [*_flag(args, "knowledge"), *_flag(args, "target"), *common]
-    STEPS["scan"].main([*_flag(args, "target"), *common])
-    STEPS["map"].main(layout)
-    STEPS["oscal"].main([*layout, *stamp])
-    STEPS["report"].main([*_flag(args, "knowledge"), *common, "--now", now])
-    STEPS["manifest"].main([*layout, *stamp])
+    config = load_config(repo, Path(args.config) if args.config else None, target=args.target, knowledge=args.knowledge)
+    if args.require_clean and (problem := _unclean(manifest.repo_state(repo, config.target, (out,)))):
+        raise SystemExit(f"grc run --require-clean: {problem}")
+    stamp = ["--now", now, "--run-id", manifest.run_id(repo, config, now)]
+    # Steps write into a staging directory; out/ changes only once the manifest exists, so a failed run
+    # leaves the previous run whole. The narratives and the LLM ledger are report inputs, not outputs.
+    out.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix=".grc-run-", dir=out))
+    try:
+        for keep in ("narratives.json", "llm-usage.jsonl"):
+            if (out / keep).is_file():
+                shutil.copy2(out / keep, staging / keep)
+        common = [*_flag(args, "config"), "--out", str(staging)]
+        layout = [*_flag(args, "knowledge"), *_flag(args, "target"), *common]
+        STEPS["scan"].main([*_flag(args, "target"), *common])
+        STEPS["map"].main(layout)
+        STEPS["oscal"].main([*layout, *stamp])
+        STEPS["report"].main([*_flag(args, "knowledge"), *common, "--now", now])
+        STEPS["manifest"].main([*layout, *stamp, "--exclude", str(out)])
+        for rel in (*manifest.OUTPUTS, "run.json"):
+            (out / rel).parent.mkdir(parents=True, exist_ok=True)
+            os.replace(staging / rel, out / rel)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+
+
+def _unclean(state: dict) -> str | None:
+    """Why the scan inputs are not exactly a commit, or None when they are."""
+    if state["commit"] is None:
+        return "not a git repository"
+    if not state["dirty"]:
+        return None
+    if untracked := state["untracked"]:
+        more = f" and {len(untracked) - 5} more" if len(untracked) > 5 else ""
+        return f"untracked scan inputs: {', '.join(untracked[:5])}{more}"
+    return "tracked files differ from the commit"
 
 
 def narrate_run(argv: list[str]) -> None:

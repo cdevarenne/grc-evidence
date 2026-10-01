@@ -7,6 +7,7 @@ import hashlib
 import json
 import subprocess
 import uuid
+from collections.abc import Iterable
 from dataclasses import asdict
 from datetime import UTC, datetime
 from importlib.metadata import version
@@ -43,18 +44,31 @@ def run_id(repo: Path, config: Config, now: str) -> str:
     return str(uuid.uuid5(NAMESPACE, f"run:{_git(repo, 'rev-parse', 'HEAD')}:{now}:{config_sha256(config)}"))
 
 
-def build_manifest(repo: Path, out: Path, config: Config, run: str, now: str) -> Json:
+def repo_state(repo: Path, target: str, exclude: Iterable[Path] = ()) -> Json:
+    """The scanned commit, whether the scan inputs differ from it, and the untracked files under the target.
+
+    Untracked, not-ignored files under the target are inputs the commit does not contain, so they make the
+    run dirty; `.tools/` and the `exclude` paths (run outputs) are not inputs. Outside git: commit None.
+    """
+    commit = _git(repo, "rev-parse", "HEAD")
+    if commit is None:
+        return {"commit": None, "dirty": None, "untracked": []}
+    root = repo.resolve()
+    skip = [p.relative_to(root) for p in ((repo / q).resolve() for q in (".tools", *exclude)) if p.is_relative_to(root)]
+    listed = (_git(repo, "ls-files", "-z", "--others", "--exclude-standard", "--", target) or "").split("\0")
+    untracked = sorted(f for f in listed if f and not any(Path(f).is_relative_to(s) for s in skip))
+    modified = bool(_git(repo, "status", "--porcelain", "--untracked-files=no"))
+    return {"commit": commit, "dirty": modified or bool(untracked), "untracked": untracked}
+
+
+def build_manifest(repo: Path, out: Path, config: Config, run: str, now: str, exclude: Iterable[Path] = ()) -> Json:
     """The manifest document; raises FileNotFoundError if an output is missing."""
     pins = load_pins(data.path("tools.lock"))
-    commit = _git(repo, "rev-parse", "HEAD")
     return {
         "schema_version": data.SCHEMA_VERSION,
         "run_id": run,
         "generated": now,
-        "repository": {
-            "commit": commit,
-            "dirty": None if commit is None else bool(_git(repo, "status", "--porcelain", "--untracked-files=no")),
-        },
+        "repository": repo_state(repo, config.target, (out, *exclude)),
         "engine": {"package": "okf-grc", "version": version("okf-grc")},
         "base_version": recorded_base_version(repo / config.knowledge),
         "scanners": {tool: pins[f"{tool.upper()}_VERSION"] for tool in SCANNERS},
@@ -89,10 +103,11 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
     parser.add_argument("--run-id", default=None, help="the id the OSCAL results carry (default: derived)")
+    parser.add_argument("--exclude", type=Path, action="append", default=[], help="a run directory that is not a scan input")
     args = parser.parse_args(argv)
     repo = Path.cwd()
     config = load_config(repo, args.config, target=args.target, knowledge=args.knowledge)
-    manifest = build_manifest(repo, args.out, config, args.run_id or run_id(repo, config, args.now), args.now)
+    manifest = build_manifest(repo, args.out, config, args.run_id or run_id(repo, config, args.now), args.now, args.exclude)
     (args.out / "run.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
