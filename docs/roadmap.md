@@ -29,3 +29,7 @@ Deliberately left out, or not started:
   like Google's `microservices-demo`, with its own CI, is Spec F Part B:
   specified but not started (Part A, the engine, is built):
   [Spec F](superpowers/specs/2026-09-29-mini-spec-f-engine-and-adopter-repo.md).
+- **Agentic workflows** An MCP server over the engine and workflows in which an
+  agent proposes (change review, gap-to-mapping patches, suppression drafts) and
+  a person approves: specified, not started:
+  [Spec G](superpowers/specs/2026-10-01-mini-spec-g-agentic-workflows.md).

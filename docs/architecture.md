@@ -184,7 +184,8 @@ MCP server or ingestion needs queries the files cannot answer.
 1. Fix #56 (stale narratives) before anything publishes the report.
 2. Spec F Part B: the adopter repo and its CI.
 3. MCP server, read-mostly.
-4. The agentic workflow, narrowed to proposing (see its spec).
+4. The agentic workflow, narrowed to proposing:
+   [Spec G](superpowers/specs/2026-10-01-mini-spec-g-agentic-workflows.md).
 5. One GRC connector, after its semantic mapping is written down.
 6. comply by files; ingestion without Airflow; the data layer when a consumer
    needs it.
