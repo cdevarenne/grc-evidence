@@ -164,8 +164,8 @@ def check(repo: Path, config: Config) -> list[str]:
 def sync_base(repo: Path, config: Config) -> list[str]:
     """Overwrite the repo's base copies with the installed engine's and set `base_version`; what changed.
 
-    An `index.md` is written only when missing: the repo's own lists its own concepts too, so one that differs
-    from the base is reported for a person to merge. A file the base no longer has is left in place.
+    An `index.md` with a line the base lacks (the repo's own entries) is kept and reported for a person to merge;
+    one whose lines all appear in the base's is overwritten. A file the base no longer has is left in place.
     """
     installed, changes = version("okf-grc"), []
     with as_file(data.path("base")) as base, as_file(data.path("policies")) as policies:
@@ -173,7 +173,7 @@ def sync_base(repo: Path, config: Config) -> list[str]:
             rel = copy.relative_to(repo).as_posix()
             if copy.is_file() and copy.read_bytes() == source.read_bytes():
                 continue
-            if copy.name == "index.md" and copy.is_file():
+            if copy.name == "index.md" and copy.is_file() and not _lines(copy) <= _lines(source):
                 changes.append(f"kept {rel}: differs from base {installed}; merge its new entries by hand")
                 continue
             changes.append(f"{'updated' if copy.is_file() else 'added'} {rel}")
@@ -187,6 +187,10 @@ def sync_base(repo: Path, config: Config) -> list[str]:
         index.write_text(synced, encoding="utf-8")
         changes.append(f"updated {index.relative_to(repo).as_posix()}: base_version {installed}")
     return changes
+
+
+def _lines(path: Path) -> set[str]:
+    return set(path.read_text(encoding="utf-8").splitlines())
 
 
 def _copies(repo: Path, config: Config, base: Path, policies: Path) -> list[tuple[Path, Path]]:

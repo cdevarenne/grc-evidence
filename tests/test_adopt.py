@@ -90,11 +90,14 @@ def test_sync_base_restores_the_base_and_reports_each_change(tmp_path: Path) -> 
     (tmp_path / "policies/rego/deny_latest_tag.rego").unlink()
     policies_index = tmp_path / "knowledge/policies/index.md"
     policies_index.write_text(policies_index.read_text() + "* [Local](local.md)\n")
+    controls_index = tmp_path / "knowledge/controls/index.md"
+    controls_index.write_text(controls_index.read_text().split("\n* ")[0] + "\n")  # an older base: fewer entries
     index = tmp_path / "knowledge/index.md"
     index.write_text(index.read_text().replace(f'base_version: "{version("okf-grc")}"', 'base_version: "1.0.0"  # a note'))
     config = load_config(tmp_path)
     assert adopt.sync_base(tmp_path, config) == [
         "updated knowledge/controls/cc6.1.md",
+        "updated knowledge/controls/index.md",
         f"kept knowledge/policies/index.md: differs from base {version('okf-grc')}; merge its new entries by hand",
         "added policies/rego/deny_latest_tag.rego",
         f"updated knowledge/index.md: base_version {version('okf-grc')}",
