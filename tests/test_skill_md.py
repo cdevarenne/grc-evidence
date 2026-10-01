@@ -1,6 +1,9 @@
+import re
 from pathlib import Path
 
 import yaml
+
+from okf_grc.cli import COMMANDS
 
 SKILL = Path(__file__).parent.parent / ".claude" / "skills" / "grc-continuous-compliance" / "SKILL.md"
 
@@ -25,6 +28,11 @@ def test_scanned_text_is_data_not_instructions() -> None:
 
 def test_enrich_and_propose_use_the_validated_llm_step() -> None:
     text = SKILL.read_text()
-    assert "make narrate" in text and "out/narratives.json" in text
-    assert "make triage" in text and "out/proposals.json" in text
+    assert "grc narrate" in text and "out/narratives.json" in text
+    assert "grc triage" in text and "out/proposals.json" in text
     assert "never apply" in text.lower()
+
+
+def test_every_grc_command_it_names_exists() -> None:
+    named = set(re.findall(r"`grc (\w+)", SKILL.read_text()))
+    assert named and named <= set(COMMANDS), named - set(COMMANDS)

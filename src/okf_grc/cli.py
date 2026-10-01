@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 from datetime import UTC, datetime
 from importlib.metadata import version
@@ -10,13 +11,15 @@ from importlib.resources import as_file
 from pathlib import Path
 from types import ModuleType
 
-from okf_grc import adopt, data, manifest, map_findings, render_report, run_scan, to_oscal
+from okf_grc import adopt, data, manifest, map_findings, narrate, render_report, run_scan, to_oscal, triage
 from okf_grc.config import load_config
 
 # Each step's own options pass through unchanged: `grc scan --target app` is `run_scan.py --target app`.
 STEPS: dict[str, ModuleType] = {
     "scan": run_scan, "map": map_findings, "oscal": to_oscal, "report": render_report, "manifest": manifest,
+    "triage": triage,
 }
+COMMANDS = ("bootstrap", "init", "check", "run", "narrate", *STEPS)
 
 
 def bootstrap() -> None:
@@ -45,6 +48,26 @@ def run(argv: list[str]) -> None:
     STEPS["manifest"].main([*layout, *stamp])
 
 
+def narrate_run(argv: list[str]) -> None:
+    """LLM prose per control, validated; then the report, and the run manifest that hashes it, are rewritten."""
+    parser = argparse.ArgumentParser(prog="grc narrate", description=narrate_run.__doc__)
+    parser.add_argument("--config", help="scan layout (default: grc.yaml if present)")
+    parser.add_argument("--knowledge", help="knowledge bundle (overrides the config)")
+    parser.add_argument("--out", default="out")
+    args = parser.parse_args(argv)
+    config = load_config(Path.cwd(), Path(args.config) if args.config else None, knowledge=args.knowledge)
+    common = [*_flag(args, "config"), *_flag(args, "knowledge"), "--out", args.out]
+    narrate.main(["--knowledge", config.knowledge, "--out", args.out])
+    run_json = Path(args.out) / "run.json"
+    if not run_json.is_file():  # steps run one by one: there is no manifest to keep in step
+        STEPS["report"].main(common)
+        return
+    run = json.loads(run_json.read_text(encoding="utf-8"))
+    STEPS["report"].main([*common, "--now", run["generated"]])
+    target = ["--target", run["config"]["resolved"]["target"]]  # the layout the run hashed, overrides included
+    STEPS["manifest"].main([*common, *target, "--now", run["generated"], "--run-id", run["run_id"]])
+
+
 def _flag(args: argparse.Namespace, name: str) -> list[str]:
     """`--name value` when the flag was given; passing nothing lets the config decide."""
     value = getattr(args, name)
@@ -55,7 +78,7 @@ def main(argv: list[str] | None = None) -> None:
     """Entry point of the `grc` command."""
     parser = argparse.ArgumentParser(prog="grc", description=__doc__)
     parser.add_argument("--version", action="version", version=f"%(prog)s {version('okf-grc')}")
-    parser.add_argument("command", choices=["bootstrap", "init", "check", "run", *STEPS], help="step to run")
+    parser.add_argument("command", choices=COMMANDS, help="step to run")
     parser.add_argument("args", nargs=argparse.REMAINDER, help="options for that step (see `grc <command> -h`)")
     args = parser.parse_args(argv)
     if args.command == "bootstrap":
@@ -64,6 +87,8 @@ def main(argv: list[str] | None = None) -> None:
         adopt.init_main(args.args)
     elif args.command == "check":
         adopt.check_main(args.args)
+    elif args.command == "narrate":
+        narrate_run(args.args)
     elif args.command == "run":
         run(args.args)
     else:

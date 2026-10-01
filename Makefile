@@ -1,6 +1,7 @@
 include src/okf_grc/data/tools.lock
 
 GRC := uv run grc
+GRC_LLM := uv run --extra llm grc
 PY_LLM := uv run --extra llm python -m
 TOOLBIN := $(CURDIR)/.tools/bin
 export PATH := $(TOOLBIN):$(PATH)
@@ -17,11 +18,10 @@ scan:
 	$(GRC) run --target app --knowledge knowledge --out out
 
 narrate:
-	$(PY_LLM) okf_grc.narrate --knowledge knowledge --out out
-	$(GRC) report --knowledge knowledge --out out
+	$(GRC_LLM) narrate --knowledge knowledge --out out
 
 triage:
-	$(PY_LLM) okf_grc.triage --knowledge knowledge --out out $(TRIAGE_ARGS)
+	$(GRC_LLM) triage --knowledge knowledge --out out $(TRIAGE_ARGS)
 
 eval-triage:
 	$(PY_LLM) okf_grc.eval_triage --knowledge knowledge --out out $(EVAL_ARGS)

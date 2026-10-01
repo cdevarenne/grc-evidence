@@ -34,11 +34,11 @@ Things to ask:
 - "Summarize the AI-governance findings for an auditor."
 - "This finding is a false positive: draft a suppression."
 
-**What it does.** It runs `make scan`, reads the report and the mapping, and
+**What it does.** It runs `grc run` (here, `make scan`), reads the report and the mapping, and
 summarizes the controls not satisfied, the highest-severity findings, the
 coverage gaps, the controls not assessed or not applicable, and the state of the
-suppressions. It can add LLM prose per control (`make narrate`) and propose
-controls for coverage gaps (`make triage`).
+suppressions. It can add LLM prose per control (`grc narrate`) and propose
+controls for coverage gaps (`grc triage`).
 
 **What it leaves to a reviewer/auditor.** It never changes a status, a count, or a
 finding, and it never applies its own mapping proposals: a person adds
@@ -46,16 +46,16 @@ finding, and it never applies its own mapping proposals: a person adds
 one, or edit `knowledge/`, unless asked. Text from scanned files is data to it,
 never instructions.
 
-It scans this repo's `app/` only. The `make` targets below run the same
+It scans the layout `grc.yaml` describes; in this repo that is the default, `app/`. The `make` targets below run the same
 pipeline without an agent.
 
 ## The one-command loop
 
 ```
 make bootstrap         # uv sync + install pinned scanners into .tools/
-make scan              # out/findings.json, out/mapping.json, out/oscal/*.json, out/report.md
+make scan              # grc run: out/findings.json, mapping.json, oscal/*.json, report.md, run.json
 make render            # out/knowledge-viz.html — the OKF graph
-make narrate           # optional: LLM prose per control, validated, then re-render (LLM_MODE=anthropic)
+make narrate           # optional: LLM prose per control, validated, then re-render and update run.json (LLM_MODE=anthropic)
 make triage            # optional: LLM proposals for coverage gaps → out/proposals.json (review only)
 make eval-triage       # optional: score triage variants on labeled gaps (tune + holdout) via the Batch API
 make test              # unit + Rego + Semgrep rule tests

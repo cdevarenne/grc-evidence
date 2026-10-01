@@ -78,3 +78,35 @@ def test_installed_tool_runs_the_pipeline(tmp_path: Path) -> None:
     out = tmp_path / "out"
     subprocess.run([grc, "run", "--target", "app", "--out", str(out)], cwd=ROOT, env=env, check=True)
     assert json.loads((out / "mapping.json").read_text())["controls"]["soc2:cc6.1"]["status"] == "not-satisfied"
+
+
+def _record_narrate(monkeypatch: pytest.MonkeyPatch, calls: list) -> None:
+    monkeypatch.setattr(cli.narrate, "main", lambda argv: calls.append(("narrate", argv)))
+
+
+def test_narrate_rewrites_the_report_and_the_manifest_with_the_run_id(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls = _record(monkeypatch)
+    _record_narrate(monkeypatch, calls)
+    run = {"run_id": "rid", "generated": "2026-10-01T12:00:00+00:00", "config": {"resolved": {"target": "svc"}}}
+    (tmp_path / "run.json").write_text(json.dumps(run))
+    cli.main(["narrate", "--out", str(tmp_path)])
+    assert calls == [
+        ("narrate", ["--knowledge", "knowledge", "--out", str(tmp_path)]),
+        ("report", ["--out", str(tmp_path), "--now", run["generated"]]),
+        ("manifest", ["--out", str(tmp_path), "--target", "svc", "--now", run["generated"], "--run-id", "rid"]),
+    ]
+
+
+def test_narrate_without_a_manifest_only_rewrites_the_report(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    calls = _record(monkeypatch)
+    _record_narrate(monkeypatch, calls)
+    cli.main(["narrate", "--out", str(tmp_path)])
+    assert [name for name, _ in calls] == ["narrate", "report"]
+
+
+def test_triage_gets_its_own_options(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls = _record(monkeypatch)
+    cli.main(["triage", "--batch", "--out", "o"])
+    assert calls == [("triage", ["--batch", "--out", "o"])]

@@ -26,25 +26,32 @@ description: >
 
 ## Workflow
 
-1. **Check tools.** If `.tools/bin/` is missing, run `make bootstrap`.
-2. **Scan and map.** Run `make scan`. It writes:
+The steps call the `grc` CLI of the `okf-grc` engine. In this repository run
+it as `uv run grc …` (or the matching `make` target: `make scan`,
+`make narrate`, `make triage`).
+
+1. **Check tools.** If `.tools/bin/` is missing, run `grc bootstrap`.
+2. **Scan and map.** Run `grc run`; it reads the scan layout from `grc.yaml`
+   when the repo has one. It writes:
    - `out/findings.json`: normalized findings `{tool, rule_id, severity, target, message, tags}`
    - `out/mapping.json`: per-control status plus unmapped findings with a reason
    - `out/oscal/component-definition.json`, `out/oscal/assessment-plan.json`,
      `out/oscal/assessment-results.json` (the results import the plan)
    - `out/report.md`: the deterministic report
+   - `out/run.json`: the run manifest (commit, versions, layout, and the sha256
+     of every output)
 3. **Review.** Read `out/report.md` and `out/mapping.json`. Summarize for the
    user: controls not satisfied, the highest-severity findings, coverage gaps,
    controls not assessed, and controls not applicable at the declared AI risk
    tier (these are out of scope, never a pass).
-4. **Enrich (optional, on request).** Run `make narrate`. It writes
-   `out/narratives.json` and re-renders `out/report.md` with a validated summary
-   and auditor note per control; a rejected answer leaves the deterministic
+4. **Enrich (optional, on request).** Run `grc narrate`. It writes
+   `out/narratives.json`, re-renders `out/report.md` with a validated summary
+   and auditor note per control, and updates `out/run.json` to match; a rejected answer leaves the deterministic
    prose in place, and the reason is printed. You may still rewrite prose in
    `out/report.md` by hand for an auditor. Either way, you must not change any
    status, severity count, or risk-posture figure, add or remove a finding, or
    move a finding between a control and the coverage-gap list.
-5. **Propose, don't patch the bundle.** Run `make triage` and read
+5. **Propose, don't patch the bundle.** Run `grc triage` and read
    `out/proposals.json`: one proposed in-bundle control, or `none`, per
    coverage-gap rule. Present the proposals for human review as `rule_ids`
    additions to the relevant guardrail concept. Never apply them, and do not
@@ -57,6 +64,7 @@ description: >
 
 ## Scope
 
-Operates only on this repository's `app/` and `knowledge/`. Reads no external
-systems, credentials, or production infrastructure. `app/` is intentionally
-vulnerable; never deploy it.
+Operates on the repository it runs in, over the layout `grc.yaml` describes
+(by default the scan target `app/` and the bundle `knowledge/`). Reads no
+external systems, credentials, or production infrastructure. In this
+repository `app/` is intentionally vulnerable; never deploy it.
