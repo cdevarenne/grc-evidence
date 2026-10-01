@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from okf_grc import cli, data, manifest
+from okf_grc.config import Config
 
 ROOT = Path(__file__).parent.parent
 
@@ -121,14 +122,14 @@ def _git_repo(path: Path) -> None:
 
 def test_repo_state_lists_untracked_inputs_under_the_target_only(tmp_path: Path) -> None:
     _git_repo(tmp_path)
-    assert manifest.repo_state(tmp_path, "app") == {"commit": manifest._git(tmp_path, "rev-parse", "HEAD"), "dirty": False, "untracked": []}
+    assert manifest.repo_state(tmp_path, ["app"]) == {"commit": manifest._git(tmp_path, "rev-parse", "HEAD"), "dirty": False, "untracked": []}
     (tmp_path / "app" / "new file.yaml").write_text("x: 1\n")
     (tmp_path / "notes.txt").write_text("outside the target\n")
     (tmp_path / "out").mkdir()
     (tmp_path / "out" / "report.md").write_text("ignored\n")
     (tmp_path / "app" / "run").mkdir()
     (tmp_path / "app" / "run" / "x.json").write_text("{}\n")
-    state = manifest.repo_state(tmp_path, "app", (tmp_path / "app" / "run",))
+    state = manifest.repo_state(tmp_path, ["app"], (tmp_path / "app" / "run",))
     assert state["dirty"] is True and state["untracked"] == ["app/new file.yaml"]
 
 
@@ -192,3 +193,17 @@ def test_triage_gets_its_own_options(monkeypatch: pytest.MonkeyPatch) -> None:
     calls = _record(monkeypatch)
     cli.main(["triage", "--batch", "--out", "o"])
     assert calls == [("triage", ["--batch", "--out", "o"])]
+
+
+def test_untracked_bundle_config_and_inventory_make_a_run_dirty(tmp_path: Path) -> None:
+    """E4: the bundle, the policies, the inventory, and grc.yaml shape a run as much as the target does."""
+    _git_repo(tmp_path)
+    (tmp_path / "knowledge").mkdir()
+    (tmp_path / "knowledge" / "new.md").write_text("---\ntype: Reference\n---\n")
+    (tmp_path / "grc.yaml").write_text("target: app\n")
+    (tmp_path / "ai-inventory.yaml").write_text("systems: []\n")
+    (tmp_path / "notes.txt").write_text("not an input\n")
+    inputs = manifest.scan_inputs(Config(target="app", inventory="../ai-inventory.yaml"))
+    state = manifest.repo_state(tmp_path, inputs)
+    assert state["dirty"] is True
+    assert state["untracked"] == ["ai-inventory.yaml", "grc.yaml", "knowledge/new.md"]

@@ -43,7 +43,7 @@ def run(argv: list[str]) -> None:
     repo, out = Path.cwd(), Path(args.out)
     now = datetime.now(UTC).isoformat(timespec="seconds")
     config = load_config(repo, Path(args.config) if args.config else None, target=args.target, knowledge=args.knowledge)
-    if args.require_clean and (problem := _unclean(manifest.repo_state(repo, config.target, (out,)))):
+    if args.require_clean and (problem := _unclean(manifest.repo_state(repo, manifest.scan_inputs(config), (out,)))):
         raise SystemExit(f"grc run --require-clean: {problem}")
     stamp = ["--now", now, "--run-id", manifest.run_id(repo, config, now)]
     # Steps write into a staging directory; out/ changes only once the manifest exists, so a failed run

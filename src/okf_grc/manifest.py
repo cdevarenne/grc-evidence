@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import posixpath
 import json
 import subprocess
 import uuid
@@ -44,18 +45,24 @@ def run_id(repo: Path, config: Config, now: str) -> str:
     return str(uuid.uuid5(NAMESPACE, f"run:{_git(repo, 'rev-parse', 'HEAD')}:{now}:{config_sha256(config)}"))
 
 
-def repo_state(repo: Path, target: str, exclude: Iterable[Path] = ()) -> Json:
-    """The scanned commit, whether the scan inputs differ from it, and the untracked files under the target.
+def scan_inputs(config: Config) -> list[str]:
+    """Every path whose content shapes a run: the target, the bundle, the policies, the inventory, `grc.yaml`."""
+    inventory = posixpath.normpath(f"{config.target}/{config.inventory}")
+    return [config.target, config.knowledge, *config.semgrep_configs, *config.rego, inventory, CONFIG_FILE]
 
-    Untracked, not-ignored files under the target are inputs the commit does not contain, so they make the
-    run dirty; `.tools/` and the `exclude` paths (run outputs) are not inputs. Outside git: commit None.
+
+def repo_state(repo: Path, inputs: Iterable[str], exclude: Iterable[Path] = ()) -> Json:
+    """The scanned commit, whether the scan inputs differ from it, and the untracked files among them.
+
+    Untracked, not-ignored files among `inputs` (see `scan_inputs`) are inputs the commit does not contain, so
+    they make the run dirty; `.tools/` and the `exclude` paths (run outputs) are not inputs. Outside git: commit None.
     """
     commit = _git(repo, "rev-parse", "HEAD")
     if commit is None:
         return {"commit": None, "dirty": None, "untracked": []}
     root = repo.resolve()
     skip = [p.relative_to(root) for p in ((repo / q).resolve() for q in (".tools", *exclude)) if p.is_relative_to(root)]
-    listed = (_git(repo, "ls-files", "-z", "--others", "--exclude-standard", "--", target) or "").split("\0")
+    listed = (_git(repo, "ls-files", "-z", "--others", "--exclude-standard", "--", *inputs) or "").split("\0")
     untracked = sorted(f for f in listed if f and not any(Path(f).is_relative_to(s) for s in skip))
     modified = bool(_git(repo, "status", "--porcelain", "--untracked-files=no"))
     return {"commit": commit, "dirty": modified or bool(untracked), "untracked": untracked}
@@ -74,7 +81,7 @@ def build_manifest(
         "schema_version": data.SCHEMA_VERSION,
         "run_id": run,
         "generated": now,
-        "repository": repository or repo_state(repo, config.target, (out, *exclude)),
+        "repository": repository or repo_state(repo, scan_inputs(config), (out, *exclude)),
         "engine": {"package": "okf-grc", "version": version("okf-grc")},
         "base_version": recorded_base_version(repo / config.knowledge),
         "scanners": {tool: pins[f"{tool.upper()}_VERSION"] for tool in SCANNERS},
