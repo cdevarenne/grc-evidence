@@ -75,10 +75,18 @@ jobs:
 ```
 
 `grc gate` compares the run with `expected/control-status.json`, a baseline you
-commit (`grc gate --write-baseline` creates it): it fails when a control moves
-to `not-satisfied` or a suppression has expired, and writes the status table to
-the job summary. A control already `not-satisfied` in the baseline does not fail
-again; update the baseline in the same pull request when a change is accepted.
+commit (`grc gate --write-baseline` creates it with each control's status and
+each mapped finding). It fails when a control moves to `not-satisfied`, when a
+finding not in the baseline is at or above `--fail-on` (default `high`), or when
+a suppression has expired, and writes the status table to the job summary. A
+control already `not-satisfied` does not fail again, but a new finding in it
+does; update the baseline in the same pull request when a change is accepted.
+
+A finding is identified by tool, rule, and file: a version bump on a package
+that is still vulnerable is not new, and neither is a second instance of a rule
+in a file that already had one. Severity `unknown` (most Checkov rules) never
+reaches a `--fail-on` level; accepted risks are left out. A baseline written
+before 1.3.0 records statuses only, so the gate checks statuses only and says so.
 
 `out/run.json` names the commit, the engine and scanner versions, the layout,
 and the sha256 of every output, so the uploaded artifact is traceable to the
