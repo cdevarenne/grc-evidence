@@ -1,6 +1,6 @@
 # Compliance Scan Report
 
-Generated 2026-10-01T15:50:56+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-10-01T16:18:07+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
@@ -213,11 +213,12 @@ purpose, then review its risk tier.
 **Open findings:**
 
 - `semgrep` `llm-hardcoded-key` (high) — An API key is assigned from a string literal; read it from the environment or a secret store. — `app/assistant/settings.py`
-- `semgrep` `llm-unbounded-call` (medium) — LLM call without both a timeout and a max_tokens bound; set both. — `app/assistant/views.py`
+- `semgrep` `llm-unbounded-call` (medium) — LLM call without both a timeout and a token limit; set both. — `app/assistant/views.py`
 
 **Remediation:** Read the key from the environment (for example `os.environ["ANTHROPIC_API_KEY"]`)
-or a secret manager, and rotate any key that was committed. Pass `timeout=` and `max_tokens=` on every `messages.create` call, sized to the
-feature's latency and cost budget.
+or a secret manager, and rotate any key that was committed. Pass `timeout=` and `max_tokens=` on every `messages.create` call, or set
+`timeout` and `max_tokens` (`max_output_tokens` for Google) on the LangChain
+chat model, sized to the feature's latency and cost budget.
 
 ### A.7 — Data for AI systems
 
