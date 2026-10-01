@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from okf_grc.config import Config, load_config
+from okf_grc.data import SCHEMA_VERSION
 
 Finding = dict[str, Any]
 SEVERITIES = ("critical", "high", "medium", "low", "info", "unknown")
@@ -189,7 +190,8 @@ def main(argv: list[str] | None = None) -> None:
     repo = Path.cwd()
     findings = scan(repo, load_config(repo, args.config, target=args.target))
     args.out.mkdir(parents=True, exist_ok=True)
-    (args.out / "findings.json").write_text(json.dumps(findings, indent=2) + "\n", encoding="utf-8")
+    doc = {"schema_version": SCHEMA_VERSION, "findings": findings}
+    (args.out / "findings.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

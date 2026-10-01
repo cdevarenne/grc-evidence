@@ -40,6 +40,7 @@ runs share one tool name, so each lists every control a Trivy rule evidences.
 | Field | Source |
 |---|---|
 | `import-ap.href` | `assessment-plan.json`, the plan written next to it (relative, so the files travel together) |
+| `results[0].props` | a namespaced `run-id` naming the run manifest (`out/run.json`) that hashes these outputs; present when written by `grc run` |
 | `results[0].reviewed-controls` | one `control-selection` per framework, described by the framework's source title; includes every control whose status is not `not-assessed` or `not-applicable` (always a subset of the plan's) |
 | `results[0].observations[]` | one per scanner finding; `methods: [TEST]`; a namespaced `severity` prop (`critical` … `unknown`) |
 | `results[0].findings[]` | one per control with open violations; `target.status.state` is always `not-satisfied`; a namespaced `severity` prop holding the highest severity among its observations; the description counts open findings and accepted risks apart |

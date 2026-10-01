@@ -78,7 +78,7 @@ def test_main_reads_the_inventory_of_the_scan_target(tmp_path: Path, monkeypatch
     out.mkdir()
     shutil.copytree(FIXTURES / "ai_bundle", tmp_path / "kb")
     (target / "ai-inventory.yaml").write_text("risk_tier: high\n", encoding="utf-8")  # app/ declares limited
-    (out / "findings.json").write_text(json.dumps(FINDINGS), encoding="utf-8")
+    (out / "findings.json").write_text(json.dumps({"schema_version": "1.0", "findings": FINDINGS}), encoding="utf-8")
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["map_findings", "--knowledge", "kb", "--target", "svc", "--out", "out"])
     map_findings_module.main()

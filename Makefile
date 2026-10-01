@@ -42,6 +42,7 @@ examples: scan
 	cp out/report.md examples/report.md
 	mkdir -p examples/oscal
 	cp out/oscal/*.json examples/oscal/
+	cp out/run.json examples/run.json
 
 clean:
 	rm -rf out

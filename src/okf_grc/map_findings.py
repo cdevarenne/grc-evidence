@@ -11,6 +11,7 @@ from typing import Any
 import yaml
 
 from okf_grc.config import load_config
+from okf_grc.data import SCHEMA_VERSION
 from okf_grc.okf_lib import EXPIRY_WARNING_DAYS, GUARDRAIL_TYPES, SCANNER_TYPE, Bundle, Suppression, applies, load_bundle
 
 Finding = dict[str, Any]
@@ -126,6 +127,15 @@ def map_findings(
     return mapping
 
 
+def read_findings(path: Path) -> list[Finding]:
+    """The findings list of a `findings.json` written under schema 1.x; anything else is an error."""
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    major = SCHEMA_VERSION.split(".")[0]
+    if not isinstance(doc, dict) or str(doc.get("schema_version", "")).split(".")[0] != major:
+        raise ValueError(f"{path}: not a schema {major}.x findings file; rerun `grc scan`")
+    return doc["findings"]
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=None, help="scan layout (default: grc.yaml if present)")
@@ -135,10 +145,11 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--today", type=date.fromisoformat, default=None, help="date for suppression expiry")
     args = parser.parse_args(argv)
     config = load_config(Path.cwd(), args.config, target=args.target, knowledge=args.knowledge)
-    findings = json.loads((args.out / "findings.json").read_text(encoding="utf-8"))
+    findings = read_findings(args.out / "findings.json")
     inventory = Path(config.target) / config.inventory
     mapping = map_findings(load_bundle(Path(config.knowledge)), findings, load_context(inventory), args.today)
-    (args.out / "mapping.json").write_text(json.dumps(mapping, indent=2) + "\n", encoding="utf-8")
+    doc = {"schema_version": SCHEMA_VERSION, **mapping}
+    (args.out / "mapping.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

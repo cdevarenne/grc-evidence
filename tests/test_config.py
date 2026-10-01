@@ -122,7 +122,7 @@ def test_real_scanners_honor_a_custom_layout(tmp_path: Path) -> None:
     env = os.environ | {"PATH": f"{root / '.tools' / 'bin'}{os.pathsep}{os.environ['PATH']}",
                         "TRIVY_CACHE_DIR": str(root / ".tools" / "trivy-cache")}
     subprocess.run(["uv", "run", "grc", "scan", "--config", str(config), "--out", str(tmp_path)], cwd=root, env=env, check=True)
-    findings = json.loads((tmp_path / "findings.json").read_text())
+    findings = json.loads((tmp_path / "findings.json").read_text())["findings"]
     by_tool = {tool: {f["target"] for f in findings if f["tool"] == tool} for tool in ("checkov", "conftest")}
     assert by_tool["checkov"] and "app/Dockerfile" not in by_tool["checkov"]
     assert by_tool["conftest"] and all(t.startswith("app/k8s/") for t in by_tool["conftest"])

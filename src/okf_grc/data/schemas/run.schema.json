@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "okf-grc run.json",
+  "description": "Provenance of one `grc run`: what produced the outputs, and the sha256 of each.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated",
+    "repository",
+    "engine",
+    "base_version",
+    "scanners",
+    "config",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$",
+      "description": "Contract version; additive changes bump the minor."
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "generated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "commit",
+        "dirty"
+      ],
+      "properties": {
+        "commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{40,64}$",
+          "description": "null outside a git repository"
+        },
+        "dirty": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Tracked files differed from the commit"
+        }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "required": [
+        "package",
+        "version"
+      ],
+      "properties": {
+        "package": {
+          "const": "okf-grc"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "base_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scanners": {
+      "type": "object",
+      "required": [
+        "semgrep",
+        "trivy",
+        "checkov",
+        "conftest"
+      ],
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "config": {
+      "type": "object",
+      "required": [
+        "file",
+        "resolved",
+        "sha256"
+      ],
+      "properties": {
+        "file": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "resolved": {
+          "type": "object"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    }
+  }
+}

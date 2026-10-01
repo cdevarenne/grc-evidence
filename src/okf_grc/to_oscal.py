@@ -282,7 +282,7 @@ def _control_selections(bundle: Bundle, assessed: list[str]) -> list[Json]:
     return selections
 
 
-def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
+def assessment_results(bundle: Bundle, mapping: Json, now: str, run_id: str | None = None) -> Json:
     """Findings only for controls with violations; unmapped findings become open risks, never findings.
 
     A clean automated scan never produces a `satisfied` finding: automation evidences a
@@ -350,6 +350,8 @@ def assessment_results(bundle: Bundle, mapping: Json, now: str) -> Json:
         "start": now,
         "reviewed-controls": {"control-selections": _control_selections(bundle, assessed)},
     }
+    if run_id:  # the run manifest (run.json) that hashes these outputs
+        result["props"] = [{"name": "run-id", "ns": PROP_NS, "value": run_id}]
     if observations:
         result["observations"] = list(observations.values())
     if risks:
@@ -380,6 +382,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
     parser.add_argument("--lock", type=Path, default=None, help="pinned scanner versions (default: the packaged tools.lock)")
     parser.add_argument("--target", default=None, help="scan target, relative to the repo root (overrides the config)")
+    parser.add_argument("--run-id", default=None, help="id of the run manifest these results belong to")
     args = parser.parse_args(argv)
     config = load_config(Path.cwd(), args.config, target=args.target, knowledge=args.knowledge)
     bundle = load_bundle(Path(config.knowledge))
@@ -389,7 +392,7 @@ def main(argv: list[str] | None = None) -> None:
     for name, doc in (
         ("component-definition.json", component_definition(bundle, args.now)),
         ("assessment-plan.json", assessment_plan(bundle, mapping, args.now, load_pins(args.lock or data.path("tools.lock")), config)),
-        ("assessment-results.json", assessment_results(bundle, mapping, args.now)),
+        ("assessment-results.json", assessment_results(bundle, mapping, args.now, args.run_id)),
     ):
         (oscal_dir / name).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
 

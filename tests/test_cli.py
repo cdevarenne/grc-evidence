@@ -37,15 +37,17 @@ def test_a_step_gets_its_own_options(monkeypatch: pytest.MonkeyPatch) -> None:
     assert calls == [("scan", ["--target", "svc", "--out", "o"])]
 
 
-def test_run_calls_the_four_steps_in_order(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_calls_every_step_in_order_with_one_time_and_run_id(monkeypatch: pytest.MonkeyPatch) -> None:
     calls = _record(monkeypatch)
-    cli.main(["run", "--target", "svc", "--knowledge", "kb", "--out", "o"])
-    assert calls == [
-        ("scan", ["--target", "svc", "--out", "o"]),
-        ("map", ["--knowledge", "kb", "--target", "svc", "--out", "o"]),
-        ("oscal", ["--knowledge", "kb", "--target", "svc", "--out", "o"]),
-        ("report", ["--knowledge", "kb", "--out", "o"]),
-    ]
+    cli.main(["run", "--target", "app", "--knowledge", "knowledge", "--out", "o"])
+    steps = dict(calls)
+    assert [name for name, _ in calls] == ["scan", "map", "oscal", "report", "manifest"]
+    layout = ["--knowledge", "knowledge", "--target", "app", "--out", "o"]
+    assert steps["scan"] == ["--target", "app", "--out", "o"]
+    assert steps["map"] == layout
+    now, run_id = steps["oscal"][-3], steps["oscal"][-1]
+    assert steps["oscal"] == steps["manifest"] == [*layout, "--now", now, "--run-id", run_id]
+    assert steps["report"] == ["--knowledge", "knowledge", "--out", "o", "--now", now]
 
 
 def test_packaged_data_is_found() -> None:

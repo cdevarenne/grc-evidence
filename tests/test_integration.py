@@ -1,12 +1,16 @@
 """End-to-end: `make scan` finds every seeded issue and maps it exactly as SEEDED.yaml expects."""
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
+from jsonschema import Draft202012Validator, FormatChecker
 
+from okf_grc import data
+from okf_grc.to_oscal import PROP_NS
 from oscal_schema import validate
 
 ROOT = Path(__file__).parent.parent
@@ -76,8 +80,21 @@ def test_accepted_risk_is_marked_while_in_force(mapping: dict, seed: dict) -> No
 
 
 def test_every_finding_target_is_under_the_scan_target(mapping: dict) -> None:
-    findings = json.loads((OUT / "findings.json").read_text())
+    findings = json.loads((OUT / "findings.json").read_text())["findings"]
     assert [f["target"] for f in findings if not f["target"].startswith("app/")] == []
+
+
+def test_outputs_follow_the_contract_and_the_manifest_matches_them(mapping: dict) -> None:
+    for name in ("findings", "mapping", "run"):
+        doc = json.loads((OUT / f"{name}.json").read_text())
+        schema = json.loads(data.path(f"schemas/{name}.schema.json").read_text())
+        Draft202012Validator(schema, format_checker=FormatChecker()).validate(doc)
+    run = json.loads((OUT / "run.json").read_text())
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+    assert run["repository"]["commit"] == head
+    assert run["outputs"] == {rel: hashlib.sha256((OUT / rel).read_bytes()).hexdigest() for rel in run["outputs"]}
+    results = json.loads((OUT / "oscal" / "assessment-results.json").read_text())["assessment-results"]["results"][0]
+    assert {"name": "run-id", "ns": PROP_NS, "value": run["run_id"]} in results["props"]
 
 
 def test_no_suppression_is_unused(mapping: dict) -> None:
