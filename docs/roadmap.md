@@ -6,7 +6,7 @@ Where the project stands and what is specified next. See [architecture.md](archi
 cost-bounded LLM step with a measured eval, and linked OSCAL component
 definition, assessment plan, and assessment results.
 
-`1.1.0` (the package version; its release tag follows) makes it an installable
+[`v1.1.0`](https://github.com/cdevarenne/okf-grc-skill/releases/tag/v1.1.0) (released 2026-10-01) makes it an installable
 engine, Spec F Part A: the `okf-grc` package and its `grc` CLI, a configurable
 scan layout (`grc.yaml`), the base bundle shipped with the engine, a versioned
 output contract with a run manifest, `grc init` and `grc check`, AI rules that
