@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from okf_grc.map_findings import map_findings
 from okf_grc.okf_lib import BundleError, load_bundle
 
 FIXTURE = Path(__file__).parent / "fixtures" / "bundle"
@@ -112,3 +113,19 @@ def test_declaring_returns_rule_declarers_carrying_the_code() -> None:
     assert [c.id for c in bundle.declaring("cc6.1")] == ["policies/require-non-root"]
     assert [c.id for c in bundle.declaring("cc7.1")] == ["scanners/trivy"]
     assert bundle.declaring("cc7.2") == []
+
+
+def test_soc2_availability_tags_and_scanner_check_guardrails(tmp_path) -> None:
+    """#85: A1 (availability) tags are SOC 2 controls; a Scanner Check groups third-party rules as a guardrail."""
+    (tmp_path / "controls").mkdir()
+    (tmp_path / "controls" / "a1.1.md").write_text("---\ntype: SOC 2 Control\ntitle: A1.1\ntags: [a1.1]\n---\n# Intent\n\nx\n")
+    (tmp_path / "policies").mkdir()
+    (tmp_path / "policies" / "limits.md").write_text(
+        "---\ntype: Scanner Check\ntitle: Limits\ntags: [a1.1]\nrule_ids:\n  - trivy:KSV-0011\n---\n# Rule\n\nx\n"
+    )
+    bundle = load_bundle(tmp_path)
+    assert bundle.control("a1.1").key == "soc2:a1.1"
+    assert [c.id for c in bundle.declaring("soc2:a1.1")] == ["policies/limits"]
+    finding = {"tool": "trivy", "rule_id": "KSV-0011", "severity": "low", "target": "k8s/a.yaml", "message": "m", "tags": []}
+    entry = map_findings(bundle, [finding])["controls"]["soc2:a1.1"]
+    assert entry["status"] == "not-satisfied" and entry["satisfied_by"] == ["policies/limits"]

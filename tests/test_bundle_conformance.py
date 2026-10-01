@@ -13,7 +13,7 @@ from okf_grc.okf_lib import FRAMEWORK_TYPES, load_bundle
 KNOWLEDGE = Path(__file__).parent.parent / "knowledge"
 TOOLS = {"semgrep", "trivy", "checkov", "conftest"}
 TYPES = {
-    *FRAMEWORK_TYPES.values(), "Crosswalk", "Stack Component", "Rego Policy", "Semgrep Rule", "Scanner", "Reference",
+    *FRAMEWORK_TYPES.values(), "Crosswalk", "Stack Component", "Rego Policy", "Semgrep Rule", "Scanner Check", "Scanner", "Reference",
     "Suppression",
 }
 BUNDLE = load_bundle(KNOWLEDGE)  # raises BundleError on a missing or empty `type` (OKF §11)
