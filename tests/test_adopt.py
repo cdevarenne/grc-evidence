@@ -40,6 +40,17 @@ def test_init_copies_the_base_and_writes_starters(tmp_path: Path) -> None:
     assert load_context(repo / "ai-inventory.yaml") == {}  # risk tier left to a person: every control is assessed
 
 
+def test_init_ignores_tools_and_outputs_in_git(tmp_path: Path) -> None:
+    assert Path(".gitignore") in adopt.init(tmp_path)
+    assert (tmp_path / ".gitignore").read_text() == ".tools/\nout/\n"
+
+
+def test_init_appends_only_missing_ignore_entries(tmp_path: Path) -> None:
+    (tmp_path / ".gitignore").write_text("node_modules/\nout/", encoding="utf-8")  # no trailing newline
+    adopt.init(tmp_path)
+    assert (tmp_path / ".gitignore").read_text() == "node_modules/\nout/\n.tools/\n"
+
+
 def test_init_refuses_and_writes_nothing_when_a_file_exists(tmp_path: Path) -> None:
     (tmp_path / "grc.yaml").write_text("target: .\n")
     with pytest.raises(FileExistsError, match="writes nothing: 1 file"):
@@ -98,10 +109,14 @@ def test_a_new_repo_goes_from_init_to_a_scan(tmp_path: Path) -> None:
     (tmp_path / "k8s").mkdir()
     shutil.copy(ROOT / "app/k8s/deployment.yaml", tmp_path / "k8s/deployment.yaml")
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
-    env = os.environ | {"PATH": f"{ROOT / '.tools' / 'bin'}{os.pathsep}{os.environ['PATH']}",
-                        "TRIVY_CACHE_DIR": str(ROOT / ".tools" / "trivy-cache")}
+    # No scanner on PATH: grc must find them in ./.tools itself (#59). The Makefile exports .tools/bin, so drop it.
+    scanners = ("semgrep", "trivy", "checkov", "conftest")
+    path = [p for p in os.environ["PATH"].split(os.pathsep) if not any((Path(p) / s).exists() for s in scanners)]
+    env = os.environ | {"PATH": os.pathsep.join(path)}
+    env.pop("TRIVY_CACHE_DIR", None)
     grc = ["uv", "run", "--project", str(ROOT), "grc"]
     subprocess.run([*grc, "init"], cwd=tmp_path, env=env, check=True, capture_output=True)
+    (tmp_path / ".tools").symlink_to(ROOT / ".tools")  # stands in for `grc bootstrap`
     subprocess.run([*grc, "check"], cwd=tmp_path, env=env, check=True, capture_output=True)
     subprocess.run([*grc, "run"], cwd=tmp_path, env=env, check=True, capture_output=True)
     mapping = json.loads((tmp_path / "out/mapping.json").read_text())

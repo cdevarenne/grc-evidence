@@ -117,8 +117,28 @@ def test_conftest_inputs_require_a_file_to_check(tmp_path: Path) -> None:
 
 
 def test_run_tool_missing_binary(tmp_path: Path) -> None:
-    with pytest.raises(ScanError, match="not found"):
-        run_tool("nope", ["definitely-not-a-scanner-binary"], tmp_path)
+    with pytest.raises(ScanError, match="not found in .tools/bin or on PATH; run `grc bootstrap`"):
+        run_tool("nope", ["definitely-not-a-scanner-binary"], tmp_path, tmp_path / ".tools")
+
+
+def _local_scanner(tools: Path, name: str, script: str) -> None:
+    (tools / "bin").mkdir(parents=True)
+    exe = tools / "bin" / name
+    exe.write_text(f"#!/bin/sh\n{script}\n", encoding="utf-8")
+    exe.chmod(0o755)
+
+
+def test_run_tool_uses_the_bootstrapped_scanner_without_path(tmp_path: Path) -> None:
+    _local_scanner(tmp_path / ".tools", "only-in-tools", "echo '[\"local\"]'")
+    assert run_tool("fake", ["only-in-tools", "--flag"], tmp_path, tmp_path / ".tools") == ["local"]
+
+
+def test_run_tool_points_trivy_at_the_local_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TRIVY_CACHE_DIR", raising=False)
+    _local_scanner(tmp_path / ".tools", "echo-cache", 'printf \'["%s"]\' "$TRIVY_CACHE_DIR"')
+    assert run_tool("fake", ["echo-cache"], tmp_path, tmp_path / ".tools") == [str(tmp_path / ".tools" / "trivy-cache")]
+    monkeypatch.setenv("TRIVY_CACHE_DIR", "/elsewhere")
+    assert run_tool("fake", ["echo-cache"], tmp_path, tmp_path / ".tools") == ["/elsewhere"]
 
 
 def test_run_tool_accepts_exit_1_with_json(tmp_path: Path) -> None:

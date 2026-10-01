@@ -11,7 +11,6 @@ uv tool install git+https://github.com/cdevarenne/okf-grc-skill@v1.1.0
 grc init        # knowledge/ and policies/ copied from the base bundle; starter grc.yaml,
                 # ai-inventory.yaml, and one stack stub per src/*/ directory (never overwrites)
 grc bootstrap   # the pinned scanners, into ./.tools
-export PATH="$PWD/.tools/bin:$PATH"   # until grc finds them itself (#59)
 grc check       # base copies unchanged, every concept reviewed by a person (stubs are not, yet)
 grc run         # out/: findings, mapping, OSCAL, report, run.json
 ```

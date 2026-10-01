@@ -36,6 +36,7 @@ this repository's own.
 * [Suppressions](suppressions/) - reviewed, expiring false positives and accepted risks; never hidden
 * [OSCAL output](oscal/component-definition.md) - the machine-readable output target
 """
+GITIGNORED = (".tools/", "out/")  # scanners and run outputs: local, never committed
 STACK_INDEX = "# Stack\n\nThis repository's components. Each one links the controls it implements.\n\n{entries}"
 SUPPRESSIONS_INDEX = "# Suppressions\n\nOne concept per reviewed decision about one exact finding, with an owner, a reason, and an expiry.\n"
 STUB = """---
@@ -100,14 +101,26 @@ def init_files(repo: Path, target: str) -> dict[Path, str]:
 
 
 def init(repo: Path, target: str = ".") -> list[Path]:
-    """Write the starter files; refuse, writing nothing, if any already exists."""
+    """Write the starter files; refuse, writing nothing, if any already exists. Ignores `.tools/` and `out/` in git."""
     files = init_files(repo, target)
     if conflicts := sorted(rel for rel in files if (repo / rel).exists()):
         raise FileExistsError(f"grc init writes nothing: {len(conflicts)} file(s) exist, e.g. {conflicts[0]}")
     for rel, text in files.items():
         (repo / rel).parent.mkdir(parents=True, exist_ok=True)
         (repo / rel).write_text(text, encoding="utf-8")
-    return sorted(files)
+    return sorted([*files, *_ignore(repo, GITIGNORED)])
+
+
+def _ignore(repo: Path, entries: tuple[str, ...]) -> list[Path]:
+    """Append the entries `.gitignore` lacks (the one file `grc init` may change); the paths it touched."""
+    gitignore = repo / ".gitignore"
+    present = gitignore.read_text(encoding="utf-8").splitlines() if gitignore.is_file() else []
+    if not (missing := [e for e in entries if e not in present]):
+        return []
+    prefix = "" if not present or gitignore.read_text(encoding="utf-8").endswith("\n") else "\n"
+    with gitignore.open("a", encoding="utf-8") as f:
+        f.write(prefix + "\n".join(missing) + "\n")
+    return [Path(".gitignore")]
 
 
 def check(repo: Path, config: Config) -> list[str]:
