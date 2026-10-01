@@ -122,3 +122,16 @@ def test_a_new_repo_goes_from_init_to_a_scan(tmp_path: Path) -> None:
     mapping = json.loads((tmp_path / "out/mapping.json").read_text())
     assert mapping["controls"]["soc2:cc6.1"]["status"] == "not-satisfied"  # the manifest runs as root
     assert json.loads((tmp_path / "out/run.json").read_text())["base_version"] == version("okf-grc")
+
+
+def test_init_never_writes_into_a_submodule(tmp_path: Path) -> None:
+    """E2: a target with its own .git (a submodule) gets nothing written into it; the inventory goes beside it."""
+    (tmp_path / "upstream" / "src" / "cart").mkdir(parents=True)
+    (tmp_path / "upstream" / ".git").write_text("gitdir: ../.git/modules/upstream\n")
+    before = sorted(p.relative_to(tmp_path) for p in (tmp_path / "upstream").rglob("*"))
+    written = adopt.init(tmp_path, "upstream")
+    assert sorted(p.relative_to(tmp_path) for p in (tmp_path / "upstream").rglob("*")) == before
+    assert Path("ai-inventory.yaml") in written and not any(str(p).startswith("upstream") for p in written)
+    config = load_config(tmp_path)
+    assert config.inventory == "../ai-inventory.yaml" and "../ai-inventory.yaml" in config.conftest_inputs
+    assert "stack/cart" in load_bundle(tmp_path / "knowledge").concepts

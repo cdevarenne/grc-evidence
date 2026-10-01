@@ -61,9 +61,8 @@ systems: []  # each AI system: {name, owner, provider, sdk, purpose}; sdk is e.g
 """
 
 
-def starter_config(target: str) -> str:
-    """A `grc.yaml` naming every key with its default, for the given target."""
-    d = Config(target=target)
+def starter_config(d: Config) -> str:
+    """A `grc.yaml` naming every key with its value in `d`."""
     return (
         "# okf-grc scan layout. Scan inputs (inventory, conftest.inputs, checkov.skip_paths) are\n"
         "# relative to the target; the other paths are relative to the repo root.\n"
@@ -79,7 +78,7 @@ def starter_config(target: str) -> str:
 
 def init_files(repo: Path, target: str) -> dict[Path, str]:
     """Every file `grc init` writes, repo-relative, with its content."""
-    config = Config(target=target)
+    config = _starter(repo, target)
     knowledge, files = Path(config.knowledge), {}
     with as_file(data.path("base")) as base, as_file(data.path("policies")) as policies:
         for src in _tree(base):
@@ -97,9 +96,20 @@ def init_files(repo: Path, target: str) -> dict[Path, str]:
         entries += f"* [{component.name}]({component.name}.md)\n"
     files[knowledge / "stack" / "index.md"] = STACK_INDEX.format(entries=entries)
     files[knowledge / "suppressions" / "index.md"] = SUPPRESSIONS_INDEX
-    files[Path(CONFIG_FILE)] = starter_config(target)
-    files[Path(target) / config.inventory] = INVENTORY
+    files[Path(CONFIG_FILE)] = starter_config(config)
+    files[Path(os.path.normpath(Path(target) / config.inventory))] = INVENTORY
     return files
+
+
+def _starter(repo: Path, target: str) -> Config:
+    """The starter layout. A target that is its own git repository (a submodule) is someone else's code:
+    the inventory goes to the repo root, beside it, and Conftest reads it there."""
+    defaults = Config(target=target)
+    if not (repo / target / ".git").exists():
+        return defaults
+    inventory = Path(os.path.relpath(repo / "ai-inventory.yaml", repo / target)).as_posix()
+    inputs = tuple(inventory if p == defaults.inventory else p for p in defaults.conftest_inputs)
+    return Config(target=target, inventory=inventory, conftest_inputs=inputs)
 
 
 def init(repo: Path, target: str = ".") -> list[Path]:
