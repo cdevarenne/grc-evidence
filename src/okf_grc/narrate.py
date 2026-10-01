@@ -19,6 +19,7 @@ STATUSES = ("not-satisfied", "no-violations-detected", "not-assessed", "not-appl
 _FORBIDDEN = re.compile(r"(?<![\w-])(satisfied|compliant|passed)\b", re.I)
 _STATUS = re.compile("|".join(STATUSES))
 _NUMBER = re.compile(r"\d+(?:\.\d+)*")
+_NOT_SATISFIED = re.compile(r"\bnot\s+satisfied\b", re.I)
 
 SYSTEM = """You write short, plain-English notes for a SOC 2 / AI-governance auditor.
 
@@ -67,7 +68,11 @@ def allowed_numbers(bundle_doc: Json, scan_doc: Json) -> dict[str, set[str]]:
 
 
 def validate(output: Json, mapping: Json, allowed: dict[str, set[str]]) -> list[str]:
-    """Every reason to reject the whole output; empty means accept. `allowed`: numbers per control."""
+    """Every reason to reject the whole output; empty means accept. `allowed`: numbers per control.
+
+    "Not satisfied" in plain words is read as the status token `not-satisfied`: checked against the control's
+    status like the token, and not mistaken for a claim that the control is satisfied.
+    """
     errors = []
     expected, got = set(mapping["controls"]), set(output)
     if missing := sorted(expected - got):
@@ -75,7 +80,7 @@ def validate(output: Json, mapping: Json, allowed: dict[str, set[str]]) -> list[
     if extra := sorted(got - expected):
         errors.append(f"controls not in the bundle: {extra}")
     for key in sorted(expected & got):
-        text = " ".join(str(v) for v in output[key].values())
+        text = _NOT_SATISFIED.sub("not-satisfied", " ".join(str(v) for v in output[key].values()))
         status = mapping["controls"][key]["status"]
         if m := _FORBIDDEN.search(text):
             errors.append(f"{key}: forbidden status word {m.group(0)!r}")

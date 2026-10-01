@@ -9,7 +9,7 @@ from okf_grc.digest import bundle_digest, scan_digest
 from okf_grc.llm import LLMError
 from llm_stub import StubLLM
 from okf_grc.map_findings import map_findings
-from okf_grc.narrate import mapping_sha256, narrate, read_narratives, validate
+from okf_grc.narrate import allowed_numbers, mapping_sha256, narrate, read_narratives, validate
 from okf_grc.render_report import main as render_main
 from okf_grc.okf_lib import load_bundle
 
@@ -55,6 +55,8 @@ def test_valid_narratives_are_accepted() -> None:
         ("soc2:cc7.2", "All checks passed.", "forbidden status word 'passed'"),
         ("soc2:cc7.2", "CC7.2 is not-satisfied.", "claims ['not-satisfied']"),
         ("soc2:cc6.1", "CC6.1 has 3 open findings.", "numbers not in the input ['3']"),
+        # "Not satisfied" in plain words is the not-satisfied status: wrong for a clean control
+        ("soc2:cc8.1", "Not satisfied; review the gate.", "claims ['not-satisfied']"),
         # #68: "1" is in the prompt (other controls' counts) but not in cc7.2's own entries, which have 0 findings
         ("soc2:cc7.2", "CC7.2 has 1 open finding.", "numbers not in the input ['1']"),
     ],
@@ -115,3 +117,11 @@ def test_narratives_without_a_mapping_hash_are_stale(tmp_path: Path) -> None:
 
 def test_no_narratives_file_is_not_stale(tmp_path: Path) -> None:
     assert read_narratives(_out_with_mapping(tmp_path, {"controls": {}, "unmapped": []})) == ({}, False)
+
+
+def test_not_satisfied_in_plain_words_is_accepted_for_a_not_satisfied_control() -> None:
+    """Seen from Haiku 4.5 on 2026-10-01: "Not satisfied; ..." was rejected as a claim that the control is satisfied."""
+    output = _good()
+    key = next(k for k, c in MAPPING["controls"].items() if c["status"] == "not-satisfied")
+    output[key]["summary"] = "Not satisfied; review the open findings."
+    assert validate(output, MAPPING, allowed_numbers(DIGEST, scan_digest(MAPPING))) == []
