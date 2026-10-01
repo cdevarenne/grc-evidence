@@ -99,18 +99,13 @@ updates `expected/` in the same pull request.
 report, one triaged gap, one suppression, what CI publishes, and the same run
 through the skill.
 
-## Decisions needed
+## Decisions (2026-10-01)
 
-1. **Where gap mappings go.** Most of the 48 gap rules are generic (Trivy KSV,
-   Checkov `CKV_K8S_*`, `CKV_DOCKER_*`): mapping them helps every adopter.
-   Proposed: generic scanner rules are mapped in the engine's base bundle
-   (released as `v1.2.x`); rules about this app's own code or configuration are
-   mapped in the adopter's bundle.
-2. **Engine first.** E1–E5 land and `v1.2.0` is tagged before the adopter repo
-   is created. Proposed: yes; the prototype shows the repo cannot be set up
-   faithfully on `v1.1.0`.
-3. **Creating the GitHub repo** (outward-facing): the user creates it, or asks
-   for `gh repo create cdevarenne/okf-grc-demo-boutique --public`.
+1. **Gap mappings:** generic scanner rules (Trivy KSV, Checkov `CKV_K8S_*`,
+   `CKV_DOCKER_*`) are mapped in the engine's base bundle, released as `v1.2.x`;
+   rules about this app's own code or configuration in the adopter's bundle.
+2. **Engine first:** E1–E5 land and `v1.2.0` is tagged before the adopter repo.
+3. **The GitHub repo:** the user creates it when B1 starts.
 
 ## Order
 
