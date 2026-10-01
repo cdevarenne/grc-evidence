@@ -133,6 +133,15 @@ def test_repo_state_lists_untracked_inputs_under_the_target_only(tmp_path: Path)
     assert state["dirty"] is True and state["untracked"] == ["app/new file.yaml"]
 
 
+def test_only_a_modified_input_makes_a_run_dirty(tmp_path: Path) -> None:
+    """#88: a tracked file outside the inputs (here .gitignore) can change without marking the run dirty."""
+    _git_repo(tmp_path)
+    (tmp_path / ".gitignore").write_text("out/\n.tools/\n")
+    assert manifest.repo_state(tmp_path, ["app"])["dirty"] is False
+    (tmp_path / "app" / "main.py").write_text("x = 2\n")
+    assert manifest.repo_state(tmp_path, ["app"])["dirty"] is True
+
+
 def test_packaged_data_is_found() -> None:
     assert "TRIVY_VERSION=" in data.path("tools.lock").read_text()
     assert 'source "$(dirname "$0")/tools.lock"' in data.path("bootstrap.sh").read_text()

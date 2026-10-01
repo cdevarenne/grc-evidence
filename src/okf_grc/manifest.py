@@ -64,7 +64,7 @@ def repo_state(repo: Path, inputs: Iterable[str], exclude: Iterable[Path] = ()) 
     skip = [p.relative_to(root) for p in ((repo / q).resolve() for q in (".tools", *exclude)) if p.is_relative_to(root)]
     listed = (_git(repo, "ls-files", "-z", "--others", "--exclude-standard", "--", *inputs) or "").split("\0")
     untracked = sorted(f for f in listed if f and not any(Path(f).is_relative_to(s) for s in skip))
-    modified = bool(_git(repo, "status", "--porcelain", "--untracked-files=no"))
+    modified = bool(_git(repo, "status", "--porcelain", "--untracked-files=no", "--", *inputs))
     return {"commit": commit, "dirty": modified or bool(untracked), "untracked": untracked}
 
 
