@@ -12,6 +12,12 @@ scan layout (`grc.yaml`), the base bundle shipped with the engine, a versioned
 output contract with a run manifest, `grc init` and `grc check`, AI rules that
 also read LangChain, CI on every push, and a release on every version tag.
 
+`1.2.0` adds what an adopter repo needs, found by prototyping Spec F Part B on
+`microservices-demo`: Conftest inputs beside the target (an inventory next to a
+submodule) with symlinks out of the repo refused unless allowed, `grc init` that
+never writes into a submodule, `skip_paths` for Trivy and Checkov, `dirty` that
+covers every input, and `grc gate` against a committed baseline.
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization

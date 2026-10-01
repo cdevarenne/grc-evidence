@@ -4,10 +4,10 @@ How to bring okf-grc into another repository: what `grc init` brings in, and wha
 
 The engine is the `okf-grc` package; its `grc` CLI runs the same pipeline
 without this repo's Makefile or an agent. From the root of the repo to scan
-(the install works once `v1.1.0` is tagged):
+(the latest release; `grc gate` needs `v1.2.0` or later):
 
 ```
-uv tool install git+https://github.com/cdevarenne/okf-grc-skill@v1.1.0
+uv tool install git+https://github.com/cdevarenne/okf-grc-skill@v1.2.0
 grc init        # knowledge/ and policies/ copied from the base bundle; starter grc.yaml,
                 # ai-inventory.yaml, and one stack stub per src/*/ directory (never overwrites)
 grc bootstrap   # the pinned scanners, into ./.tools

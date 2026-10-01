@@ -1,7 +1,7 @@
 name: release
 
-# Pushing a version tag (v1.1.0) runs every test, checks the tag equals the package version,
-# and publishes a GitHub release. Adopters install that tag: `uv tool install git+…@v1.1.0`.
+# Pushing a version tag (vX.Y.Z) runs every test, checks the tag equals the package version,
+# and publishes a GitHub release. Adopters install that tag: `uv tool install git+…@vX.Y.Z`.
 on:
   push:
     tags: ["v*"]

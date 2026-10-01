@@ -155,7 +155,7 @@ def test_installed_tool_runs_the_pipeline(tmp_path: Path) -> None:
     env = os.environ | {"UV_TOOL_DIR": str(tmp_path / "tools"), "UV_TOOL_BIN_DIR": str(tmp_path / "bin")}
     subprocess.run(["uv", "tool", "install", "--quiet", str(ROOT)], env=env, check=True)
     grc = tmp_path / "bin" / "grc"
-    assert subprocess.run([grc, "--version"], capture_output=True, text=True, check=True).stdout.strip() == "grc 1.1.0"
+    assert subprocess.run([grc, "--version"], capture_output=True, text=True, check=True).stdout.strip() == f"grc {version('okf-grc')}"
     env["PATH"] = f"{ROOT / '.tools' / 'bin'}{os.pathsep}{env['PATH']}"
     env["TRIVY_CACHE_DIR"] = str(ROOT / ".tools" / "trivy-cache")
     out = tmp_path / "out"

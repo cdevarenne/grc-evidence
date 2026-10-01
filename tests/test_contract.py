@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 from datetime import date
+from importlib.metadata import version
 from pathlib import Path
 
 import pytest
@@ -85,7 +86,7 @@ def test_manifest_hashes_the_outputs_and_names_the_commit(tmp_path: Path) -> Non
     manifest = build_manifest(ROOT, out, load_config(ROOT), "id", NOW)
     assert manifest["outputs"] == {rel: hashlib.sha256((out / rel).read_bytes()).hexdigest() for rel in OUTPUTS}
     assert len(manifest["repository"]["commit"]) == 40
-    assert manifest["base_version"] == "1.1.0"
+    assert manifest["base_version"] == version("okf-grc")
     assert manifest["scanners"]["trivy"] == "0.74.0"
 
 
