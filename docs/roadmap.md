@@ -23,6 +23,10 @@ into the base bundle: SOC 2 A1.1 (capacity) and eight guardrails whose rules
 are third-party scanner checks (`Scanner Check`), and adds `grc sync-base` so
 an adopter can take a newer base.
 
+`1.3.0` makes `grc gate` fail on new findings at or above a severity, not only
+on controls newly `not-satisfied`: on `microservices-demo` every SOC 2 control
+already fails, so a status-only gate passed a new critical CVE.
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization
