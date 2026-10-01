@@ -61,14 +61,20 @@ def repo_state(repo: Path, target: str, exclude: Iterable[Path] = ()) -> Json:
     return {"commit": commit, "dirty": modified or bool(untracked), "untracked": untracked}
 
 
-def build_manifest(repo: Path, out: Path, config: Config, run: str, now: str, exclude: Iterable[Path] = ()) -> Json:
-    """The manifest document; raises FileNotFoundError if an output is missing."""
+def build_manifest(
+    repo: Path, out: Path, config: Config, run: str, now: str, exclude: Iterable[Path] = (), repository: Json | None = None
+) -> Json:
+    """The manifest document; raises FileNotFoundError if an output is missing.
+
+    `repository` keeps the state a scan recorded when the manifest is rewritten later (after narration),
+    since the inputs did not change; otherwise the state is read now.
+    """
     pins = load_pins(data.path("tools.lock"))
     return {
         "schema_version": data.SCHEMA_VERSION,
         "run_id": run,
         "generated": now,
-        "repository": repo_state(repo, config.target, (out, *exclude)),
+        "repository": repository or repo_state(repo, config.target, (out, *exclude)),
         "engine": {"package": "okf-grc", "version": version("okf-grc")},
         "base_version": recorded_base_version(repo / config.knowledge),
         "scanners": {tool: pins[f"{tool.upper()}_VERSION"] for tool in SCANNERS},
@@ -104,10 +110,12 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
     parser.add_argument("--run-id", default=None, help="the id the OSCAL results carry (default: derived)")
     parser.add_argument("--exclude", type=Path, action="append", default=[], help="a run directory that is not a scan input")
+    parser.add_argument("--keep-repository", action="store_true", help="keep the repository state of the existing run.json")
     args = parser.parse_args(argv)
     repo = Path.cwd()
     config = load_config(repo, args.config, target=args.target, knowledge=args.knowledge)
-    manifest = build_manifest(repo, args.out, config, args.run_id or run_id(repo, config, args.now), args.now, args.exclude)
+    kept = json.loads((args.out / "run.json").read_text(encoding="utf-8"))["repository"] if args.keep_repository else None
+    manifest = build_manifest(repo, args.out, config, args.run_id or run_id(repo, config, args.now), args.now, args.exclude, kept)
     (args.out / "run.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 

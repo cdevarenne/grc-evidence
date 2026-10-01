@@ -97,7 +97,8 @@ def narrate_run(argv: list[str]) -> None:
     run = json.loads(run_json.read_text(encoding="utf-8"))
     STEPS["report"].main([*common, "--now", run["generated"]])
     target = ["--target", run["config"]["resolved"]["target"]]  # the layout the run hashed, overrides included
-    STEPS["manifest"].main([*common, *target, "--now", run["generated"], "--run-id", run["run_id"]])
+    # The scan's inputs did not change: keep the repository state it recorded rather than reading the tree now.
+    STEPS["manifest"].main([*common, *target, "--now", run["generated"], "--run-id", run["run_id"], "--keep-repository"])
 
 
 def _flag(args: argparse.Namespace, name: str) -> list[str]:

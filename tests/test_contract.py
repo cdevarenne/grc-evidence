@@ -12,6 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker, ValidationError
 from okf_grc import data
 from okf_grc.config import load_config
 from okf_grc.manifest import OUTPUTS, build_manifest, run_id
+from okf_grc.manifest import main as manifest_main
 from okf_grc.map_findings import map_findings, read_findings
 from okf_grc.okf_lib import load_bundle
 from okf_grc.run_scan import dedupe
@@ -121,3 +122,13 @@ def test_read_findings_requires_the_versioned_document(tmp_path: Path) -> None:
         path.write_text(json.dumps(stale))
         with pytest.raises(ValueError, match="rerun `grc scan`"):
             read_findings(path)
+
+
+def test_a_rewritten_manifest_keeps_the_repository_state_the_scan_recorded(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Narration rewrites run.json after files changed (e.g. examples/ copied); the scan's inputs did not change."""
+    out = _outputs(tmp_path / "out")
+    scanned = {"commit": "a" * 40, "dirty": False, "untracked": []}
+    (out / "run.json").write_text(json.dumps({"repository": scanned}), encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    manifest_main(["--out", str(out), "--now", NOW, "--run-id", "r", "--keep-repository"])
+    assert json.loads((out / "run.json").read_text())["repository"] == scanned

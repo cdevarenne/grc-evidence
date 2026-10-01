@@ -177,7 +177,7 @@ def test_narrate_rewrites_the_report_and_the_manifest_with_the_run_id(
     assert calls == [
         ("narrate", ["--knowledge", "knowledge", "--out", str(tmp_path)]),
         ("report", ["--out", str(tmp_path), "--now", run["generated"]]),
-        ("manifest", ["--out", str(tmp_path), "--target", "svc", "--now", run["generated"], "--run-id", "rid"]),
+        ("manifest", ["--out", str(tmp_path), "--target", "svc", "--now", run["generated"], "--run-id", "rid", "--keep-repository"]),
     ]
 
 
