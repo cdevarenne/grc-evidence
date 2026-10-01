@@ -10,7 +10,7 @@ import subprocess
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from importlib.resources.abc import Traversable
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from okf_grc.config import Config, load_config
@@ -26,8 +26,11 @@ class ScanError(RuntimeError):
 
 
 def _finding(tool: str, rule_id: str, severity: str, target: str, message: str) -> Finding:
+    """One normalized finding. The target is a repo-relative POSIX path with no `./`, whichever scanner
+    reported it, because suppressions match it exactly (target `.` would otherwise yield `./Dockerfile`)."""
     level = severity.lower() if severity.lower() in SEVERITIES else "unknown"
-    return {"tool": tool, "rule_id": rule_id, "severity": level, "target": target, "message": message, "tags": []}
+    path = PurePosixPath(target).as_posix()
+    return {"tool": tool, "rule_id": rule_id, "severity": level, "target": path, "message": message, "tags": []}
 
 
 def normalize_semgrep(doc: dict[str, Any], target_dir: str) -> list[Finding]:

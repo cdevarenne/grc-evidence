@@ -195,3 +195,21 @@ def test_load_pins_skips_comments_and_blank_lines(tmp_path: Path) -> None:
     lock = tmp_path / "tools.lock"
     lock.write_text("# pins\n\nSEMGREP_VERSION=1.0.0\nOKF_COMMIT=abc\n", encoding="utf-8")
     assert load_pins(lock) == {"SEMGREP_VERSION": "1.0.0", "OKF_COMMIT": "abc"}
+
+
+@pytest.mark.parametrize(
+    ("normalize", "doc"),
+    [
+        (normalize_trivy, {"Results": [{"Target": "Dockerfile", "Misconfigurations": [
+            {"Status": "FAIL", "ID": "X", "Severity": "HIGH", "Title": "t", "Message": "m"}]}]}),
+        (normalize_checkov, {"results": {"failed_checks": [
+            {"check_id": "C", "file_path": "/Dockerfile", "check_name": "n", "resource": "r"}]}}),
+        (normalize_semgrep, {"results": [{"check_id": "x.r", "path": "./Dockerfile",
+                                          "extra": {"severity": "ERROR", "message": "m"}}]}),
+        (normalize_conftest, [{"namespace": "n", "filename": "./Dockerfile", "failures": [{"msg": "m"}]}]),
+    ],
+    ids=["trivy", "checkov", "semgrep", "conftest"],
+)
+def test_targets_have_no_dot_prefix_when_the_scan_target_is_the_repo_root(normalize, doc) -> None:
+    """#66: every scanner reports `Dockerfile`, never `./Dockerfile`, so suppressions match exactly."""
+    assert [f["target"] for f in normalize(doc, ".")] == ["Dockerfile"]
