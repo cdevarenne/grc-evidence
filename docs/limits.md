@@ -19,7 +19,10 @@ What okf-grc does not do, or does only partly. Read this before relying on a rep
   `grc.yaml` at the repo root changes the target, the knowledge bundle, the AI
   inventory, Conftest's inputs, Checkov's frameworks and skipped paths, and the
   Semgrep and Rego policies, and the time each scanner may run (`scanner_timeout`,
-  900 seconds by default; a scanner past it is stopped and named). See
+  900 seconds by default; a scanner past it is stopped and named). Conftest inputs
+  may reach beside the target with `..` (an inventory next to a submodule) but
+  never out of the repo, and a symlink out of the repo is refused unless
+  `allow_external_symlinks: true`. See
   `src/okf_grc/config.py`. A target where
   Conftest finds no inputs stops the scan with an error.
 - **LLM eval is small and single-run.** The triage eval has 65 labeled cases,

@@ -172,12 +172,23 @@ def load_pins(lock: Traversable) -> dict[str, str]:
 
 
 def conftest_inputs(repo: Path, config: Config) -> list[str]:
-    """The files Conftest checks: `conftest.inputs` globs under the target, repo-relative and sorted.
+    """The files Conftest checks: `conftest.inputs` globs from the target, repo-relative and sorted.
 
-    None is an error: Conftest given no files prints its usage instead of JSON.
+    None is an error: Conftest given no files prints its usage instead of JSON. A match that leaves the repo is an
+    error; so is one that is a symlink out of it, unless `allow_external_symlinks` is set.
     """
-    target, patterns = repo / config.target, config.conftest_inputs
-    inputs = sorted({p.relative_to(repo).as_posix() for pattern in patterns for p in target.glob(pattern)})
+    root, patterns = repo.absolute(), config.conftest_inputs
+    found: set[str] = set()
+    for pattern in patterns:
+        for match in (root / config.target).glob(pattern):
+            path = Path(os.path.normpath(match))
+            if not path.is_relative_to(root):
+                raise ScanError(f"conftest.inputs {pattern!r} reaches {path}, outside the repo")
+            rel = path.relative_to(root).as_posix()
+            if not path.resolve().is_relative_to(root.resolve()) and not config.allow_external_symlinks:
+                raise ScanError(f"conftest input {rel} is a symlink out of the repo; set allow_external_symlinks: true to accept it")
+            found.add(rel)
+    inputs = sorted(found)
     if not inputs:
         raise ScanError(f"conftest: no files under {config.target!r} match conftest.inputs ({', '.join(patterns)})")
     return inputs

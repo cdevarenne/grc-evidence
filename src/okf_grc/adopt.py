@@ -73,6 +73,7 @@ def starter_config(target: str) -> str:
         f"semgrep:\n  configs: {_flow(d.semgrep_configs)}\n"
         f"rego: {_flow(d.rego)}\n"
         f"scanner_timeout: {d.scanner_timeout}  # seconds per scanner\n"
+        f"allow_external_symlinks: false  # accept a Conftest input that is a symlink out of the repo\n"
     )
 
 

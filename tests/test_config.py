@@ -75,7 +75,8 @@ def test_an_explicit_config_file_must_exist(tmp_path: Path) -> None:
         ("semgrep:\n  configs: [--dangerous]\n", "'semgrep.configs': a value may not start with '-'"),
         ("target: ../elsewhere\n", "target '../elsewhere' leaves the repo root"),
         ("rego: [../rules]\n", "rego '../rules' leaves the repo root"),
-        ("conftest:\n  inputs: ['../x/*.yaml']\n", "conftest.inputs '../x/\\*.yaml' must stay under the target"),
+        ("conftest:\n  inputs: ['/etc/*.yaml']\n", "conftest.inputs '/etc/\\*.yaml' must be relative to the target"),
+        ("allow_external_symlinks: 'yes'\n", "'allow_external_symlinks' must be true or false"),
         ("checkov:\n  skip_paths: [/etc]\n", "checkov.skip_paths '/etc' must stay under the target"),
         ("scanner_timeout: '60'\n", "'scanner_timeout' must be a positive whole number of seconds"),
         ("scanner_timeout: true\n", "'scanner_timeout' must be a positive whole number of seconds"),
@@ -130,3 +131,35 @@ def test_real_scanners_honor_a_custom_layout(tmp_path: Path) -> None:
     by_tool = {tool: {f["target"] for f in findings if f["tool"] == tool} for tool in ("checkov", "conftest")}
     assert by_tool["checkov"] and "app/Dockerfile" not in by_tool["checkov"]
     assert by_tool["conftest"] and all(t.startswith("app/k8s/") for t in by_tool["conftest"])
+
+
+def _beside_layout(tmp_path: Path) -> Path:
+    """A repo whose target is a vendored directory; the inventory sits beside it, as for a submodule."""
+    (tmp_path / "upstream" / "k8s").mkdir(parents=True)
+    (tmp_path / "upstream" / "k8s" / "app.yaml").write_text("kind: Deployment\n")
+    (tmp_path / "ai-inventory.yaml").write_text("systems: []\n")
+    return tmp_path
+
+
+def test_conftest_reads_an_input_beside_the_target(tmp_path: Path) -> None:
+    repo = _beside_layout(tmp_path)
+    config = Config(target="upstream", conftest_inputs=("k8s/*.yaml", "../ai-inventory.yaml"))
+    assert conftest_inputs(repo, config) == ["ai-inventory.yaml", "upstream/k8s/app.yaml"]
+
+
+def test_conftest_inputs_may_not_leave_the_repo(tmp_path: Path) -> None:
+    repo = _beside_layout(tmp_path / "repo")
+    (tmp_path / "secret.yaml").write_text("x: 1\n")
+    with pytest.raises(ScanError, match="outside the repo"):
+        conftest_inputs(repo, Config(target="upstream", conftest_inputs=("../../secret.yaml",)))
+
+
+def test_a_symlink_out_of_the_repo_needs_the_opt_in(tmp_path: Path) -> None:
+    """#70: adopter repos are trusted, but a symlink out of the repo is accepted only on request."""
+    repo = _beside_layout(tmp_path / "repo")
+    (tmp_path / "outside.yaml").write_text("x: 1\n")
+    (repo / "upstream" / "k8s" / "link.yaml").symlink_to(tmp_path / "outside.yaml")
+    with pytest.raises(ScanError, match="upstream/k8s/link.yaml is a symlink out of the repo"):
+        conftest_inputs(repo, Config(target="upstream", conftest_inputs=("k8s/*.yaml",)))
+    allowed = Config(target="upstream", conftest_inputs=("k8s/*.yaml",), allow_external_symlinks=True)
+    assert conftest_inputs(repo, allowed) == ["upstream/k8s/app.yaml", "upstream/k8s/link.yaml"]

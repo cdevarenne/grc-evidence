@@ -21,6 +21,7 @@ _SHAPE: dict[str, Any] = {
     "inventory": str,
     "rego": list,
     "scanner_timeout": int,
+    "allow_external_symlinks": bool,
     "conftest": {"inputs": list},
     "checkov": {"frameworks": list, "skip_paths": list},
     "semgrep": {"configs": list},
@@ -44,6 +45,7 @@ class Config:
     semgrep_configs: tuple[str, ...] = ("policies/semgrep",)
     rego: tuple[str, ...] = ("policies/rego",)
     scanner_timeout: int = 900  # seconds per scanner; a hung scanner stops the scan with its name
+    allow_external_symlinks: bool = False  # accept a Conftest input that is a symlink out of the repo
 
 
 def load_config(repo: Path, path: Path | None = None, **overrides: str | None) -> Config:
@@ -70,6 +72,11 @@ def _fields(raw: Any, shape: dict[str, Any], prefix: str) -> dict[str, Any]:
             raise ConfigError(f"unknown key {name!r}")
         if isinstance(kind, dict):
             fields |= _fields(value, kind, f"{name}.")
+            continue
+        if kind is bool:
+            if not isinstance(value, bool):
+                raise ConfigError(f"{name!r} must be true or false")
+            fields[name] = value
             continue
         if kind is int:
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
@@ -99,7 +106,11 @@ def _check_paths(repo: Path, config: Config) -> None:
         inside(rel, "semgrep.configs")
     for rel in config.rego:
         inside(rel, "rego")
-    for key, patterns in (("conftest.inputs", config.conftest_inputs), ("checkov.skip_paths", config.checkov_skip_paths)):
-        for pattern in patterns:
-            if PurePosixPath(pattern).is_absolute() or ".." in PurePosixPath(pattern).parts:
-                raise ConfigError(f"{key} {pattern!r} must stay under the target")
+    # Conftest inputs may reach beside the target (an inventory next to a submodule); the scan checks that
+    # every file they match stays inside the repo.
+    for pattern in config.conftest_inputs:
+        if PurePosixPath(pattern).is_absolute():
+            raise ConfigError(f"conftest.inputs {pattern!r} must be relative to the target")
+    for pattern in config.checkov_skip_paths:
+        if PurePosixPath(pattern).is_absolute() or ".." in PurePosixPath(pattern).parts:
+            raise ConfigError(f"checkov.skip_paths {pattern!r} must stay under the target")
