@@ -15,9 +15,9 @@ contracted outputs, and CI can run it on every change. What it cannot do is the
 work around those outputs that takes judgment on text: explaining what changed
 to the person who owns it, drafting the `rule_ids` line a coverage gap needs,
 drafting a suppression for a likely false positive, and turning a run into the
-issues and comments a team acts on. That work is what an agent adds. The
-architecture review ([docs/architecture.md](../../architecture.md)) narrows it:
-the agent proposes, a person approves, and nothing an agent writes changes a
+issues and comments a team acts on. That work is what an agent adds, and this
+spec keeps it narrow ([docs/architecture.md](../../architecture.md) has the
+order): the agent proposes, a person approves, and nothing an agent writes changes a
 status, a mapping, or a suppression on its own.
 
 ## 2. Principles

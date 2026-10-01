@@ -1,6 +1,6 @@
 # Status and roadmap
 
-Where the project stands and what is specified next. See [architecture.md](architecture.md) for how the proposed features fit together and a skeptical review of them.
+Where the project stands and what is specified next. See [architecture.md](architecture.md) for how the proposed features fit together and the order to build them in.
 
 `v1.0` is complete for this use case: three frameworks, suppressions, a
 cost-bounded LLM step with a measured eval, and linked OSCAL component

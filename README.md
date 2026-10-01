@@ -88,7 +88,7 @@ directly and does not use the graph.*
 
 | Document | What it covers |
 |---|---|
-| [Architecture](docs/architecture.md) | How the parts fit, a diagram, and a skeptical review of the proposed features |
+| [Architecture](docs/architecture.md) | How the parts fit, a diagram, and the order to build the proposed features in |
 | [Outputs](docs/outputs.md) | The output contract, the run manifest, and the OSCAL documents |
 | [OSCAL subset](docs/oscal-subset.md) | Exactly which OSCAL fields are emitted, and the placeholders |
 | [Suppressions](docs/suppressions.md) | Reviewed, expiring decisions about single findings |
