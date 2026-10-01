@@ -56,7 +56,7 @@ def build_manifest(repo: Path, out: Path, config: Config, run: str, now: str) ->
             "dirty": None if commit is None else bool(_git(repo, "status", "--porcelain", "--untracked-files=no")),
         },
         "engine": {"package": "okf-grc", "version": version("okf-grc")},
-        "base_version": _base_version(repo / config.knowledge),
+        "base_version": recorded_base_version(repo / config.knowledge),
         "scanners": {tool: pins[f"{tool.upper()}_VERSION"] for tool in SCANNERS},
         "config": {
             "file": CONFIG_FILE if (repo / CONFIG_FILE).is_file() else None,
@@ -73,7 +73,7 @@ def _git(repo: Path, *args: str) -> str | None:
     return proc.stdout.strip() if proc.returncode == 0 else None
 
 
-def _base_version(knowledge: Path) -> str | None:
+def recorded_base_version(knowledge: Path) -> str | None:
     """`base_version` from the bundle's root index frontmatter, if recorded."""
     index = knowledge / "index.md"
     if not index.is_file() or not (text := index.read_text(encoding="utf-8")).startswith("---\n"):

@@ -32,6 +32,7 @@ render:
 
 test:
 	uv run pytest
+	$(GRC) check
 	$(TOOLBIN)/conftest verify -p policies/rego --no-color
 	$(TOOLBIN)/semgrep --test policies/semgrep
 

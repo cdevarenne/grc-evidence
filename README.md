@@ -108,6 +108,25 @@ soon**, and from 2026-12-28 under **Expired suppressions**, with their findings
 counted again. That is the workflow working, not the repo going stale; renewing
 one means a new review and a new `verified` entry.
 
+## Using the engine in another repo
+
+The engine is the `okf-grc` package; its `grc` CLI runs the same pipeline
+without this repo's Makefile or an agent. From the root of the repo to scan
+(the install works once `v1.1.0` is tagged):
+
+```
+uv tool install git+https://github.com/cdevarenne/okf-grc-skill@v1.1.0
+grc init        # knowledge/ and policies/ copied from the base bundle; starter grc.yaml,
+                # ai-inventory.yaml, and one stack stub per src/*/ directory (never overwrites)
+grc bootstrap   # the pinned scanners, into ./.tools
+grc check       # base copies unchanged, every concept reviewed by a person (stubs are not, yet)
+grc run         # out/: findings, mapping, OSCAL, report, run.json
+```
+
+Edit `grc.yaml` to match the repo's layout, link each stack stub to the
+controls its component implements, and set the AI risk tier in
+`ai-inventory.yaml` with a recorded reason.
+
 ## Output contract
 
 `make scan` (`grc run`) writes `out/findings.json` and `out/mapping.json`, each

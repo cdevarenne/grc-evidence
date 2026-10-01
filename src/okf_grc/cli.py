@@ -10,7 +10,7 @@ from importlib.resources import as_file
 from pathlib import Path
 from types import ModuleType
 
-from okf_grc import data, manifest, map_findings, render_report, run_scan, to_oscal
+from okf_grc import adopt, data, manifest, map_findings, render_report, run_scan, to_oscal
 from okf_grc.config import load_config
 
 # Each step's own options pass through unchanged: `grc scan --target app` is `run_scan.py --target app`.
@@ -55,11 +55,15 @@ def main(argv: list[str] | None = None) -> None:
     """Entry point of the `grc` command."""
     parser = argparse.ArgumentParser(prog="grc", description=__doc__)
     parser.add_argument("--version", action="version", version=f"%(prog)s {version('okf-grc')}")
-    parser.add_argument("command", choices=["bootstrap", "run", *STEPS], help="step to run")
+    parser.add_argument("command", choices=["bootstrap", "init", "check", "run", *STEPS], help="step to run")
     parser.add_argument("args", nargs=argparse.REMAINDER, help="options for that step (see `grc <command> -h`)")
     args = parser.parse_args(argv)
     if args.command == "bootstrap":
         bootstrap()
+    elif args.command == "init":
+        adopt.init_main(args.args)
+    elif args.command == "check":
+        adopt.check_main(args.args)
     elif args.command == "run":
         run(args.args)
     else:
