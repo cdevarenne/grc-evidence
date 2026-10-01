@@ -18,6 +18,11 @@ submodule) with symlinks out of the repo refused unless allowed, `grc init` that
 never writes into a submodule, `skip_paths` for Trivy and Checkov, `dirty` that
 covers every input, and `grc gate` against a committed baseline.
 
+`1.2.1` maps the generic coverage gaps triage found on `microservices-demo`
+into the base bundle: SOC 2 A1.1 (capacity) and eight guardrails whose rules
+are third-party scanner checks (`Scanner Check`), and adds `grc sync-base` so
+an adopter can take a newer base.
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization

@@ -7,7 +7,7 @@ without this repo's Makefile or an agent. From the root of the repo to scan
 (the latest release; `grc gate` needs `v1.2.0` or later):
 
 ```
-uv tool install git+https://github.com/cdevarenne/okf-grc-skill@v1.2.0
+uv tool install git+https://github.com/cdevarenne/okf-grc-skill@v1.2.1
 grc init        # knowledge/ and policies/ copied from the base bundle; starter grc.yaml,
                 # ai-inventory.yaml, and one stack stub per src/*/ directory (never overwrites)
 grc bootstrap   # the pinned scanners, into ./.tools
