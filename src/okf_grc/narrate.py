@@ -11,7 +11,7 @@ from typing import Any
 
 from okf_grc.digest import bundle_digest, dumps, scan_digest
 from okf_grc.llm import LLM, LLMError, Request
-from okf_grc.okf_lib import load_bundle
+from okf_grc.okf_lib import FRAMEWORK_TITLES, load_bundle
 
 Json = dict[str, Any]
 MAX_TOKENS = 2000
@@ -55,15 +55,25 @@ def request(bundle_doc: Json, scan_doc: Json) -> Request:
     )
 
 
-def validate(output: Json, mapping: Json, input_text: str) -> list[str]:
-    """Every reason to reject the whole output; empty means accept."""
+def allowed_numbers(bundle_doc: Json, scan_doc: Json) -> dict[str, set[str]]:
+    """Per control, the numbers its prose may use: its key, its framework's name (the 2 of "SOC 2"), and its own
+    bundle and scan digest entries. A number from another control's counts is not evidence for this one."""
+    allowed = {}
+    for key in bundle_doc:
+        text = " ".join([key, FRAMEWORK_TITLES.get(key.partition(":")[0], ""), dumps(bundle_doc[key]),
+                         dumps(scan_doc["controls"].get(key, {}))])
+        allowed[key] = set(_NUMBER.findall(text))
+    return allowed
+
+
+def validate(output: Json, mapping: Json, allowed: dict[str, set[str]]) -> list[str]:
+    """Every reason to reject the whole output; empty means accept. `allowed`: numbers per control."""
     errors = []
     expected, got = set(mapping["controls"]), set(output)
     if missing := sorted(expected - got):
         errors.append(f"missing controls: {missing}")
     if extra := sorted(got - expected):
         errors.append(f"controls not in the bundle: {extra}")
-    allowed_numbers = set(_NUMBER.findall(input_text))
     for key in sorted(expected & got):
         text = " ".join(str(v) for v in output[key].values())
         status = mapping["controls"][key]["status"]
@@ -71,19 +81,20 @@ def validate(output: Json, mapping: Json, input_text: str) -> list[str]:
             errors.append(f"{key}: forbidden status word {m.group(0)!r}")
         if wrong := sorted({s for s in _STATUS.findall(text) if s != status}):
             errors.append(f"{key}: claims {wrong}, status is {status!r}")
-        if invented := sorted(set(_NUMBER.findall(text)) - allowed_numbers):
+        if invented := sorted(set(_NUMBER.findall(text)) - allowed.get(key, set())):
             errors.append(f"{key}: numbers not in the input {invented}")
     return errors
 
 
 def narrate(llm: LLM, bundle_doc: Json, mapping: Json) -> tuple[Json, list[str]]:
     """(narratives, errors). On any error the narratives are {} and the report keeps its v1 prose."""
-    req = request(bundle_doc, scan_digest(mapping))
+    scan_doc = scan_digest(mapping)
+    req = request(bundle_doc, scan_doc)
     try:
         output = llm.complete(req)
     except LLMError as e:
         return {}, [str(e)]
-    errors = validate(output, mapping, req.system + req.user)
+    errors = validate(output, mapping, allowed_numbers(bundle_doc, scan_doc))
     return ({}, errors) if errors else (output, [])
 
 

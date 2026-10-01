@@ -55,6 +55,8 @@ def test_valid_narratives_are_accepted() -> None:
         ("soc2:cc7.2", "All checks passed.", "forbidden status word 'passed'"),
         ("soc2:cc7.2", "CC7.2 is not-satisfied.", "claims ['not-satisfied']"),
         ("soc2:cc6.1", "CC6.1 has 3 open findings.", "numbers not in the input ['3']"),
+        # #68: "1" is in the prompt (other controls' counts) but not in cc7.2's own entries, which have 0 findings
+        ("soc2:cc7.2", "CC7.2 has 1 open finding.", "numbers not in the input ['1']"),
     ],
 )
 def test_one_bad_claim_rejects_the_whole_output(key: str, text: str, error: str) -> None:
@@ -68,7 +70,7 @@ def test_missing_or_extra_controls_are_rejected() -> None:
     output = _good()
     del output["soc2:cc7.2"]
     output["soc2:cc9.9"] = {"summary": "x", "auditor_note": "y"}
-    errors = validate(output, MAPPING, "")
+    errors = validate(output, MAPPING, {})
     assert "missing controls: ['soc2:cc7.2']" in errors
     assert "controls not in the bundle: ['soc2:cc9.9']" in errors
 
