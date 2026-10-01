@@ -28,9 +28,18 @@ TRIVY_SHA256_VAR="TRIVY_SHA256_$PLATFORM" CONFTEST_SHA256_VAR="CONFTEST_SHA256_$
 fetch_release aquasecurity/trivy "v$TRIVY_VERSION" "trivy_${TRIVY_VERSION}_${TRIVY_OS}.tar.gz" "${!TRIVY_SHA256_VAR}" trivy
 fetch_release open-policy-agent/conftest "v$CONFTEST_VERSION" "conftest_${CONFTEST_VERSION}_${CONFTEST_OS}.tar.gz" "${!CONFTEST_SHA256_VAR}" conftest
 
-export UV_TOOL_DIR="$TOOLS/uv" UV_TOOL_BIN_DIR="$BIN"
-uv tool install --force --quiet "semgrep==$SEMGREP_VERSION"
-uv tool install --force --quiet --python "$CHECKOV_PYTHON" "checkov==$CHECKOV_VERSION"
+# install_locked <name> <python> <command...>: a venv per scanner, installed only from the hash-pinned
+# requirements in locks/<name>/ (uv pip enforces --require-hashes; uv tool install would not), with its
+# commands linked into .tools/bin.
+install_locked() {
+  local name=$1 python=$2; shift 2
+  local venv="$TOOLS/venv/$name"
+  uv venv --quiet --clear --python "$python" "$venv"
+  VIRTUAL_ENV="$venv" uv pip install --quiet --require-hashes -r "$(dirname "$0")/locks/$name/requirements.txt"
+  for command in "$@"; do ln -sf "$venv/bin/$command" "$BIN/$command"; done
+}
+install_locked semgrep "$SEMGREP_PYTHON" semgrep pysemgrep
+install_locked checkov "$CHECKOV_PYTHON" checkov
 
 # check <binary> <expected-version> <version-args...>
 check() {

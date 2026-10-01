@@ -114,8 +114,12 @@ directly and does not use the graph.*
 ## Pins
 
 All external versions are pinned in [`tools.lock`](src/okf_grc/data/tools.lock): Semgrep, Checkov,
-Trivy, Conftest, the OKF spec (v0.2, by commit), and OSCAL 1.2.3. The OSCAL
-output is a documented subset: see [`docs/oscal-subset.md`](docs/oscal-subset.md).
+Trivy, Conftest, the OKF spec (v0.2, by commit), and OSCAL 1.2.3. Trivy and
+Conftest are checked against SHA-256 pins; Semgrep and Checkov, with every
+dependency, install only from hash-pinned requirements in
+[`src/okf_grc/data/locks/`](src/okf_grc/data/locks/) (`make lock-scanners`
+regenerates them after a version change). The OSCAL output is a documented
+subset: see [`docs/oscal-subset.md`](docs/oscal-subset.md).
 
 ## License
 

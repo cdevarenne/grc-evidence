@@ -1,5 +1,6 @@
 # Pinned external versions. Read by bootstrap.sh (next to this file), grc, and the Makefile.
 SEMGREP_VERSION=1.178.0
+SEMGREP_PYTHON=3.13
 CHECKOV_VERSION=3.3.19
 CHECKOV_PYTHON=3.12
 TRIVY_VERSION=0.74.0

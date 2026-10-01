@@ -8,11 +8,18 @@ export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
 OKF := reference-agent @ git+https://github.com/GoogleCloudPlatform/open-knowledge-format@$(OKF_COMMIT)
 
-.PHONY: bootstrap scan narrate triage eval-triage render test test-integration examples clean
+.PHONY: bootstrap lock-scanners scan narrate triage eval-triage render test test-integration examples clean
 
 bootstrap:
 	uv sync
 	$(GRC) bootstrap
+
+# Regenerate the Python scanners' hash-pinned requirements after changing their versions in tools.lock.
+LOCKS := src/okf_grc/data/locks
+lock-scanners:
+	mkdir -p $(LOCKS)/semgrep $(LOCKS)/checkov
+	echo "semgrep==$(SEMGREP_VERSION)" | uv pip compile --quiet --universal --generate-hashes --python-version $(SEMGREP_PYTHON) - -o $(LOCKS)/semgrep/requirements.txt
+	echo "checkov==$(CHECKOV_VERSION)" | uv pip compile --quiet --universal --generate-hashes --python-version $(CHECKOV_PYTHON) - -o $(LOCKS)/checkov/requirements.txt
 
 scan:
 	$(GRC) run --target app --knowledge knowledge --out out
