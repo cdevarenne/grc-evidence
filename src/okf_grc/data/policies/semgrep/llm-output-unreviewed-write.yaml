@@ -4,10 +4,23 @@ rules:
     severity: WARNING
     message: Model output is written to a record with no human-review flag checked first.
     patterns:
-      - pattern: $OBJ.$ATTR = $OUT.content[$I].text
+      - pattern-either:
+          # Anthropic SDK response
+          - pattern: $OBJ.$ATTR = $OUT.content[$I].text
+          # LangChain: the message returned by invoke()
+          - pattern: $OBJ.$ATTR = $LLM.invoke(...).content
+          - pattern: $OBJ.$ATTR = (await $LLM.ainvoke(...)).content
+          - patterns:
+              - pattern-inside: |
+                  $OUT = $LLM.invoke(...)
+                  ...
+              - pattern: $OBJ.$ATTR = $OUT.content
       - pattern-not-inside: |
           if <... human_reviewed ...>:
               ...
       - pattern-not-inside: |
           if <... "human_reviewed" ...>:
+              ...
+      - pattern-not-inside: |
+          if <... $FLAGGED.human_reviewed ...>:
               ...

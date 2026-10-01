@@ -3,8 +3,15 @@ rules:
     languages: [python]
     severity: ERROR
     message: An API key is assigned from a string literal; read it from the environment or a secret store.
-    patterns:
-      - pattern: $NAME = "..."
-      - metavariable-regex:
-          metavariable: $NAME
-          regex: ^[A-Z0-9_]*_API_KEY$
+    pattern-either:
+      - patterns:
+          - pattern: $NAME = "..."
+          - metavariable-regex:
+              metavariable: $NAME
+              regex: ^[A-Z0-9_]*_API_KEY$
+      # A literal key passed to a client or model, e.g. ChatGoogleGenerativeAI(google_api_key="...")
+      - patterns:
+          - pattern: $CALL(..., $KW="...", ...)
+          - metavariable-regex:
+              metavariable: $KW
+              regex: ^([a-z0-9]+_)*api_key$

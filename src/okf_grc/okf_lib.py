@@ -296,6 +296,7 @@ def _parse(rel_path: str, text: str) -> Concept:
     stem = rel_path.removesuffix(".md")
     tags = _string_list(rel_path, fm, "tags")
     rule_ids = _string_list(rel_path, fm, "rule_ids")
+    _string_list(rel_path, fm, "sdks")  # AI SDKs a rule can read; checked for shape only
     _check_grounding(rel_path, tags, rule_ids)
     type_ = str(fm["type"]).strip()
     _check_control(rel_path, fm, type_)

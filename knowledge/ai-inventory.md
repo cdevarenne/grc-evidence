@@ -20,7 +20,9 @@ verified:
 - `components`: every app component with its `kind`.
 - `systems`: the inventoried AI systems. The
   [AI inventory is complete](policies/ai-inventory-complete.md) policy checks
-  that every `assistant` component has one.
+  that every `assistant` component has one. A system may name its `sdk`
+  (`anthropic`, `langchain`); when every system does, a control whose only rules
+  read none of those SDKs reports `not-assessed`, not `no-violations-detected`.
 
 # Declared tier
 

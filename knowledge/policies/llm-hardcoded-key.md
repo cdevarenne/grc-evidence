@@ -15,8 +15,9 @@ verified:
 ---
 # Rule
 
-A string literal assigned to an `*_API_KEY` name puts a credential in source
-control, where anyone with read access can use it.
+A string literal assigned to an `*_API_KEY` name, or passed as an `*api_key`
+argument (for example `ChatGoogleGenerativeAI(google_api_key="...")`), puts a
+credential in source control, where anyone with read access can use it.
 
 # Satisfies
 

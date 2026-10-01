@@ -17,6 +17,7 @@ from okf_grc.okf_lib import EXPIRY_WARNING_DAYS, GUARDRAIL_TYPES, SCANNER_TYPE, 
 Finding = dict[str, Any]
 CONTEXT_FIELDS = ("risk_tier",)  # inventory fields that `applies_when` may name
 RISK_TIERS = ("minimal", "limited", "high")  # EU AI Act risk classes the inventory may declare
+SDK_GAP = "rules-do-not-cover-sdk"  # not-assessed: the only rules cannot read the AI SDKs the inventory declares
 
 
 def _controls_for(bundle: Bundle, finding: Finding) -> tuple[list[str], str | None]:
@@ -41,13 +42,29 @@ def load_context(inventory: Path) -> dict[str, Any]:
     """Applicability context from the AI inventory file; empty when there is none.
 
     An unknown `risk_tier` is an error: it would otherwise exclude every tier-gated control.
+    `ai_sdks` is set only when every inventoried AI system names its `sdk`: an unknown SDK rules nothing out.
     """
     if not inventory.is_file():
         return {}
     doc = yaml.safe_load(inventory.read_text(encoding="utf-8")) or {}
     if "risk_tier" in doc and doc["risk_tier"] not in RISK_TIERS:
         raise ValueError(f"{inventory}: risk_tier {doc['risk_tier']!r} is not one of {RISK_TIERS}")
-    return {field: doc[field] for field in CONTEXT_FIELDS if field in doc}
+    context = {field: doc[field] for field in CONTEXT_FIELDS if field in doc}
+    systems = doc.get("systems") or []
+    if not isinstance(systems, list) or not all(isinstance(s, dict) for s in systems):
+        raise ValueError(f"{inventory}: systems must be a list of mappings")
+    sdks = [s.get("sdk") for s in systems]
+    if sdks and all(isinstance(sdk, str) and sdk for sdk in sdks):
+        context["ai_sdks"] = sorted(set(sdks))
+    return context
+
+
+def _sdk_gap(bundle: Bundle, key: str, context: dict[str, Any]) -> bool:
+    """The control's only evidence is SDK-scoped rules, and none of them reads an SDK the inventory declares."""
+    declaring = bundle.declaring(key)
+    if not context.get("ai_sdks") or not declaring or not all(c.frontmatter.get("sdks") for c in declaring):
+        return False
+    return not set(context["ai_sdks"]) & {sdk for c in declaring for sdk in c.frontmatter["sdks"]}
 
 
 def _suppression_entry(finding: Finding, s: Suppression, keys: list[str]) -> dict[str, Any]:
@@ -103,11 +120,13 @@ def map_findings(
             unmapped.append({"finding": finding, "reason": reason})
         for key in keys:
             controls[key]["findings"].append(finding)
-    for entry in controls.values():
+    for key, entry in controls.items():
         if entry["status"] == "not-applicable":
             continue
         if entry["findings"]:
             entry["status"] = "not-satisfied"
+        elif _sdk_gap(bundle, key, context or {}):
+            entry |= {"status": "not-assessed", "reason": SDK_GAP}
         elif entry["evidenced_by"] or entry["satisfied_by"]:
             entry["status"] = "no-violations-detected"
         else:

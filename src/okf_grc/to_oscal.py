@@ -12,6 +12,7 @@ from typing import Any
 from okf_grc.okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, MAX_SUPPRESSION_DAYS, Bundle, Concept, load_bundle
 from okf_grc import data
 from okf_grc.config import Config, load_config
+from okf_grc.map_findings import SDK_GAP
 from okf_grc.run_scan import SEVERITIES, conftest_inputs, load_pins, scanner_runs
 
 OSCAL_VERSION = "1.2.3"
@@ -258,14 +259,19 @@ def _observation(f: Json, now: str) -> Json:
 
 def _remarks(mapping: Json) -> str:
     """Controls without an OSCAL finding, stated so their absence is not read as a pass."""
-    labels = {
-        "no-violations-detected": "No violations detected by automated checks (not a control attestation)",
-        "not-assessed": "Not assessed (no in-bundle scanner or policy)",
-        "not-applicable": "Not applicable at the declared AI risk tier",
-    }
+    groups = [
+        ("no-violations-detected", None, "No violations detected by automated checks (not a control attestation)"),
+        ("not-assessed", None, "Not assessed (no in-bundle scanner or policy)"),
+        ("not-assessed", SDK_GAP, "Not assessed (its only rules do not read the AI SDKs the inventory declares)"),
+        ("not-applicable", None, "Not applicable at the declared AI risk tier"),
+    ]
     parts = []
-    for status, label in labels.items():
-        if keys := sorted(key for key, c in mapping["controls"].items() if c["status"] == status):
+    for status, reason, label in groups:
+        keys = sorted(
+            key for key, c in mapping["controls"].items()
+            if c["status"] == status and (status != "not-assessed" or c.get("reason") == reason)
+        )
+        if keys:
             parts.append(f"{label}: {', '.join(keys)}")
     return ". ".join(parts)
 

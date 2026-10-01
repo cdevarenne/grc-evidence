@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from okf_grc.config import load_config
+from okf_grc.map_findings import SDK_GAP
 from okf_grc.okf_lib import FRAMEWORK_TITLES, Bundle, load_bundle
 
 Json = dict[str, Any]
@@ -242,8 +243,14 @@ def render_report(
     lines += _suppression_sections(mapping)
     lines += ["", "## Not assessed", ""]
     not_assessed = [key for key, entry in controls if entry["status"] == "not-assessed"]
+    reasons = dict(controls)
     for key in not_assessed:
-        lines.append(f"- {_title(bundle, key)}: no in-bundle scanner or policy evidences this control.")
+        why = (
+            "its only rules do not read the AI SDKs the inventory declares"
+            if reasons[key].get("reason") == SDK_GAP
+            else "no in-bundle scanner or policy evidences this control"
+        )
+        lines.append(f"- {_title(bundle, key)}: {why}.")
     if not not_assessed:
         lines.append("None.")
     not_applicable = [(key, entry) for key, entry in controls if entry["status"] == "not-applicable"]

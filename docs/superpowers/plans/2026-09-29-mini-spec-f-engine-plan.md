@@ -217,6 +217,14 @@ repo.
 concepts under `data/base/policies/`; modify `map_findings.py` and the
 inventory schema notes in `knowledge/ai-inventory.md`.
 
+**As built (2026-10-01):** the prototype extended the existing rules instead
+of adding siblings, so no guardrail concept is new and no mapping changes.
+`llm-unbounded-call` and `llm-output-unreviewed-write` (Anthropic-only) gained
+LangChain patterns; `llm-hardcoded-key` gained literal `*api_key=` arguments;
+`llm-prompt-logged` already reads any SDK; `llm-no-ai-disclosure` stays
+Anthropic-only (`sdks: [anthropic]`), so Art. 50 reports `not-assessed` for a
+LangChain-only inventory.
+
 **Design:**
 
 - Rules cover, for LangChain chat models, the four checks the spec lists:

@@ -2,7 +2,17 @@ rules:
   - id: llm-unbounded-call
     languages: [python]
     severity: WARNING
-    message: LLM call without both a timeout and a max_tokens bound; set both.
-    patterns:
-      - pattern: $CLIENT.messages.create(...)
-      - pattern-not: $CLIENT.messages.create(..., timeout=$T, max_tokens=$M, ...)
+    message: LLM call without both a timeout and a token limit; set both.
+    pattern-either:
+      # Anthropic SDK: the bounds go on each call.
+      - patterns:
+          - pattern: $CLIENT.messages.create(...)
+          - pattern-not: $CLIENT.messages.create(..., timeout=$T, max_tokens=$M, ...)
+      # LangChain chat models: the bounds go on the model (max_output_tokens on Google's).
+      - patterns:
+          - pattern: $CHAT(...)
+          - metavariable-regex:
+              metavariable: $CHAT
+              regex: ^Chat[A-Z]\w*$
+          - pattern-not: $CHAT(..., timeout=$T, max_tokens=$M, ...)
+          - pattern-not: $CHAT(..., timeout=$T, max_output_tokens=$M, ...)

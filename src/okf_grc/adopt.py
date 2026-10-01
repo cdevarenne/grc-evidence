@@ -56,7 +56,7 @@ INVENTORY = """# AI system inventory read by okf-grc. A person fills this in.
 # every tier-gated control is assessed; set it only with a recorded reason.
 # risk_tier: limited
 components: []  # each component: {path: <dir>, kind: <api | assistant | ...>}
-systems: []  # each AI system: {name, owner, provider, purpose}
+systems: []  # each AI system: {name, owner, provider, sdk, purpose}; sdk is e.g. anthropic or langchain
 """
 
 

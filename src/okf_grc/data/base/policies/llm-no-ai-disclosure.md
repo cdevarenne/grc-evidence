@@ -6,6 +6,7 @@ resource: ../../policies/semgrep/llm-no-ai-disclosure.yaml
 tags: [semgrep, ai, eu-ai-act:art-50]
 rule_ids:
   - semgrep:llm-no-ai-disclosure
+sdks: [anthropic]  # the AI SDKs the rule reads
 generated:
   by: claude-code/claude-opus-5-5
   at: "2026-09-28T00:00:00+00:00"
