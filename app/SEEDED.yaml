@@ -12,9 +12,9 @@
   expect: {controls: [soc2:cc6.1]}
 - id: S2
   file: app/Dockerfile
-  issue: no HEALTHCHECK (availability, SOC 2 A1 — not in the bundle)
+  issue: no HEALTHCHECK (availability, SOC 2 A1.1)
   detected_by: ["trivy:DS-0026", "checkov:CKV_DOCKER_2"]
-  expect: {gap: no-rule-match}
+  expect: {controls: [soc2:a1.1]}
 - id: S3
   file: app/k8s/deployment.yaml
   issue: image uses the :latest tag
@@ -74,4 +74,4 @@
   file: app/k8s/deployment.yaml
   issue: image from the project's own registry flagged as untrusted (a reviewed false positive)
   detected_by: ["trivy:KSV-0125"]
-  expect: {suppressed: false-positive, unsuppressed: {gap: no-rule-match}, suppression: suppressions/trivy-trusted-registry}
+  expect: {suppressed: false-positive, unsuppressed: {controls: [soc2:cc8.1]}, suppression: suppressions/trivy-trusted-registry}

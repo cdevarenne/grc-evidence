@@ -10,6 +10,8 @@ generated:
 verified:
   - by: "human:cdevarenne"
     at: "2026-09-29T17:21:00-07:00"
+  - by: "human:cdevarenne"
+    at: "2026-10-01T15:58:00-07:00"
 ---
 # Intent
 
@@ -25,6 +27,9 @@ and workloads run with the least privilege they need.
 # Satisfied by
 
 - [Require non-root containers](../policies/require-non-root.md)
+- [Harden the container runtime](../policies/harden-container-runtime.md)
+- [Isolate workloads in their own namespace](../policies/isolate-workloads.md)
+- [Least-privilege access to GKE](../policies/gke-access.md)
 
 # Evidenced by
 

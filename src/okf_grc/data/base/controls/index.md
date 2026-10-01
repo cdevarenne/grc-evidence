@@ -5,6 +5,7 @@ SOC 2 criteria are listed here; the AI-governance frameworks have their own fold
 * [ISO/IEC 42001 Annex A](iso42001/) - AI management system controls, by Annex A group
 * [EU AI Act](eu-ai-act/) - Articles of Regulation (EU) 2024/1689 that apply to AI systems
 
+* [A1.1 — Capacity Management](a1.1.md) - Processing capacity and the use of system components are maintained, monitored, and managed to meet availability objectives.
 * [CC6.1 — Logical Access](cc6.1.md) - Access to systems and data is restricted to authorized, least-privileged identities.
 * [CC6.6 — System Boundary Protection](cc6.6.md) - Resources are protected from access originating outside the system boundary.
 * [CC7.1 — Vulnerability Detection](cc7.1.md) - Vulnerabilities in code, dependencies, images, and configuration are detected.

@@ -7,12 +7,15 @@ tags: [sca, container, iac, cc7.1]
 rule_ids:
   - "trivy:CVE-*"
   - "trivy:GHSA-*"
+  - "trivy:GO-*"
 generated:
   by: claude-code/claude-opus-5-5
   at: "2026-09-25T00:00:00+00:00"
 verified:
   - by: "human:cdevarenne"
     at: "2026-09-29T17:21:00-07:00"
+  - by: "human:cdevarenne"
+    at: "2026-10-01T15:58:00-07:00"
 ---
 # Covers
 
@@ -26,7 +29,7 @@ container images are not scanned (`trivy image` does not run in v1).
 
 # Rules
 
-Every vulnerability id (`CVE-*`, `GHSA-*`) evidences CC7.1. Configuration
+Every vulnerability id (`CVE-*`, `GHSA-*`, and the Go database's `GO-*`) evidences CC7.1. Configuration
 rules are declared on the guardrail they detect, for example
 [Require non-root containers](../policies/require-non-root.md).
 

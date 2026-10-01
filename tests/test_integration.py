@@ -116,8 +116,10 @@ def test_plan_names_the_monitoring_control_the_results_leave_unassessed(mapping:
     assert "cc7.2" in planned and "art-12" not in planned
 
 
-def test_monitoring_control_is_not_assessed(mapping: dict) -> None:
-    assert mapping["controls"]["soc2:cc7.2"]["status"] == "not-assessed"
+def test_monitoring_control_has_only_a_configuration_check(mapping: dict) -> None:
+    """CC7.2's one rule checks GKE flow logging; the sample has no cluster, so nothing fires (#87)."""
+    entry = mapping["controls"]["soc2:cc7.2"]
+    assert entry["status"] == "no-violations-detected" and entry["satisfied_by"] == ["policies/network-flow-logs"]
 
 
 def test_high_risk_articles_are_not_applicable_at_limited_tier(mapping: dict) -> None:

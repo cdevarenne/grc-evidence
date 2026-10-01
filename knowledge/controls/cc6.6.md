@@ -10,6 +10,8 @@ generated:
 verified:
   - by: "human:cdevarenne"
     at: "2026-09-29T17:21:00-07:00"
+  - by: "human:cdevarenne"
+    at: "2026-10-01T15:58:00-07:00"
 ---
 # Intent
 
@@ -24,6 +26,7 @@ and data crossing the boundary is protected in transit.
 # Satisfied by
 
 - [No public buckets](../policies/no-public-bucket.md)
+- [Keep the GKE cluster private](../policies/private-gke-control-plane.md)
 
 # Evidenced by
 

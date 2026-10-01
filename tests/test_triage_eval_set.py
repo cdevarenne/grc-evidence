@@ -24,7 +24,7 @@ def test_every_case_has_a_split_and_a_target() -> None:
 
 def test_tune_split_is_the_first_baseline_set() -> None:
     labels = Counter("none" if c["expected"] == "none" else "control" for c in _split("tune"))
-    assert labels == {"control": 15, "none": 10}
+    assert labels == {"control": 12, "none": 5}  # 25 cases until base 1.2.1 mapped 8 of their rules (#87)
 
 
 def test_holdout_split_can_catch_both_failure_modes() -> None:

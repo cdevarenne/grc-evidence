@@ -21,7 +21,7 @@ BUNDLE = load_bundle(KNOWLEDGE)  # raises BundleError on a missing or empty `typ
 
 def test_bundle_has_the_expected_controls() -> None:
     keys = {c.key for c in BUNDLE.controls()}
-    assert {k for k in keys if k.startswith("soc2:")} == {f"soc2:{c}" for c in ("cc6.1", "cc6.6", "cc7.1", "cc7.2", "cc8.1")}
+    assert {k for k in keys if k.startswith("soc2:")} == {f"soc2:{c}" for c in ("a1.1", "cc6.1", "cc6.6", "cc7.1", "cc7.2", "cc8.1")}
     assert {k for k in keys if k.startswith("iso42001:")} == {f"iso42001:a.{n}" for n in range(4, 10)}
     assert {k for k in keys if k.startswith("eu-ai-act:")} == {f"eu-ai-act:art-{n}" for n in (9, 10, 12, 13, 14, 15, 50)}
 

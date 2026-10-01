@@ -10,6 +10,8 @@ generated:
 verified:
   - by: "human:cdevarenne"
     at: "2026-09-29T17:21:00-07:00"
+  - by: "human:cdevarenne"
+    at: "2026-10-01T15:58:00-07:00"
 ---
 # Intent
 
@@ -24,6 +26,7 @@ changes pass automated policy gates before release.
 # Satisfied by
 
 - [Deny :latest image tag](../policies/deny-latest-tag.md)
+- [Pin images and modules to reviewed sources](../policies/pin-image-provenance.md)
 
 # Evidenced by
 

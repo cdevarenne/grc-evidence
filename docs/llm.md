@@ -16,12 +16,15 @@ An optional Claude API step adds words and proposals on top, never statuses:
   model's guess is kept in `cutoff_from`), chosen by the measurements below.
   `make triage TRIAGE_ARGS=--batch` sends it as one Message Batch instead:
   half price, results in minutes rather than seconds.
-- **`make eval-triage`** scores triage on 65 labeled gaps (accuracy, and
+- **`make eval-triage`** scores triage on 57 labeled gaps (accuracy, and
   precision and recall of `none`) through the Message Batches API. Cases are
   split into `tune` (seen while diagnosing a problem), `holdout`, and
   `confirm` (each labeled before its first run), and each input variant
   (`baseline`, `scoped`) runs on all three; confidence cutoffs are chosen on
-  `tune` only. The first baseline is in
+  `tune` only. The results below were measured on 65 cases against base
+  1.2.0; base 1.2.1 maps 13 of those rules, so they are no longer gaps
+  and were retired, and five reviewer-labeled cases were added. The first
+  baseline is in
   [`examples/triage-eval-baseline.json`](../examples/triage-eval-baseline.json).
 
 `LLM_MODE` picks the provider: `replay` (default; recorded responses, $0, used

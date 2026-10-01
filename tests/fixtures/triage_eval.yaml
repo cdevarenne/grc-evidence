@@ -2,6 +2,8 @@
 # so each is a real gap. `expected` is the in-bundle control a reviewer would claim it for, or `none`
 # when no control in the bundle fits (availability, cost, encryption in transit, and so on).
 # Labels are a reviewer's judgment: change one only with a note in the commit message.
+# Base 1.2.1 mapped 13 cases' rules (#87); they were retired, since a declared rule is never a gap.
+# Results published before that were measured on 65 cases against base 1.2.0.
 #
 # Splits (issue #32): `tune` cases informed the diagnosis of the first baseline, so they are not
 # evidence for a fix. `holdout` cases were written and labeled before any run of the fix; report
@@ -19,9 +21,6 @@
 - {rule: "checkov:CKV_GCP_26", message: "Ensure that VPC Flow Logs is enabled for every subnet in a VPC Network", target: app/infra/main.tf, split: tune, expected: "soc2:cc7.2"}
 - {rule: "checkov:CKV_AWS_18", message: "Ensure the S3 bucket has access logging enabled", target: app/infra/main.tf, split: tune, expected: "soc2:cc7.2"}
 - {rule: "checkov:CKV_AWS_67", message: "Ensure CloudTrail is enabled in all Regions", target: app/infra/main.tf, split: tune, expected: "soc2:cc7.2"}
-- {rule: "checkov:CKV_K8S_43", message: "Image should use digest", target: app/k8s/deployment.yaml, split: tune, expected: "soc2:cc8.1"}
-- {rule: "checkov:CKV_DOCKER_7", message: "Ensure the base image uses a non latest version tag", target: app/Dockerfile, split: tune, expected: "soc2:cc8.1"}
-- {rule: "checkov:CKV_TF_1", message: "Ensure Terraform module sources use a commit hash", target: app/infra/main.tf, split: tune, expected: "soc2:cc8.1"}
 - {rule: "semgrep:python-eval-user-input", message: "eval() on data derived from the request allows code injection", target: app/widgets/views.py, split: tune, expected: "soc2:cc7.1"}
 
 # Near misses: sound related to an in-bundle control, but the criterion that fits is not in the bundle
@@ -31,11 +30,6 @@
 - {rule: "trivy:AVD-GCP-0066", message: "Storage bucket encryption does not use a customer-managed key", target: app/infra/main.tf, split: tune, expected: "none"}
 
 # Clear `none`: availability, capacity, hygiene
-- {rule: "trivy:DS-0026", message: "No HEALTHCHECK defined: add HEALTHCHECK instruction in your Dockerfile", target: app/Dockerfile, split: tune, expected: "none"}
-- {rule: "checkov:CKV_DOCKER_2", message: "Ensure that HEALTHCHECK instructions have been added to container images", target: app/Dockerfile, split: tune, expected: "none"}
-- {rule: "checkov:CKV_K8S_8", message: "Liveness Probe Should be Configured", target: app/k8s/deployment.yaml, split: tune, expected: "none"}
-- {rule: "checkov:CKV_K8S_9", message: "Readiness Probe Should be Configured", target: app/k8s/deployment.yaml, split: tune, expected: "none"}
-- {rule: "checkov:CKV_K8S_11", message: "CPU limits should be set", target: app/k8s/deployment.yaml, split: tune, expected: "none"}
 - {rule: "trivy:DS-0017", message: "'RUN <package-manager> update' instruction alone: combine it with install", target: app/Dockerfile, split: tune, expected: "none"}
 
 # ---------------------------------------------------------------------------------------------
@@ -57,11 +51,12 @@
 - {rule: "semgrep:python-pickle-load-request", message: "pickle.loads on request data allows arbitrary code execution", target: app/widgets/views.py, split: holdout, expected: "soc2:cc7.1"}
 
 # `none`: availability, capacity, hygiene (the error class behind issue #32)
-- {rule: "checkov:CKV_K8S_10", message: "CPU requests should be set", target: app/k8s/deployment.yaml, split: holdout, expected: "none"}
-- {rule: "checkov:CKV_K8S_12", message: "Memory requests should be set", target: app/k8s/deployment.yaml, split: holdout, expected: "none"}
-- {rule: "checkov:CKV_K8S_13", message: "Memory limits should be set", target: app/k8s/deployment.yaml, split: holdout, expected: "none"}
 - {rule: "trivy:DS-0005", message: "Use COPY instead of ADD in the Dockerfile", target: app/Dockerfile, split: holdout, expected: "none"}
 - {rule: "checkov:CKV_GCP_81", message: "Ensure Cloud SQL instances are deployed in multiple zones for high availability", target: app/infra/main.tf, split: holdout, expected: "none"}
+# Added with base 1.2.1 (#87) to restore the minimums after the retirement; labeled by a reviewer.
+- {rule: "checkov:CKV_GCP_119", message: "Ensure Spanner Database has deletion protection enabled", target: app/infra/main.tf, split: holdout, expected: "none"}
+- {rule: "checkov:CKV_GCP_21", message: "Ensure Kubernetes Clusters are configured with Labels", target: app/infra/main.tf, split: holdout, expected: "none"}
+- {rule: "checkov:CKV_DOCKER_6", message: "Ensure that LABEL maintainer is used instead of MAINTAINER (deprecated)", target: app/Dockerfile, split: holdout, expected: "none"}
 
 # ---------------------------------------------------------------------------------------------
 # Confirm: a second, fresh holdout (issue #32), written after the first holdout was measured and
@@ -87,8 +82,6 @@
 - {rule: "semgrep:python-print-debug", message: "print() debugging statement left in view code", target: app/assistant/views.py, split: confirm, expected: "none"}
 
 # Ordinary matches
-- {rule: "checkov:CKV_K8S_22", message: "Use read-only filesystem for containers where possible", target: app/k8s/deployment.yaml, split: confirm, expected: "soc2:cc6.1"}
-- {rule: "checkov:CKV_K8S_38", message: "Ensure that Service Account Tokens are only mounted where necessary", target: app/k8s/deployment.yaml, split: confirm, expected: "soc2:cc6.1"}
 - {rule: "checkov:CKV_AWS_25", message: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389", target: app/infra/main.tf, split: confirm, expected: "soc2:cc6.6"}
 - {rule: "checkov:CKV_AWS_260", message: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 80", target: app/infra/main.tf, split: confirm, expected: "soc2:cc6.6"}
 - {rule: "semgrep:python-yaml-load-request", message: "yaml.load on request data can construct arbitrary objects", target: app/widgets/views.py, split: confirm, expected: "soc2:cc7.1"}
@@ -105,3 +98,6 @@
 - {rule: "semgrep:k8s-no-pod-disruption-budget", message: "Deployment has no PodDisruptionBudget", target: app/k8s/deployment.yaml, split: confirm, expected: "none"}
 - {rule: "trivy:DS-0013", message: "RUN cd ... is used; use WORKDIR to change directory", target: app/Dockerfile, split: confirm, expected: "none"}
 - {rule: "checkov:CKV_DOCKER_5", message: "Ensure update instructions are not used alone in the Dockerfile", target: app/Dockerfile, split: confirm, expected: "none"}
+# Added with base 1.2.1 (#87) to restore the minimums after the retirement; labeled by a reviewer.
+- {rule: "checkov:CKV_GCP_82", message: "Ensure KMS keys are protected from deletion", target: app/infra/main.tf, split: confirm, expected: "none"}
+- {rule: "trivy:DS-0029", message: "'apt-get' missing '--no-install-recommends'", target: app/Dockerfile, split: confirm, expected: "none"}

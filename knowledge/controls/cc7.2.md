@@ -9,7 +9,9 @@ generated:
   at: "2026-09-25T00:00:00+00:00"
 verified:
   - by: "human:cdevarenne"
-    at: "2026-09-29T17:21:00-07:00"  
+    at: "2026-09-29T17:21:00-07:00"
+  - by: "human:cdevarenne"
+    at: "2026-10-01T15:58:00-07:00"
 ---
 # Intent
 
@@ -21,8 +23,13 @@ acted on.
 - **SI-4** — System Monitoring
 - **AU-6** — Audit Record Review, Analysis, and Reporting
 
+# Satisfied by
+
+- [Log network flows](../policies/network-flow-logs.md)
+
 # Evidenced by
 
-No scanner in this bundle evidences runtime monitoring. A runtime detection
-tool is planned for a later version, so this control is reported as
-not assessed rather than as having no violations.
+- [Checkov](../scanners/checkov.md) — whether flow logging is configured
+
+Only configuration is checked: that monitoring data is collected, not that
+anyone reviews it. No scanner here evidences runtime detection.
