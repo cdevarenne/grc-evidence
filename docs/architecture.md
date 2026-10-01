@@ -15,7 +15,7 @@ is linked.
 | **Output contract** | `findings.json`, `mapping.json`, and `run.json` (commit, versions, layout, the sha256 of every output), each with a JSON Schema and a `schema_version`. OSCAL 1.2.3 component definition, assessment plan, and assessment results carrying the run id. | `src/okf_grc/data/schemas/`, `docs/oscal-subset.md` |
 | **LLM steps** | Optional, never change a status: `grc narrate` (prose per control, validated) and `grc triage` (proposed control or `none` per coverage gap, for a person to apply). | `src/okf_grc/narrate.py`, `triage.py`, `llm.py` |
 | **Agent entry** | A skill (`SKILL.md`) that calls `grc` and leaves every status, mapping, and suppression decision to a person. | `.claude/skills/grc-continuous-compliance/` |
-| **Adoption** | `grc init` copies the base bundle and policies into a repo and writes starters; `grc check` reports drift from the base and unreviewed concepts. | `src/okf_grc/adopt.py` |
+| **Adoption** | `grc init` copies the base bundle and policies into a repo and writes starters; `grc check` reports drift from the base and unreviewed concepts; `grc sync-base` updates the copies to a newer engine's base. | `src/okf_grc/adopt.py` |
 | **CI** | Tests on every push and pull request; a version tag releases. | `.github/workflows/` |
 
 ## Diagram

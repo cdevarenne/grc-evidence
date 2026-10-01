@@ -1,9 +1,11 @@
-"""`grc init` sets up a repo from the engine's base bundle; `grc check` reports drift from it and unreviewed concepts."""
+"""`grc init` sets up a repo from the engine's base bundle; `grc check` reports drift from it and unreviewed concepts;
+`grc sync-base` updates the repo's copies to the installed engine's base."""
 
 from __future__ import annotations
 
 import argparse
 import os
+import re
 from collections.abc import Iterable
 from importlib.metadata import version
 from importlib.resources import as_file
@@ -142,13 +144,12 @@ def check(repo: Path, config: Config) -> list[str]:
     if (recorded := recorded_base_version(knowledge)) != installed:
         problems.append(f"{config.knowledge}/index.md: base_version {recorded!r}, installed engine {installed!r}")
     with as_file(data.path("base")) as base, as_file(data.path("policies")) as policies:
-        copies = [(base, knowledge, rel) for rel in _tree(base) if rel.name != "index.md"]
-        copies += [(policies, repo / "policies", rel) for rel in _tree(policies)]
-        for source, dest, rel in copies:
-            copy = dest / rel
+        for source, copy in _copies(repo, config, base, policies):
+            if copy.name == "index.md":
+                continue
             if not copy.is_file():
                 problems.append(f"{copy.relative_to(repo)}: missing (base {installed})")
-            elif copy.read_bytes() != (source / rel).read_bytes():
+            elif copy.read_bytes() != source.read_bytes():
                 problems.append(f"{copy.relative_to(repo)}: differs from base {installed}")
     try:
         bundle = load_bundle(knowledge)
@@ -158,6 +159,40 @@ def check(repo: Path, config: Config) -> list[str]:
         if not any(str(e.get("by", "")).startswith("human:") for e in concept.frontmatter.get("verified") or []):
             problems.append(f"{config.knowledge}/{concept.path}: not verified by a person")
     return problems
+
+
+def sync_base(repo: Path, config: Config) -> list[str]:
+    """Overwrite the repo's base copies with the installed engine's and set `base_version`; what changed.
+
+    An `index.md` is written only when missing: the repo's own lists its own concepts too, so one that differs
+    from the base is reported for a person to merge. A file the base no longer has is left in place.
+    """
+    installed, changes = version("okf-grc"), []
+    with as_file(data.path("base")) as base, as_file(data.path("policies")) as policies:
+        for source, copy in _copies(repo, config, base, policies):
+            rel = copy.relative_to(repo).as_posix()
+            if copy.is_file() and copy.read_bytes() == source.read_bytes():
+                continue
+            if copy.name == "index.md" and copy.is_file():
+                changes.append(f"kept {rel}: differs from base {installed}; merge its new entries by hand")
+                continue
+            changes.append(f"{'updated' if copy.is_file() else 'added'} {rel}")
+            copy.parent.mkdir(parents=True, exist_ok=True)
+            copy.write_bytes(source.read_bytes())
+    index = repo / config.knowledge / "index.md"
+    text = index.read_text(encoding="utf-8")
+    # Only the value changes: a comment after it stays.
+    synced = re.sub(r'^(base_version:\s*)("[^"]*"|[^\s#]+)', rf'\g<1>"{installed}"', text, count=1, flags=re.MULTILINE)
+    if synced != text:
+        index.write_text(synced, encoding="utf-8")
+        changes.append(f"updated {index.relative_to(repo).as_posix()}: base_version {installed}")
+    return changes
+
+
+def _copies(repo: Path, config: Config, base: Path, policies: Path) -> list[tuple[Path, Path]]:
+    """Each base file and where the repo keeps its copy; the base's root `index.md` is the repo's own."""
+    pairs = [(base / rel, repo / config.knowledge / rel) for rel in _tree(base) if rel != Path("index.md")]
+    return pairs + [(policies / rel, repo / "policies" / rel) for rel in _tree(policies)]
 
 
 def _flow(values: Iterable[str]) -> str:
@@ -194,3 +229,12 @@ def check_main(argv: list[str] | None = None) -> None:
         print("\n".join(problems))
         raise SystemExit(1)
     print(f"ok: copies match base {version('okf-grc')}; every concept is verified")
+
+
+def sync_base_main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(prog="grc sync-base", description="Update this repo's base copies to the installed engine's base.")
+    parser.add_argument("--config", type=Path, default=None, help="scan layout (default: grc.yaml if present)")
+    args = parser.parse_args(argv)
+    repo = Path.cwd()
+    changes = sync_base(repo, load_config(repo, args.config))
+    print("\n".join(changes) if changes else f"ok: copies already match base {version('okf-grc')}")

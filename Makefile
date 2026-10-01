@@ -8,7 +8,7 @@ export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
 OKF := reference-agent @ git+https://github.com/GoogleCloudPlatform/open-knowledge-format@$(OKF_COMMIT)
 
-.PHONY: bootstrap lock-scanners audit examples-llm scan narrate triage eval-triage render test test-integration examples clean
+.PHONY: bootstrap lock-scanners sync-base audit examples-llm scan narrate triage eval-triage render test test-integration examples clean
 
 bootstrap:
 	uv sync
@@ -28,7 +28,11 @@ audit:
 	  --ignorefile audit-ignore.yaml --skip-dirs app --skip-dirs .tools --skip-dirs out --skip-dirs .venv .
 	uv run zizmor --no-progress .github/workflows
 
-scan:
+# knowledge/ and policies/ hold copies of the base bundle; edit src/okf_grc/data/ and sync (#64).
+sync-base:
+	$(GRC) sync-base
+
+scan: sync-base
 	$(GRC) run --target app --knowledge knowledge --out out
 
 narrate:

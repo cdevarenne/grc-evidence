@@ -82,6 +82,31 @@ def test_check_reports_drift(tmp_path: Path) -> None:
     ]
 
 
+def test_sync_base_restores_the_base_and_reports_each_change(tmp_path: Path) -> None:
+    """#86: drifted and missing copies are rewritten, base_version updated, a differing index kept for a person."""
+    adopt.init(tmp_path)
+    concept = tmp_path / "knowledge/controls/cc6.1.md"
+    concept.write_text(concept.read_text() + "A local edit.\n")
+    (tmp_path / "policies/rego/deny_latest_tag.rego").unlink()
+    policies_index = tmp_path / "knowledge/policies/index.md"
+    policies_index.write_text(policies_index.read_text() + "* [Local](local.md)\n")
+    index = tmp_path / "knowledge/index.md"
+    index.write_text(index.read_text().replace(f'base_version: "{version("okf-grc")}"', 'base_version: "1.0.0"  # a note'))
+    config = load_config(tmp_path)
+    assert adopt.sync_base(tmp_path, config) == [
+        "updated knowledge/controls/cc6.1.md",
+        f"kept knowledge/policies/index.md: differs from base {version('okf-grc')}; merge its new entries by hand",
+        "added policies/rego/deny_latest_tag.rego",
+        f"updated knowledge/index.md: base_version {version('okf-grc')}",
+    ]
+    assert policies_index.read_text().endswith("* [Local](local.md)\n")
+    assert f'base_version: "{version("okf-grc")}"  # a note\n' in index.read_text()
+    assert adopt.check(tmp_path, config) == []
+    assert adopt.sync_base(tmp_path, config) == [
+        f"kept knowledge/policies/index.md: differs from base {version('okf-grc')}; merge its new entries by hand"
+    ]
+
+
 def test_check_reports_a_malformed_concept_instead_of_crashing(tmp_path: Path) -> None:
     adopt.init(tmp_path)
     (tmp_path / "knowledge/stack/broken.md").write_text("no frontmatter\n")

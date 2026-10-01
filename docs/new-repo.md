@@ -34,3 +34,9 @@ controls its component implements, and set the AI risk tier in
 Every concept you write needs a `verified` entry from a person before
 `grc check` passes. Your own scanner rules reach a control only through a
 `rule_ids` line in a concept you write and review.
+
+When you move to a newer engine, `grc sync-base` overwrites the base copies
+with its base bundle, updates `base_version`, and lists each change. It writes
+an `index.md` only when missing: one that differs is kept, for you to merge the
+new base entries by hand. New base concepts carry the engine author's review;
+read their diff before you commit, then run `grc check`.
