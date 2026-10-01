@@ -213,3 +213,10 @@ def test_load_pins_skips_comments_and_blank_lines(tmp_path: Path) -> None:
 def test_targets_have_no_dot_prefix_when_the_scan_target_is_the_repo_root(normalize, doc) -> None:
     """#66: every scanner reports `Dockerfile`, never `./Dockerfile`, so suppressions match exactly."""
     assert [f["target"] for f in normalize(doc, ".")] == ["Dockerfile"]
+
+
+def test_a_hung_scanner_stops_the_scan_with_its_name(tmp_path: Path) -> None:
+    """#62: a scanner that never answers is killed after the timeout, and the error names it."""
+    _local_scanner(tmp_path / ".tools", "hangs", "sleep 30")
+    with pytest.raises(ScanError, match=r"slowscan: no result after 1s; stopped \(scanner_timeout in grc.yaml\)"):
+        run_tool("slowscan", ["hangs"], tmp_path, tmp_path / ".tools", timeout=1)

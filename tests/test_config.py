@@ -32,6 +32,7 @@ def test_defaults_are_the_v1_layout(tmp_path: Path) -> None:
         checkov_skip_paths=(),
         semgrep_configs=("policies/semgrep",),
         rego=("policies/rego",),
+        scanner_timeout=900,
     )
 
 
@@ -76,6 +77,9 @@ def test_an_explicit_config_file_must_exist(tmp_path: Path) -> None:
         ("rego: [../rules]\n", "rego '../rules' leaves the repo root"),
         ("conftest:\n  inputs: ['../x/*.yaml']\n", "conftest.inputs '../x/\\*.yaml' must stay under the target"),
         ("checkov:\n  skip_paths: [/etc]\n", "checkov.skip_paths '/etc' must stay under the target"),
+        ("scanner_timeout: '60'\n", "'scanner_timeout' must be a positive whole number of seconds"),
+        ("scanner_timeout: true\n", "'scanner_timeout' must be a positive whole number of seconds"),
+        ("scanner_timeout: 0\n", "'scanner_timeout' must be a positive whole number of seconds"),
     ],
 )
 def test_malformed_configs_are_rejected(tmp_path: Path, text: str, error: str) -> None:

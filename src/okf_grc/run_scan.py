@@ -106,7 +106,7 @@ def dedupe(findings: list[Finding]) -> list[Finding]:
     return [seen[key] for key in sorted(seen)]
 
 
-def run_tool(tool: str, argv: list[str], cwd: Path, tools: Path | None = None) -> Any:
+def run_tool(tool: str, argv: list[str], cwd: Path, tools: Path | None = None, timeout: int | None = None) -> Any:
     """Run a scanner and parse its JSON stdout. Exit 0/1 means clean/issues found; anything else fails.
 
     `tools` is the `.tools` directory `grc bootstrap` fills: its `bin/` copy of a scanner is used before
@@ -117,7 +117,12 @@ def run_tool(tool: str, argv: list[str], cwd: Path, tools: Path | None = None) -
     if exe is None:
         raise ScanError(f"{tool}: '{argv[0]}' not found in .tools/bin or on PATH; run `grc bootstrap`")
     env = os.environ | ({"TRIVY_CACHE_DIR": str(tools / "trivy-cache")} if tools and "TRIVY_CACHE_DIR" not in os.environ else {})
-    proc = subprocess.run([exe, *argv[1:]], cwd=cwd, env=env, capture_output=True, text=True, encoding="utf-8", check=False)
+    try:
+        proc = subprocess.run(
+            [exe, *argv[1:]], cwd=cwd, env=env, capture_output=True, text=True, encoding="utf-8", check=False, timeout=timeout
+        )
+    except subprocess.TimeoutExpired as e:  # the scanner is killed; name it rather than hang the run
+        raise ScanError(f"{tool}: no result after {timeout}s; stopped (scanner_timeout in grc.yaml)") from e
     if proc.returncode not in (0, 1):
         raise ScanError(f"{tool}: exit {proc.returncode}: {proc.stderr.strip()[-500:]}")
     try:
@@ -188,7 +193,7 @@ def scan(repo: Path, config: Config) -> list[Finding]:
     target = repo / config.target
     findings: list[Finding] = []
     for run in scanner_runs(config, conftest_inputs(repo, config)):
-        findings += run.normalize(run_tool(run.tool, list(run.argv), target if run.in_target else repo, repo / ".tools"), config.target)
+        findings += run.normalize(run_tool(run.tool, list(run.argv), target if run.in_target else repo, repo / ".tools", config.scanner_timeout), config.target)
     return dedupe(findings)
 
 

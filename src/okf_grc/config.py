@@ -20,6 +20,7 @@ _SHAPE: dict[str, Any] = {
     "knowledge": str,
     "inventory": str,
     "rego": list,
+    "scanner_timeout": int,
     "conftest": {"inputs": list},
     "checkov": {"frameworks": list, "skip_paths": list},
     "semgrep": {"configs": list},
@@ -42,6 +43,7 @@ class Config:
     checkov_skip_paths: tuple[str, ...] = ()
     semgrep_configs: tuple[str, ...] = ("policies/semgrep",)
     rego: tuple[str, ...] = ("policies/rego",)
+    scanner_timeout: int = 900  # seconds per scanner; a hung scanner stops the scan with its name
 
 
 def load_config(repo: Path, path: Path | None = None, **overrides: str | None) -> Config:
@@ -68,6 +70,11 @@ def _fields(raw: Any, shape: dict[str, Any], prefix: str) -> dict[str, Any]:
             raise ConfigError(f"unknown key {name!r}")
         if isinstance(kind, dict):
             fields |= _fields(value, kind, f"{name}.")
+            continue
+        if kind is int:
+            if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                raise ConfigError(f"{name!r} must be a positive whole number of seconds")
+            fields[name] = value
             continue
         values = value if kind is list else [value]
         if (kind is list and not isinstance(value, list)) or not all(isinstance(v, str) and v for v in values):

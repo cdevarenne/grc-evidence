@@ -72,6 +72,7 @@ def starter_config(target: str) -> str:
         f"checkov:\n  frameworks: {_flow(d.checkov_frameworks)}\n  skip_paths: {_flow(d.checkov_skip_paths)}\n"
         f"semgrep:\n  configs: {_flow(d.semgrep_configs)}\n"
         f"rego: {_flow(d.rego)}\n"
+        f"scanner_timeout: {d.scanner_timeout}  # seconds per scanner\n"
     )
 
 
