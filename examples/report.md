@@ -1,6 +1,6 @@
 # Compliance Scan Report
 
-Generated 2026-10-01T16:18:07+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-10-01T20:09:59+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
@@ -39,10 +39,6 @@ it is evidence, not a control attestation.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 8 findings: 4 high-severity, 1 medium-severity, 1 low-severity, and 2 unknown-severity.
-
-**Auditor note (LLM):** Review logical access controls to ensure only authenticated, authorized identities reach protected functions and data, and verify least-privilege execution.
-
 **Findings:** 4 high, 1 medium, 1 low, 2 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Semgrep](../knowledge/scanners/semgrep.md), [Trivy](../knowledge/scanners/trivy.md), [DRF writes require authentication](../knowledge/policies/drf-authenticated-writes.md), [No hard-coded LLM API keys](../knowledge/policies/llm-hardcoded-key.md), [Require non-root containers](../knowledge/policies/require-non-root.md)
@@ -67,10 +63,6 @@ or a secret manager, and rotate any key that was committed.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 4 findings: 2 high-severity and 2 unknown-severity.
-
-**Auditor note (LLM):** Examine boundary protection to ensure resources are not reachable anonymously from outside the system and data in transit is protected.
-
 **Findings:** 2 high, 2 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Trivy](../knowledge/scanners/trivy.md), [No public buckets](../knowledge/policies/no-public-bucket.md)
@@ -88,10 +80,6 @@ accounts only, and enforce public access prevention on the bucket.
 ### CC7.1 — Vulnerability Detection
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Status is not-satisfied with 51 findings: 3 critical, 16 high-severity, 21 medium-severity, and 11 low-severity.
-
-**Auditor note (LLM):** Prioritize addressing the 3 critical and 16 high-severity vulnerabilities across source, dependencies, and container images immediately.
 
 **Findings:** 3 critical, 17 high, 22 medium, 11 low
 
@@ -160,10 +148,6 @@ advisories, then re-scan.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 3 findings: 1 high-severity, 1 medium-severity, and 1 unknown-severity.
-
-**Auditor note (LLM):** Confirm that deployment artifacts are pinned, changes undergo review, and automated policy gates prevent unapproved releases.
-
 **Findings:** 1 high, 1 medium, 1 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Trivy](../knowledge/scanners/trivy.md), [Deny :latest image tag](../knowledge/policies/deny-latest-tag.md)
@@ -183,10 +167,6 @@ and update it only through a reviewed change.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 1 high-severity finding.
-
-**Auditor note (LLM):** Verify that an inventory of AI systems exists with documented owners and dependencies (models, providers, data, tooling, people).
-
 **Findings:** 1 high
 
 **Evidence:** [Conftest](../knowledge/scanners/conftest.md), [AI inventory is complete](../knowledge/policies/ai-inventory-complete.md)
@@ -201,10 +181,6 @@ purpose, then review its risk tier.
 ### A.6 — AI system life cycle
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Status is not-satisfied with 2 findings: 1 high-severity and 1 medium-severity.
-
-**Auditor note (LLM):** Review the design, build, deployment, and operation controls; address resource limits, security context, and namespace isolation gaps.
 
 **Findings:** 1 high, 1 medium
 
@@ -224,10 +200,6 @@ chat model, sized to the feature's latency and cost budget.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 1 high-severity finding.
-
-**Auditor note (LLM):** Determine how prompts, context, and model outputs are governed for quality, provenance, and protection; examine the unreviewed LLM output write issue.
-
 **Findings:** 1 high
 
 **Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Do not log prompts or completions](../knowledge/policies/llm-prompt-logged.md)
@@ -244,10 +216,6 @@ Keep full transcripts, if needed, in a store with its own access control and ret
 ### Art. 50 — Transparency obligations for certain AI systems
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Status is not-satisfied with 1 medium-severity finding.
-
-**Auditor note (LLM):** Investigate whether users are informed when interacting with AI systems or receiving AI-generated content.
 
 **Findings:** 1 medium
 
