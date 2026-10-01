@@ -43,8 +43,8 @@ def test_no_dependency_cache_in_a_release() -> None:
 def test_checks_the_version_then_tests_then_releases() -> None:
     runs = [s["run"] for s in _steps() if "run" in s]
     assert runs[0] == 'test "$GITHUB_REF_NAME" = "v$(uv version --short)"'
-    assert runs[1:4] == ["make bootstrap", "make test", "make test-integration"]
-    assert runs[4].startswith('gh release create "$GITHUB_REF_NAME"') and "--verify-tag" in runs[4]
+    assert runs[1:5] == ["make bootstrap", "make audit", "make test", "make test-integration"]
+    assert runs[5].startswith('gh release create "$GITHUB_REF_NAME"') and "--verify-tag" in runs[5]
 
 
 def test_no_expression_is_interpolated_into_a_shell_command() -> None:

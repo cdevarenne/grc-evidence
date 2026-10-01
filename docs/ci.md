@@ -6,7 +6,7 @@ own pipeline.
 ## This repository
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs `make bootstrap`,
-`make test` (unit tests, `grc check`, Rego and Semgrep rule tests), and
+`make audit` (see below), `make test` (unit tests, `grc check`, Rego and Semgrep rule tests), and
 `make test-integration` (a full scan of the sample app) on every push to `main`
 and every pull request. uv's package cache keeps the scanner installs fast;
 Trivy's vulnerability database is cached once a day.
@@ -19,6 +19,17 @@ install that tag.
 Both workflows pin every action to a commit SHA, keep the token read-only
 except where the release needs `contents: write`, do not persist credentials,
 and pass no `${{ }}` expression into a shell command.
+
+## Supply-chain audit
+
+`make audit` scans the engine's own dependencies, not the deliberately
+vulnerable `app/`: `uv.lock` and the Python scanners' hash-pinned requirements
+in `src/okf_grc/data/locks/`, with the pinned Trivy; and the workflows, with
+zizmor (a dev dependency, so `uv.lock` pins it by hash). It fails on a high or
+critical vulnerability that has a fixed version, unless
+[`audit-ignore.yaml`](../audit-ignore.yaml) records a reviewed exception: one
+exact finding, a reason, and an expiry at most 90 days out, after which the audit
+fails again until someone reviews it. CI and the release workflow both run it.
 
 ## Your own pipeline
 

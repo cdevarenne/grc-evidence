@@ -55,6 +55,7 @@ make render            # out/knowledge-viz.html — the OKF graph
 make narrate           # optional: LLM prose per control, validated, then re-render and update run.json (LLM_MODE=anthropic)
 make triage            # optional: LLM proposals for coverage gaps → out/proposals.json (review only)
 make eval-triage       # optional: score triage variants on labeled gaps (tune + holdout) via the Batch API
+make audit             # supply chain: the engine's dependencies (Trivy) and workflows (zizmor)
 make test              # unit + Rego + Semgrep rule tests
 make test-integration  # full scan; asserts every seeded issue lands where expected
 make clean             # remove out/

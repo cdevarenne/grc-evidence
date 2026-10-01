@@ -31,7 +31,7 @@ def test_token_is_read_only() -> None:
 
 def test_runs_bootstrap_then_unit_then_integration_tests() -> None:
     steps = [s["run"] for s in _workflow()["jobs"]["test"]["steps"] if "run" in s and "GITHUB_OUTPUT" not in s["run"]]
-    assert steps == ["make bootstrap", "make test", "make test-integration"]
+    assert steps == ["make bootstrap", "make audit", "make test", "make test-integration"]
 
 
 def test_trivy_database_cache_is_keyed_on_the_pins_and_the_day() -> None:

@@ -25,6 +25,7 @@ jobs:
       - name: Tag equals the package version
         run: test "$GITHUB_REF_NAME" = "v$(uv version --short)"
       - run: make bootstrap
+      - run: make audit
       - run: make test
       - run: make test-integration
       - name: Publish the release

@@ -8,7 +8,7 @@ export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
 OKF := reference-agent @ git+https://github.com/GoogleCloudPlatform/open-knowledge-format@$(OKF_COMMIT)
 
-.PHONY: bootstrap lock-scanners scan narrate triage eval-triage render test test-integration examples clean
+.PHONY: bootstrap lock-scanners audit scan narrate triage eval-triage render test test-integration examples clean
 
 bootstrap:
 	uv sync
@@ -20,6 +20,13 @@ lock-scanners:
 	mkdir -p $(LOCKS)/semgrep $(LOCKS)/checkov
 	echo "semgrep==$(SEMGREP_VERSION)" | uv pip compile --quiet --universal --generate-hashes --python-version $(SEMGREP_PYTHON) - -o $(LOCKS)/semgrep/requirements.txt
 	echo "checkov==$(CHECKOV_VERSION)" | uv pip compile --quiet --universal --generate-hashes --python-version $(CHECKOV_PYTHON) - -o $(LOCKS)/checkov/requirements.txt
+
+# Supply chain: the engine's own dependencies (not the deliberately vulnerable app/) and the workflows.
+# Fails on a high or critical vulnerability that has a fix, unless audit-ignore.yaml records a reviewed exception.
+audit:
+	$(TOOLBIN)/trivy fs --quiet --scanners vuln --ignore-unfixed --severity HIGH,CRITICAL --exit-code 1 \
+	  --ignorefile audit-ignore.yaml --skip-dirs app --skip-dirs .tools --skip-dirs out --skip-dirs .venv .
+	uv run zizmor --no-progress .github/workflows
 
 scan:
 	$(GRC) run --target app --knowledge knowledge --out out
