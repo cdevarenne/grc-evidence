@@ -67,6 +67,8 @@ Supported platforms: macOS arm64 and Linux x86_64 (the pinned scanner binaries).
 
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs `make bootstrap`,
 `make test`, and `make test-integration` on every push to `main` and every pull request.
+Pushing a version tag (`v1.1.0`) runs the same tests, checks the tag equals the package
+version, and publishes a GitHub release ([`.github/workflows/release.yml`](.github/workflows/release.yml)).
 
 ## How grounding works
 
