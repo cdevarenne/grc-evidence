@@ -86,12 +86,10 @@ def map_findings(
 
     Active suppressions (Spec C) change how a matching finding is counted, never whether it is shown:
     a false positive leaves its control or the gap list; an accepted risk stays on its control, marked.
-    A suppression approved after `today` is an error: it would otherwise appear in no list at all.
+    A suppression approved after `today` (a reviewer's date east of UTC, or a typo) is pending: not applied, and listed.
     """
     today = today or datetime.now(UTC).date()
     suppressions = bundle.suppressions()
-    if pending := [s.id for s in suppressions if s.approved > today]:
-        raise ValueError(f"suppressions approved after {today}: {pending}")
     active = [s for s in suppressions if s.active(today)]
     used: set[str] = set()
     controls: dict[str, dict[str, Any]] = {}
@@ -136,6 +134,7 @@ def map_findings(
         mapping |= {
             "suppressed": suppressed,
             "expired_suppressions": [s.id for s in suppressions if today > s.expires],
+            "pending_suppressions": [{"id": s.id, "approved": s.approved.isoformat()} for s in suppressions if s.approved > today],
             "unused_suppressions": [s.id for s in active if s.id not in used],
             "expiring_suppressions": [
                 {"id": s.id, "expires": s.expires.isoformat()}

@@ -117,6 +117,26 @@
           }
         }
       }
+    },
+    "pending_suppressions": {
+      "type": "array",
+      "description": "Suppressions approved after the mapping date: not applied (since 1.1)",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "approved"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "approved": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
     }
   },
   "$defs": {

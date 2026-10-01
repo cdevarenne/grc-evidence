@@ -113,9 +113,14 @@ def test_suppression_applies_from_approval_through_expiry(tmp_path: Path, today:
     assert ("suppressions/fp" in m["expired_suppressions"]) is (today > date(2026, 12, 27))
 
 
-def test_suppression_approved_after_today_is_rejected(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="suppressions/fp"):
-        _mapping(tmp_path, today=date(2026, 9, 27), fp=FALSE_POSITIVE)
+def test_suppression_approved_after_today_is_pending_and_listed(tmp_path: Path) -> None:
+    """#69: not an error, not silently ignored: not applied, and listed with its approval date."""
+    m = _mapping(tmp_path, today=date(2026, 9, 27), fp=FALSE_POSITIVE)
+    assert m["pending_suppressions"] == [{"id": "suppressions/fp", "approved": "2026-09-28"}]
+    assert m["suppressed"] == [] and "suppressions/fp" not in m["unused_suppressions"]
+    assert "CKV_TEST_99" in [u["finding"]["rule_id"] for u in m["unmapped"]]
+    report = render_report(_bundle(tmp_path / "r", fp=FALSE_POSITIVE), m, NOW)
+    assert "## Pending suppressions" in report and "- `suppressions/fp` approved 2026-09-28" in report
 
 
 def test_expired_suppression_puts_the_finding_back(tmp_path: Path) -> None:
