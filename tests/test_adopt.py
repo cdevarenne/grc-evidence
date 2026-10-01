@@ -135,3 +135,8 @@ def test_init_never_writes_into_a_submodule(tmp_path: Path) -> None:
     config = load_config(tmp_path)
     assert config.inventory == "../ai-inventory.yaml" and "../ai-inventory.yaml" in config.conftest_inputs
     assert "stack/cart" in load_bundle(tmp_path / "knowledge").concepts
+
+
+def test_starter_inventory_documents_the_path_that_ties_a_system_to_its_component() -> None:
+    """ai_inventory_complete matches a system to its assistant component by `path`; the starter must say so."""
+    assert "path (its component's)" in adopt.INVENTORY
