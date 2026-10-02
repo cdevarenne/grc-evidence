@@ -164,7 +164,10 @@ def test_findings_filters_and_pages(tmp_path: Path, args: dict, rules: list[str]
 
 def test_findings_rejects_an_unbounded_page(tmp_path: Path) -> None:
     result = _call(_out(tmp_path), "findings", {"limit": 201})
-    assert result.is_error and "limit must be 1 to 200" in result.content[0].text
+    assert result.is_error and "limit must be 0 to 200" in result.content[0].text
+    (tmp_path / "t").mkdir()
+    totals = _call(_out(tmp_path / "t"), "findings", {"limit": 0}).structured_content  # #124: counts without the list
+    assert totals["total"] == 5 and totals["findings"] == [] and len(totals["by_rule"]) == 5
 
 
 def test_gaps_group_by_rule(tmp_path: Path) -> None:

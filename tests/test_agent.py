@@ -11,7 +11,7 @@ from typing import Any
 import pytest
 
 from okf_grc import agent, cli
-from okf_grc.agent import AgentError, Limits, Transcript, Workflow
+from okf_grc.agent import AgentError, Limits, Provider, Transcript, Workflow
 
 STREAMS = Path(__file__).parent / "fixtures" / "agent" / "streams"
 WORKFLOW = Workflow(
@@ -269,7 +269,7 @@ def test_an_unpriced_model_cannot_be_budgeted(tmp_path: Path) -> None:
         agent.run_anthropic(WORKFLOW, tmp_path, Limits(model="claude-mystery"))
 
 
-STATUS_RESULT = json.dumps({"run_id": "run-1", "controls": [
+STATUS_RESULT = json.dumps({"run_id": "run-1", "by_status": {"not-satisfied": 2}, "controls": [
     {"key": "soc2:cc6.1", "status": "not-satisfied", "findings": 2}, {"key": "soc2:cc7.1", "status": "not-satisfied", "findings": 1}]})
 SCHEMA = {"type": "object", "properties": {"summary": {"type": "string"}}, "required": ["summary"]}
 
@@ -283,16 +283,41 @@ def _check(draft: dict, results: tuple[str, ...] = (STATUS_RESULT,)) -> list[str
     return agent.validate(WORKFLOW.__class__(**{**WORKFLOW.__dict__, "schema": SCHEMA}), _transcript(output=draft, tool_calls=calls), mapping)
 
 
+def _unbound(problems: list[str]) -> list[int]:
+    """The numbers a validation found not bound to what they count."""
+    found = [p for p in problems if p.startswith("numbers that are not the count")]
+    return [int(item.split()[0]) if item[0].isdigit() else int(item.split()[1]) for item in eval(found[0].split(": ", 1)[1])] if found else []
+
+
 def test_an_invented_total_is_rejected() -> None:
     """#120, the prototype's failure: right controls, right counts, and a sum no tool returned (here 4; really 3)."""
-    assert _check({"summary": "cc6.1 (2 findings) and cc7.1 (1 finding) are not-satisfied, totaling 4 findings."}) == [
-        "numbers not in any tool result of this run: ['4']"]
+    assert _unbound(_check({"summary": "cc6.1 (2 findings) and cc7.1 (1 finding) are not-satisfied, totaling 4 findings."})) == [4]
     assert _check({"summary": "cc6.1 (2 findings) and cc7.1 (1 finding) are not-satisfied."}) == []
 
 
-def test_numbers_in_fields_count_too() -> None:
-    assert _check({"summary": "Two controls.", "count": 9}) == ["numbers not in any tool result of this run: ['9']"]
+def test_a_reported_number_next_to_the_wrong_thing_is_rejected() -> None:
+    """#124, the demo repo's 1.7.0 draft: 11 is a count the tools reported (here, cc8.1's), but not of what it sits
+    next to. Validation in 1.7 passed it; binding does not."""
+    findings = json.dumps({"run_id": "run-1", "total": 8, "by_rule": {"trivy:CVE-1": 4, "trivy:CVE-2": 4}})
+    other = json.dumps({"run_id": "run-1", "controls": [{"key": "soc2:cc8.1", "status": "not-satisfied", "findings": 11}]})
+    draft = {"summary": "soc2:cc7.1: trivy:CVE-1 (4), plus 11 additional CVEs at 4 findings each."}
+    assert _unbound(_check(draft, (findings, other))) == [11]
+    assert _check({"summary": "soc2:cc7.1: trivy:CVE-1 (4), trivy:CVE-2 (4); soc2:cc8.1 has 11 findings."}, (findings, other)) == []
+
+
+def test_a_count_in_a_field_must_be_its_controls_or_rules() -> None:
+    assert _unbound(_check({"summary": "See below.", "controls": [{"key": "soc2:cc6.1", "findings": 3}]})) == [3]
+    assert _check({"summary": "See below.", "controls": [{"key": "soc2:cc6.1", "findings": 2}]}) == []
+    assert _unbound(_check({"summary": "Two controls.", "count": 9})) == [9]  # any other number: a reported total
     assert _check({"summary": "Two controls.", "count": 2}) == []
+
+
+def test_text_inside_an_object_may_cite_its_own_count() -> None:
+    """As posture writes "Six rules with 1 finding each" for a control with 6 findings."""
+    result = json.dumps({"run_id": "run-1", "controls": [{"key": "soc2:cc6.1", "status": "not-satisfied", "findings": 6}],
+                         "by_rule": {"checkov:CKV_GCP_12": 1}})
+    draft = {"summary": "See below.", "groups": [{"key": "soc2:cc6.1", "findings": 6, "note": "Six rules with 1 finding each: checkov:CKV_GCP_12."}]}
+    assert _check(draft, (result,)) == []
 
 
 def test_a_control_that_does_not_exist_is_rejected() -> None:
@@ -316,26 +341,67 @@ def test_a_missing_field_is_rejected() -> None:
     assert _check({"note": "x"}) == ["missing field 'summary'"]
 
 
-def test_a_rejected_draft_is_recorded_but_not_written(tmp_path: Path) -> None:
-    out = _out(tmp_path)
-    invented = _transcript(output={"summary": "There are 12 findings."}, tool_calls=[
-        {"name": "control_status", "arguments": {}, "result": STATUS_RESULT, "is_error": False}])
-    record = agent.run_workflow(WORKFLOW, lambda w, o, lim: invented, out, Limits(), NOW)
-    assert record["validation"] == {"passed": False, "problems": ["numbers not in any tool result of this run: ['12']"]}
-    assert record["draft"] is None and not list((out / "agent").glob("*.md"))
-
-
-def test_a_run_ids_digits_are_not_numbers_a_draft_may_cite() -> None:
-    """Every tool result carries a run id: its digit runs must not make an invented number look seen."""
-    result = json.dumps({"run_id": "82a46f28-3485-5abe-b1dc-2442fb88399b", "controls": [{"key": "soc2:cc6.1", "status": "not-satisfied", "findings": 2}]})
-    assert _check({"summary": "28 controls fail."}, (result,)) == ["numbers not in any tool result of this run: ['28']"]
-    assert _check({"summary": "Run 82a46f28-3485-5abe-b1dc-2442fb88399b: cc6.1 has 2 findings."}, (result,)) == []
+def test_names_with_digits_are_not_counts() -> None:
+    """Run ids, dates the tools reported (and their years), ids they returned verbatim, and framework names."""
+    result = json.dumps({"run_id": "82a46f28-3485-5abe-b1dc-2442fb88399b", "controls": [{"key": "soc2:cc6.1", "status": "not-satisfied", "findings": 2}],
+                         "applied": [{"suppression": "suppressions/django-cve-2023-31047", "expires": "2026-12-30"}]})
+    draft = {"summary": "Run 82a46f28-3485-5abe-b1dc-2442fb88399b: cc6.1 has 2 findings under SOC 2 and ISO/IEC 42001. "
+                        "suppressions/django-cve-2023-31047 expires 2026-12-30, in 2026."}
+    assert _check(draft, (result,)) == []
+    assert _unbound(_check({"summary": "28 controls fail."}, (result,))) == [28]
 
 
 def test_numbers_written_as_words_are_checked_too() -> None:
-    """The trial posture run wrote "Seven controls": a spelled-out number must be one the tools reported."""
-    assert _check({"summary": "Two controls are not-satisfied."}) == []  # 2 appears in a tool result
-    assert _check({"summary": "Six controls are not-satisfied."}) == ["numbers not in any tool result of this run: ['6']"]
+    """The trial posture run wrote "Seven controls": a spelled-out number must be bound like any other."""
+    assert _check({"summary": "Two controls are not-satisfied."}) == []  # by_status reports 2
+    assert _unbound(_check({"summary": "Six controls are not-satisfied."})) == [6]
+
+
+def test_a_result_the_validator_cannot_read_binds_nothing() -> None:
+    """Claude Code saved a 57.7 KB result to a file and gave the model a preview: nothing in it can be checked."""
+    preview = "<persisted-output>\nOutput too large (57.7KB). Full output saved to: (a local file)\n{\"by_rule\": {\"checkov:CKV_K8S_21\": 41"
+    assert _unbound(_check({"summary": "checkov:CKV_K8S_21 has 41 findings."}, (STATUS_RESULT, preview))) == [41]
+
+
+def _two_drafts(first: dict, second: dict) -> tuple[Provider, list[str]]:
+    """A provider whose first run drafts `first` and second run `second`; it keeps the tasks it was given."""
+    tasks: list[str] = []
+    calls = [{"name": "control_status", "arguments": {}, "result": STATUS_RESULT, "is_error": False}]
+
+    def provider(workflow: Workflow, out: Path, limits: Limits) -> Transcript:
+        tasks.append(workflow.task)
+        return _transcript(output=first if len(tasks) == 1 else second, tool_calls=calls)
+
+    return provider, tasks
+
+
+def test_a_rejected_draft_gets_one_correction_round(tmp_path: Path) -> None:
+    """#124: the model sees why, and its corrected draft is the one written; both attempts are recorded and billed."""
+    out = _out(tmp_path)
+    provider, tasks = _two_drafts({"summary": "There are 12 findings."}, {"summary": "cc6.1 has 2 findings."})
+    record = agent.run_workflow(WORKFLOW, provider, out, Limits(), NOW)
+    assert record["validation"] == {"passed": True, "problems": []} and record["draft"]
+    (attempt,) = record["rejected_attempts"]
+    assert _unbound(attempt["problems"]) == [12] and attempt["transcript"]["output"] == {"summary": "There are 12 findings."}
+    assert "rejected for these reasons" in tasks[1] and "There are 12 findings." in tasks[1]
+    assert len((out / "agent" / "usage.jsonl").read_text().splitlines()) == 2
+
+
+def test_a_draft_rejected_twice_is_not_written(tmp_path: Path) -> None:
+    out = _out(tmp_path)
+    provider, tasks = _two_drafts({"summary": "There are 12 findings."}, {"summary": "There are 13 findings."})
+    record = agent.run_workflow(WORKFLOW, provider, out, Limits(), NOW)
+    assert not record["validation"]["passed"] and _unbound(record["validation"]["problems"]) == [13] and len(tasks) == 2
+    assert record["draft"] is None and not list((out / "agent").glob("*.md"))
+
+
+def test_no_correction_round_without_budget_or_after_a_stop(tmp_path: Path) -> None:
+    provider, tasks = _two_drafts({"summary": "There are 12 findings."}, {"summary": "cc6.1 has 2 findings."})
+    record = agent.run_workflow(WORKFLOW, provider, _out(tmp_path), Limits(budget_usd=0.01), NOW)  # the first run cost 0.01
+    assert len(tasks) == 1 and record["rejected_attempts"] == [] and not record["validation"]["passed"]
+    (tmp_path / "s").mkdir()
+    stopped = agent.run_workflow(WORKFLOW, lambda w, o, lim: _transcript(stopped="max_turns", output=None), _out(tmp_path / "s"), Limits(), NOW)
+    assert stopped["rejected_attempts"] == []
 
 
 @pytest.mark.usefixtures("_api_key")

@@ -1,7 +1,6 @@
 """The posture workflow (#121): what it may call, what it asks for, and how a draft reads."""
 
 import json
-import shutil
 from pathlib import Path
 
 import pytest
@@ -61,25 +60,27 @@ def test_every_workflow_schema_is_closed_as_the_api_requires() -> None:
 RECORDED = Path(__file__).parent / "fixtures" / "agent"
 
 
-@pytest.mark.parametrize(("recording", "outputs"), [("posture.json", "demo-out"), ("posture.anthropic.json", "sample-out")],
-                         ids=["claude-cli-on-the-demo-repo", "api-on-the-sample-app"])
-def test_a_recorded_run_replays_and_validates(tmp_path: Path, recording: str, outputs: str) -> None:
-    """#121: real runs (the maintainer's plan, then the API) replay to a draft that passes validation."""
-    out = tmp_path / "out"
-    shutil.copytree(RECORDED / outputs, out)
+UNBOUND_IN_1_7 = {"posture.json": [41], "posture.anthropic.json": [7, 5, 10, 7]}
+
+
+@pytest.mark.parametrize("recording", UNBOUND_IN_1_7)
+def test_drafts_that_passed_in_1_7_are_rejected_by_binding(recording: str) -> None:
+    """#124: real runs recorded under 1.7.0 passed its validation. Binding rejects the numbers that sat next to
+    nothing they count: a group named in words ("namespace isolation violations (41)"), and per-tool counts the
+    model added up itself ("checkov (7), trivy (5)")."""
     transcript = json.loads((RECORDED / recording).read_text())
-    record = agent.run_workflow(POSTURE, lambda w, o, lim: transcript, out, agent.Limits())
-    assert record["validation"] == {"passed": True, "problems": []}
-    assert (out / "agent" / record["draft"]).read_text().startswith("# Compliance posture\n")
-    assert {c["name"] for c in transcript["tool_calls"]} <= set(POSTURE.tools)
+    mapping = read_mapping(RECORDED / ("demo-out" if recording == "posture.json" else "sample-out") / "mapping.json")
+    problems = agent.validate(POSTURE, transcript, mapping)
+    (numbers,) = [p for p in problems if p.startswith("numbers that are not the count")]
+    assert [int(item.split()[0]) for item in eval(numbers.split(": ", 1)[1])] == UNBOUND_IN_1_7[recording]
 
 
-@pytest.mark.parametrize("recording", ["posture.json", "posture.anthropic.json"])
-def test_a_recorded_draft_with_a_changed_number_is_rejected(tmp_path: Path, recording: str) -> None:
+@pytest.mark.parametrize("recording", UNBOUND_IN_1_7)
+def test_a_recorded_draft_with_a_changed_number_is_rejected(recording: str) -> None:
     transcript = json.loads((RECORDED / recording).read_text())
     transcript["output"]["summary"] += " In all, 9999 findings."
     mapping = read_mapping(RECORDED / ("demo-out" if recording == "posture.json" else "sample-out") / "mapping.json")
-    assert agent.validate(POSTURE, transcript, mapping) == ["numbers not in any tool result of this run: ['9999']"]
+    assert any("9999" in p for p in agent.validate(POSTURE, transcript, mapping))
 
 
 def test_both_providers_record_the_same_shape() -> None:

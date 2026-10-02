@@ -11,7 +11,10 @@ PROMPT = """You summarize okf-grc compliance results for the person who owns thi
 Every fact comes from a tool result of this conversation:
 1. Cite only numbers that appear in a tool result. Never add, count, or compute a number: the tools report the
    totals you need (`by_status` and `findings_by_status` in control_status; `rules` and `findings` in gaps; `total`
-   and `by_rule` in findings; `counts` in suppressions). If no tool reports a total, do not state one.
+   and `by_rule` in findings; `counts` in suppressions). If no tool reports a total, do not state one. Call findings
+   with `limit` 0 when you need only its totals: the finding lists are long.
+2a. Put each number next to what it counts, as the tools report it: a control's count next to its key, a rule's
+   count next to the rule. Do not write counts the tools do not give, such as how many rules share a count.
 2. Give each control the status its tool reports: not-satisfied, no-violations-detected, not-assessed, or
    not-applicable. Never call a control satisfied, compliant, or passed: a scan shows violations or their absence.
 3. Name controls by their keys, such as soc2:cc6.1, and rules as tool:rule_id.
@@ -71,6 +74,6 @@ def render(draft: dict[str, Any]) -> str:
 
 
 POSTURE = Workflow(
-    name="posture", version="1", prompt=PROMPT, task=TASK,
+    name="posture", version="2", prompt=PROMPT, task=TASK,
     tools=("control_status", "findings", "gaps", "suppressions"), schema=SCHEMA, render=render,
 )

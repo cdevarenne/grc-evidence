@@ -89,11 +89,17 @@ Under `out/agent/`:
 ## Validation
 
 Before a draft is written, the runner checks it against the tool results of the
-same run:
+same run, read as structured data:
 
-- every number in it, in its text (digits, or words from zero to twenty) and in
-  its numeric fields, appears in some tool result; run ids are names, not
-  numbers;
+- **every number is bound to what it counts:** a `{key, findings}` or
+  `{rule, findings}` pair must match the count the tools reported exactly; a
+  number in text (digits, or words from zero to twenty) must be the reported
+  count of the control or rule it sits next to (before or after it in the same
+  sentence), or of the object it belongs to, or a total the tools reported
+  (controls and findings by status, gap rules and findings, a filter's total,
+  suppressions by state). Run ids, dates the tools reported and their years,
+  strings they returned verbatim, and framework names (SOC 2, ISO/IEC 42001)
+  are names, not counts;
 - every control it names exists, and a status it gives a control (in a field
   next to the control, or in a sentence that names only that control) is that
   control's own;
@@ -101,18 +107,29 @@ same run:
 - the schema's required fields are present (both providers also enforce the
   schema on the model's side).
 
-A rejected draft is not written; the run record keeps it with the reasons, and
-`grc agent` exits non-zero. The tools report the totals a summary needs
-(controls and findings by status, gap rules and findings, findings per rule,
-suppressions by state), so a draft never has to compute one: a sum no tool
-reported is rejected even when it is right. In testing, a model wrote 425
-findings where the tool results add up to 417, and in a later run wrote the
-correct 417 before any tool reported it; both drafts were rejected.
+A rejected draft goes back to the model once, with the reasons, on what is left
+of the budget; the corrected draft is checked the same way. A draft rejected
+twice is not written; the run record keeps every attempt with its reasons, and
+`grc agent` exits non-zero.
 
-What it does not check: whether a number that does appear in a tool result is
-attached to the right thing (a count of one rule's findings cited as a count of
-deployments passes), and whether the prose is useful. Measuring that is the
-evaluation step that comes next (Spec G, G6).
+Binding came from a review. In okf-grc 1.7.0, validation only required that a
+number appear somewhere in the tool results; the demo repository's `posture`
+draft passed it with "plus 11 additional CVEs at 4 findings each", where 11 is
+a count the tools reported but the right figure was 7. With binding, the same
+run on the same outputs produced a first draft with "11 rules at 4 findings
+each" (this time true, but a count no tool reports), which was rejected; the
+corrected draft left the number out. Binding cannot tell a true derived count
+from a false one, so it rejects both: a number reaches a person only if a tool
+reported it for that thing. Earlier, a model wrote 425 findings where the tool
+results add up to 417, and in a later run the correct 417 before any tool
+reported it; both were rejected too.
+
+What it does not check: words. The same corrected draft called CC7.1 "system
+monitoring" (it is vulnerability detection); a person reviews every draft, and
+measuring how often drafts are right is the evaluation step that comes next
+(Spec G, G6). A tool result the runner cannot parse binds nothing: Claude Code
+saves a very large result to a local file and shows the model only a preview,
+so workflows ask for totals (`findings` with `limit` 0) rather than long lists.
 
 ## Costs observed
 

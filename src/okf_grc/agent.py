@@ -15,13 +15,13 @@ import sys
 import tempfile
 import time
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
 from typing import Any, TypedDict
 
-from okf_grc.claims import FORBIDDEN, NUMBER, STATUS, normalize
+from okf_grc.claims import FORBIDDEN, STATUS, normalize
 from okf_grc.contract import read_mapping
 from okf_grc.errors import GrcError
 from okf_grc.llm import DEFAULT_MODEL, PRICES, cost_usd
@@ -38,8 +38,23 @@ BARE_SOC2 = re.compile(r"(?<![\w:.-])((?:cc|a)\d+\.\d+)\b", re.IGNORECASE)
 WORDS = ("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen "
          "seventeen eighteen nineteen twenty").split()
 NUMBER_WORD = re.compile(r"\b(" + "|".join(WORDS) + r")\b", re.IGNORECASE)  # "Seven controls" is a number too
+DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")  # a date the tools reported, such as an expiry: a name, not a count
+FRAMEWORK_NAME = re.compile(r"\b(?:SOC\s?2|ISO(?:/IEC)?\s?42001(?::2023)?|(?:NIST\s)?(?:SP\s)?800-53|2024/1689|Art(?:icle)?\.?\s?\d+)\b", re.IGNORECASE)
+INTEGER = re.compile(r"(?<![\w.])\d+(?![\w.]\w)")
 UUID = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.IGNORECASE)  # run ids: names, not numbers
+CLAUSE = re.compile(r"(?<=[.;!?])\s+|\n+")  # sentences and lines, keeping "rule: 13" together
 SEGMENT = re.compile(r"(?<=[.;:!?])\s+|\n+")  # sentences and lines: a status must sit next to its control
+CORRECTION = """
+
+Your previous draft was rejected for these reasons:
+{problems}
+
+Your previous draft:
+{draft}
+
+Call the tools again as you need and answer with a corrected draft. Every number must be the count the tools
+report for what it sits next to (a control's count next to its key, a rule's next to the rule), or a total they
+report; leave out any number you cannot place that way."""
 USAGE_KEYS = ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")
 STRUCTURED_OUTPUT = "StructuredOutput"  # how Claude Code returns the --json-schema draft: its own, not a workflow tool
 
@@ -297,26 +312,115 @@ def _cited(text: str) -> set[str]:
     return {k.lower() for k in FULL_KEY.findall(text)} | {f"soc2:{k.lower()}" for k in BARE_SOC2.findall(text)}
 
 
-def _walk(value: Any) -> tuple[list[str], list[float], list[Json]]:
-    """Every string, every number, and every object in a draft."""
+def _walk(value: Any, context: str | None = None) -> tuple[list[tuple[str, str | None]], list[tuple[Json, str | None]]]:
+    """Every string in a draft with the identifier of its nearest enclosing object (its `key` or `rule`), and every
+    object with its own."""
     if isinstance(value, dict):
-        parts = [_walk(v) for v in value.values()]
-        return [t for p in parts for t in p[0]], [n for p in parts for n in p[1]], [value, *(o for p in parts for o in p[2])]
+        own = value.get("key") or value.get("rule") or context
+        parts = [_walk(v, own) for v in value.values()]
+        return [t for p in parts for t in p[0]], [(value, own), *(o for p in parts for o in p[1])]
     if isinstance(value, list):
-        parts = [_walk(v) for v in value]
-        return [t for p in parts for t in p[0]], [n for p in parts for n in p[1]], [o for p in parts for o in p[2]]
-    if isinstance(value, str):
-        return [value], [], []
-    if isinstance(value, int | float) and not isinstance(value, bool):
-        return [], [value], []
-    return [], [], []
+        parts = [_walk(v, context) for v in value]
+        return [t for p in parts for t in p[0]], [o for p in parts for o in p[1]]
+    return ([(value, context)], []) if isinstance(value, str) else ([], [])
+
+
+@dataclass(frozen=True)
+class Facts:
+    """What the tools of one run reported: counts by identifier, totals, and the strings they returned verbatim."""
+
+    counts: dict[str, set[int]]
+    totals: set[int]
+    verbatim: tuple[str, ...]
+    years: set[int]  # of the dates the tools reported, such as "expires in 2026": names, not counts  # strings with digits, longest first: masked in a draft, so their digits are not counts
+
+
+def _names(identifier: str) -> list[str]:
+    """How a draft may write an identifier: as reported, a rule without its tool, a SOC 2 key without `soc2:`."""
+    name = identifier.lower()
+    prefix, _, rest = name.partition(":")
+    return [name, rest] if rest and prefix != "iso42001" and prefix != "eu-ai-act" else [name]
+
+
+def _strings(value: Any) -> list[str]:
+    if isinstance(value, dict):
+        return [s for v in value.values() for s in _strings(v)]
+    if isinstance(value, list):
+        return [s for v in value for s in _strings(v)]
+    return [value] if isinstance(value, str) and any(c.isdigit() for c in value) and len(value) >= 4 else []
+
+
+def facts(calls: list[ToolCall]) -> Facts:
+    """The counts and totals the tools reported in a run, read from their structured results. A result that is not
+    JSON (Claude Code saves a very large one to a file and shows the model a preview) contributes nothing."""
+    counts: dict[str, set[int]] = {}
+    totals: set[int] = set()
+    verbatim: set[str] = set()
+
+    def add(identifier: str, n: Any) -> None:
+        if isinstance(n, int) and not isinstance(n, bool):
+            for name in _names(identifier):
+                counts.setdefault(name, set()).add(n)
+
+    for call in calls:
+        try:
+            result = json.loads(call["result"])
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(result, dict):
+            continue
+        verbatim.update(_strings(result))
+        for entry in result.get("controls", []):
+            add(entry.get("key", ""), entry.get("findings"))
+        for rule, n in result.get("by_rule", {}).items():
+            add(rule, n)
+        for gap in result.get("gaps", []):
+            add(gap.get("rule", ""), gap.get("findings"))
+        for field in ("by_status", "findings_by_status", "counts"):
+            totals.update(v for v in result.get(field, {}).values() if isinstance(v, int))
+        totals.update(v for field in ("total", "rules", "findings") if isinstance(v := result.get(field), int) and not isinstance(v, bool))
+    years = {int(d[:4]) for v in verbatim for d in DATE.findall(v)}
+    return Facts(counts, totals, tuple(sorted(verbatim, key=len, reverse=True)), years)
+
+
+def _blank(text: str, pattern: re.Pattern[str]) -> str:
+    return pattern.sub(lambda m: " " * len(m.group()), text)
+
+
+def _unbound(text: str, known: Facts, context: str | None) -> list[str]:
+    """Numbers in `text` that are neither a count the tools reported for the identifier next to them (before or
+    after, in the same sentence) or for the enclosing object's identifier, nor a total the tools reported."""
+    names = sorted({name for name in known.counts}, key=len, reverse=True)
+    identifier = re.compile(r"(?<![\w-])(" + "|".join(map(re.escape, names)) + r")(?![\w-])", re.IGNORECASE) if names else None
+    own = {n for name in _names(context) for n in known.counts.get(name, set())} if context else set()
+    unbound = []
+    for clause in CLAUSE.split(normalize(text)):
+        masked = clause
+        for pattern in (UUID, DATE, FRAMEWORK_NAME):
+            masked = _blank(masked, pattern)
+        # Identifiers first, so a count can bind to one; then other strings the tools returned verbatim.
+        spans = [(m.start(), m.end(), m.group(1).lower()) for m in identifier.finditer(masked)] if identifier else []
+        for start, stop, _ in spans:
+            masked = masked[:start] + " " * (stop - start) + masked[stop:]
+        for literal in known.verbatim:
+            masked = _blank(masked, re.compile(re.escape(literal), re.IGNORECASE))
+        numbers = [(m.start(), int(m.group())) for m in INTEGER.finditer(masked)]
+        numbers += [(m.start(), WORDS.index(m.group(1).lower())) for m in NUMBER_WORD.finditer(masked)]
+        for at, n in sorted(numbers):
+            before = [name for start, stop, name in spans if stop <= at]
+            after = [name for start, stop, name in spans if start > at]
+            near = (known.counts[before[-1]] if before else set()) | (known.counts[after[0]] if after else set())
+            if n not in known.totals | known.years | own | near:
+                unbound.append(f"{n} in {clause.strip()[:80]!r}")
+    return unbound
 
 
 def validate(workflow: Workflow, transcript: Transcript, mapping: Json) -> list[str]:
     """Why the draft cannot be written; empty when it can.
 
-    The model may say only what the tools showed it in this run: every number in the draft appears in a tool
-    result, every control it names exists, a status it gives a control is that control's, and no control is called
+    The model may say only what the tools showed it in this run, and each number must be what it is next to: a
+    count the tools reported for that control or rule (exactly, in a `{key|rule, findings}` pair), or a total they
+    reported. Every control named exists, a status given to a control is that control's, and no control is called
     satisfied or compliant. The providers enforce the draft's schema; its required fields are checked again here.
     """
     if transcript["stopped"]:
@@ -326,18 +430,24 @@ def validate(workflow: Workflow, transcript: Transcript, mapping: Json) -> list[
         return ["the run produced no structured draft"]
     errors = [f"missing field {field!r}" for field in workflow.schema.get("required", []) if field not in draft]
     statuses = {key: entry["status"] for key, entry in mapping["controls"].items()}
-    allowed = set(NUMBER.findall(UUID.sub(" ", " ".join(call["result"] for call in transcript["tool_calls"]))))
-    texts, numbers, objects = _walk(draft)
-    text = normalize("\n".join(texts))
-    as_digits = NUMBER_WORD.sub(lambda m: str(WORDS.index(m.group(1).lower())), UUID.sub(" ", text))
-    invented = sorted({n for n in NUMBER.findall(as_digits) if n not in allowed} | {f"{n:g}" for n in numbers if f"{n:g}" not in allowed})
-    if invented:
-        errors.append(f"numbers not in any tool result of this run: {invented}")
+    known = facts(transcript["tool_calls"])
+    texts, objects = _walk(draft)
+    unbound = [u for text, context in texts for u in _unbound(text, known, context)]
+    for obj, own in objects:
+        reported = {n for name in _names(own) for n in known.counts.get(name, set())} if own else set()
+        for field, n in obj.items():
+            if isinstance(n, int | float) and not isinstance(n, bool):
+                pair = field == "findings" and own and ("key" in obj or "rule" in obj)
+                if (n not in reported) if pair else (n not in known.totals | reported):
+                    unbound.append(f"{field} {n:g} of {own or 'the draft'} (the tools report {sorted(reported) or 'no count for it'})")
+    if unbound:
+        errors.append(f"numbers that are not the count of what they sit next to, nor a reported total: {unbound}")
+    text = normalize("\n".join(t for t, _ in texts))
     if unknown := sorted(_cited(text) - set(statuses)):
         errors.append(f"controls that do not exist: {unknown}")
     if m := FORBIDDEN.search(text):
         errors.append(f"forbidden claim {m.group(0)!r}: a scan shows violations or their absence, never compliance")
-    for obj in objects:
+    for obj, _ in objects:
         keys = _cited(str(obj.get("key", "")))
         if len(keys) == 1 and "status" in obj and (key := keys.pop()) in statuses and obj["status"] != statuses[key]:
             errors.append(f"{key}: draft says {obj['status']!r}, status is {statuses[key]!r}")
@@ -362,6 +472,15 @@ def run_workflow(workflow: Workflow, provider: Provider, out: Path, limits: Limi
     started = time.monotonic()
     transcript = provider(workflow, out, limits)
     problems = validate(workflow, transcript, mapping)
+    attempts: list[Json] = []
+    remaining = limits.budget_usd - transcript["cost_usd"]
+    if problems and transcript["output"] is not None and remaining > 0:
+        # One correction round: the model sees why its draft was rejected, on what is left of the budget.
+        attempts.append({"transcript": transcript, "problems": problems})
+        retry = replace(workflow, task=workflow.task + CORRECTION.format(
+            problems="\n".join(f"- {p}" for p in problems), draft=json.dumps(transcript["output"], indent=1)))
+        transcript = provider(retry, out, replace(limits, budget_usd=remaining))
+        problems = validate(retry, transcript, mapping)
     name = f"{workflow.name}-{now.strftime('%Y%m%dT%H%M%SZ')}"
     folder = out / "agent"
     folder.mkdir(parents=True, exist_ok=True)
@@ -375,15 +494,17 @@ def run_workflow(workflow: Workflow, provider: Provider, out: Path, limits: Limi
         "engine": version("okf-grc"), "outputs_run_id": outputs_run, "started": now.isoformat(timespec="seconds"),
         "duration_s": round(time.monotonic() - started, 1), "transcript": transcript,
         "validation": {"passed": not problems, "problems": problems}, "draft": draft.name if draft else None,
+        "rejected_attempts": attempts,
     }
     (folder / f"{name}.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
     # Agent runs keep their own ledger: the report's LLM line counts only the report's narration.
     with (folder / "usage.jsonl").open("a", encoding="utf-8") as ledger:
-        ledger.write(json.dumps({
-            "ts": now.isoformat(timespec="seconds"), "run_id": outputs_run, "task": f"agent:{workflow.name}",
-            "mode": transcript["provider"], "model": transcript["model"], "prompt_hash": prompt_hash, **transcript["usage"],
-            "batch": False, "billed": transcript["billed"], "cost_usd": transcript["cost_usd"],
-        }) + "\n")
+        for t in [a["transcript"] for a in attempts] + [transcript]:
+            ledger.write(json.dumps({
+                "ts": now.isoformat(timespec="seconds"), "run_id": outputs_run, "task": f"agent:{workflow.name}",
+                "mode": t["provider"], "model": t["model"], "prompt_hash": prompt_hash, **t["usage"],
+                "batch": False, "billed": t["billed"], "cost_usd": t["cost_usd"],
+            }) + "\n")
     return record
 
 
@@ -413,8 +534,10 @@ def main(argv: list[str] | None = None) -> None:
         raise AgentError(f"LLM_MODE={mode!r} cannot run agents; one of: {', '.join(sorted(PROVIDERS))}")
     record = run_workflow(WORKFLOWS[args.workflow], PROVIDERS[mode], args.out, Limits.from_env())
     t = record["transcript"]
+    cost = t["cost_usd"] + sum(a["transcript"]["cost_usd"] for a in record["rejected_attempts"])
+    retried = f", after {len(record['rejected_attempts'])} rejected draft(s)" if record["rejected_attempts"] else ""
     print(f"agent {record['workflow']}: {t['turns']} turn(s), {len(t['tool_calls'])} tool call(s), denied {t['denials'] or 'none'}, "
-          f"${t['cost_usd']:.4f} ({'billed' if t['billed'] else 'not billed'})")
+          f"${cost:.4f} ({'billed' if t['billed'] else 'not billed'}){retried}")
     if not record["validation"]["passed"]:
         raise AgentError("draft rejected: " + "; ".join(record["validation"]["problems"]))
     print(f"agent: wrote {args.out / 'agent' / record['draft']}")

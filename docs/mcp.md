@@ -47,7 +47,7 @@ interactive session. Other MCP clients take the same command and arguments.
 |---|---|---|
 | `scan` | `out/`, all at once when every step succeeded | the new run: id, commit, dirty, engine version, controls by status, findings, gaps |
 | `control_status` | nothing | each control (or one: a key, or a bare SOC 2 code such as `cc6.1`): status, reason, finding count, evidence |
-| `findings` | nothing | findings, each once, by control, rule, or file; paged (at most 200) |
+| `findings` | nothing | findings, each once, by control, rule, or file; paged (at most 200), with `total` and `by_rule` over every page; `limit` 0 returns only those |
 | `gaps` | nothing | coverage gaps grouped by rule, with their files |
 | `suppressions` | nothing | applied, expiring, expired, pending, and unused suppressions |
 | `gate` | nothing | what `grc gate` would report against `expected/control-status.json`, at a chosen `fail_on` |
