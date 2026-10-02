@@ -140,14 +140,16 @@ does not run.
 ## 6. Open questions for review
 
 1. **First workflow.** G3 (change review) has the clearest value per pull
-   request; G4 (gap to mapping) reuses the most existing work. Recommended: G4
-   first, then G3.
-2. **Runner implementation.** Claude Code headless (`claude -p` with the MCP
-   server and an allowed-tools list) for local runs is decided by the budget; for
-   CI, the Claude Agent SDK or the plain Messages API with tool use. Choose once
-   G1 exists.
+   request; G4 (gap to mapping) reuses the most existing work. Decided
+   2026-10-02 (G2 plan): G2 ships a small `posture` workflow to prove the
+   runner; then G4, then G3.
+2. **Runner implementation.** Decided 2026-10-02 (G2 plan): Claude Code
+   headless (`claude -p`, built-in tools off, our MCP server only, an allowlist)
+   and the Messages API through the SDK's `tool_runner` with its MCP helper,
+   both in G2, plus recorded replays for tests.
 3. **Where drafts go on this repo,** which is trunk-based with no pull
-   requests: patch files under `out/agent/`, or issues.
+   requests. Decided 2026-10-02 (G2 plan): files under `out/agent/`; publishing
+   comes with the first workflow that needs it, behind `--publish`.
 4. **Untrusted-text marking.** Decided 2026-10-02: scanner-derived strings
    appear only under a field named `untrusted` (G1 plan).
 5. **CI budget.** Whether G7 is worth a paid key, and the per-run cap.
