@@ -30,7 +30,7 @@ def _transcript(**changes: Any) -> Transcript:
     base: Transcript = {
         "provider": "replay", "model": "claude-haiku-4-5", "tool_calls": [], "denials": [], "turns": 2,
         "usage": {"input_tokens": 10, "output_tokens": 5, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0},
-        "cost_usd": 0.01, "billed": False, "output": {"summary": "Two gaps."}, "stopped": None,
+        "cost_usd": 0.01, "billed": False, "output": {"summary": "The gaps are listed."}, "stopped": None,
     }
     return base | changes  # type: ignore[return-value]
 
@@ -121,7 +121,7 @@ def test_a_run_writes_its_record_draft_and_ledger_line_and_nothing_else(tmp_path
     record = agent.run_workflow(WORKFLOW, lambda w, o, lim: _transcript(), out, Limits(), NOW)
     folder = out / "agent"
     assert sorted(p.name for p in tmp_path.rglob("*") if p.is_file()) == ["mapping.json", "probe-20261002T120000Z.json", "probe-20261002T120000Z.md", "run.json", "usage.jsonl"]
-    assert (folder / "probe-20261002T120000Z.md").read_text() == "# Probe\n\nTwo gaps.\n"
+    assert (folder / "probe-20261002T120000Z.md").read_text() == "# Probe\n\nThe gaps are listed.\n"
     assert record["validation"] == {"passed": True, "problems": []} and record["outputs_run_id"] == "run-1"
     assert json.loads((folder / "probe-20261002T120000Z.json").read_text()) == record
     line = json.loads((folder / "usage.jsonl").read_text())
@@ -142,7 +142,7 @@ def test_a_run_needs_the_outputs(tmp_path: Path) -> None:
 
 def test_replay_reads_a_recording_and_names_a_missing_one(tmp_path: Path) -> None:
     (tmp_path / "probe.json").write_text(json.dumps(_transcript()))
-    assert agent.run_replay(WORKFLOW, tmp_path, Limits(), fixtures=tmp_path)["output"] == {"summary": "Two gaps."}
+    assert agent.run_replay(WORKFLOW, tmp_path, Limits(), fixtures=tmp_path)["output"] == {"summary": "The gaps are listed."}
     with pytest.raises(AgentError, match="no recorded run"):
         agent.run_replay(WORKFLOW, tmp_path, Limits(), fixtures=tmp_path / "none")
 
@@ -313,3 +313,9 @@ def test_a_run_ids_digits_are_not_numbers_a_draft_may_cite() -> None:
     result = json.dumps({"run_id": "82a46f28-3485-5abe-b1dc-2442fb88399b", "controls": [{"key": "soc2:cc6.1", "status": "not-satisfied", "findings": 2}]})
     assert _check({"summary": "28 controls fail."}, (result,)) == ["numbers not in any tool result of this run: ['28']"]
     assert _check({"summary": "Run 82a46f28-3485-5abe-b1dc-2442fb88399b: cc6.1 has 2 findings."}, (result,)) == []
+
+
+def test_numbers_written_as_words_are_checked_too() -> None:
+    """The trial posture run wrote "Seven controls": a spelled-out number must be one the tools reported."""
+    assert _check({"summary": "Two controls are not-satisfied."}) == []  # 2 appears in a tool result
+    assert _check({"summary": "Six controls are not-satisfied."}) == ["numbers not in any tool result of this run: ['6']"]

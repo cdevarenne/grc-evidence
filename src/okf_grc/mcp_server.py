@@ -45,6 +45,8 @@ class Control(TypedDict):
 
 class ControlStatus(TypedDict):
     run_id: str
+    by_status: dict[str, int]  # how many of the returned controls have each status: totals no agent should add up
+    findings_by_status: dict[str, int]  # how many findings the controls of each status hold (a finding may sit on several)
     controls: list[Control]
 
 
@@ -68,6 +70,7 @@ class Finding(TypedDict):
 class FindingPage(TypedDict):
     run_id: str
     total: int
+    by_rule: dict[str, int]  # findings per rule over every page of the filter, most first
     offset: int
     findings: list[Finding]
 
@@ -81,6 +84,8 @@ class Gap(TypedDict):
 
 class Gaps(TypedDict):
     run_id: str
+    rules: int
+    findings: int
     gaps: list[Gap]
 
 
@@ -103,6 +108,7 @@ class Suppressed(TypedDict):
 
 class Suppressions(TypedDict):
     run_id: str
+    counts: dict[str, int]  # how many are applied, expiring, expired, pending, and unused
     applied: list[Suppressed]
     expiring: list[str]
     expired: list[str]
@@ -191,8 +197,13 @@ def build_server(out: Path, repo: Path | None = None) -> MCPServer:
             if key not in controls:
                 raise ToolError(f"no control {control!r}; call control_status without arguments for the keys")
             controls = {key: controls[key]}
+        held: Counter[str] = Counter()
+        for entry in controls.values():
+            held[entry["status"]] += len(entry["findings"])
         return {
             "run_id": _run_id(out),
+            "by_status": dict(sorted(Counter(entry["status"] for entry in controls.values()).items())),
+            "findings_by_status": dict(sorted(held.items())),
             "controls": [
                 {
                     "key": key,
@@ -220,7 +231,9 @@ def build_server(out: Path, repo: Path | None = None) -> MCPServer:
             and (rule is None or rule in (f["rule_id"], f"{f['tool']}:{f['rule_id']}"))
             and (file is None or f["target"] == file)
         ]
-        return {"run_id": _run_id(out), "total": len(picked), "offset": offset, "findings": picked[offset : offset + limit]}
+        by_rule = Counter(f"{f['tool']}:{f['rule_id']}" for f in picked)
+        return {"run_id": _run_id(out), "total": len(picked), "by_rule": dict(sorted(by_rule.items(), key=lambda kv: (-kv[1], kv[0]))),
+                "offset": offset, "findings": picked[offset : offset + limit]}
 
     @server.tool(annotations=READ_ONLY)
     def gaps() -> Gaps:
@@ -233,7 +246,8 @@ def build_server(out: Path, repo: Path | None = None) -> MCPServer:
             g["findings"] += 1
             if f["target"] not in g["files"]:
                 g["files"].append(f["target"])
-        return {"run_id": _run_id(out), "gaps": sorted(grouped.values(), key=lambda g: (-g["findings"], g["rule"]))}
+        gaps = sorted(grouped.values(), key=lambda g: (-g["findings"], g["rule"]))
+        return {"run_id": _run_id(out), "rules": len(gaps), "findings": sum(g["findings"] for g in gaps), "gaps": gaps}
 
     @server.tool(annotations=READ_ONLY)
     def suppressions() -> Suppressions:
@@ -250,13 +264,14 @@ def build_server(out: Path, repo: Path | None = None) -> MCPServer:
             }
             for e in mapping.get("suppressed", [])
         ]
-        return {
-            "run_id": _run_id(out), "applied": applied,
+        states = {
             "expiring": [s["id"] for s in mapping.get("expiring_suppressions", [])],
             "expired": list(mapping.get("expired_suppressions", [])),
             "pending": [s["id"] for s in mapping.get("pending_suppressions", [])],
             "unused": list(mapping.get("unused_suppressions", [])),
         }
+        counts = {"applied": len({e["suppression"] for e in applied})} | {k: len(v) for k, v in states.items()}
+        return {"run_id": _run_id(out), "counts": counts, "applied": applied, **states}  # type: ignore[typeddict-item]
 
     @server.tool(name="gate", annotations=READ_ONLY)
     def gate_tool(fail_on: str = "high") -> GateResult:

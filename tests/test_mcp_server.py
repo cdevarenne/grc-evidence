@@ -49,7 +49,7 @@ def test_control_status_is_a_typed_read_only_tool(tmp_path: Path) -> None:
 
     tool = next(t for t in _with_client(build_server(_out(tmp_path)), use) if t.name == "control_status")
     assert tool.annotations and tool.annotations.read_only_hint and not tool.annotations.destructive_hint
-    assert tool.output_schema and set(tool.output_schema["properties"]) == {"run_id", "controls"}
+    assert tool.output_schema and set(tool.output_schema["properties"]) == {"run_id", "by_status", "findings_by_status", "controls"}
 
 
 def test_control_status_reports_every_control_from_the_mapping(tmp_path: Path) -> None:
@@ -59,6 +59,11 @@ def test_control_status_reports_every_control_from_the_mapping(tmp_path: Path) -
     result = _with_client(build_server(_out(tmp_path)), use)
     assert not result.is_error and result.structured_content["run_id"] == "run-1"
     got = {c["key"]: (c["status"], c["findings"]) for c in result.structured_content["controls"]}
+    assert result.structured_content["by_status"] == dict(sorted(Counter(e["status"] for e in MAPPING["controls"].values()).items()))
+    held = Counter({s: 0 for s in result.structured_content["by_status"]})
+    for e in MAPPING["controls"].values():
+        held[e["status"]] += len(e["findings"])
+    assert result.structured_content["findings_by_status"] == dict(sorted(held.items()))
     assert got == {key: (entry["status"], len(entry["findings"])) for key, entry in MAPPING["controls"].items()}
 
 
@@ -132,6 +137,10 @@ def test_findings_lists_each_finding_once_with_scanner_text_untrusted(tmp_path: 
     """#109: mapped findings and gaps; the scanner's message only under `untrusted`."""
     page = _call(_out(tmp_path), "findings").structured_content
     assert page["total"] == 5 and page["offset"] == 0
+    assert page["by_rule"] == {"checkov:CKV_TEST_1": 1, "checkov:CKV_TEST_99": 1, "conftest:orphan_rule": 1, "conftest:require_non_root": 1, "trivy:CVE-2024-0001": 1}
+    (tmp_path / "x").mkdir()
+    assert _call(_out(tmp_path / "x"), "findings", {"control": "cc6.1", "limit": 1}).structured_content["by_rule"] == {
+        "checkov:CKV_TEST_1": 1, "conftest:require_non_root": 1}  # over the whole filter, not the page
     gap = next(f for f in page["findings"] if f["rule_id"] == "CKV_TEST_99")
     assert gap["controls"] == [] and gap["gap"] == "no-rule-match"
     assert all(set(f) == {"tool", "rule_id", "severity", "target", "controls", "gap", "accepted", "untrusted"} for f in page["findings"])
@@ -159,8 +168,9 @@ def test_findings_rejects_an_unbounded_page(tmp_path: Path) -> None:
 
 
 def test_gaps_group_by_rule(tmp_path: Path) -> None:
-    gaps = _call(_out(tmp_path), "gaps").structured_content["gaps"]
-    assert gaps == [
+    result = _call(_out(tmp_path), "gaps").structured_content
+    assert (result["rules"], result["findings"]) == (2, 2)
+    assert result["gaps"] == [
         {"rule": "checkov:CKV_TEST_99", "reason": "no-rule-match", "findings": 1, "files": ["app/Dockerfile"]},
         {"rule": "conftest:orphan_rule", "reason": "control-not-in-bundle", "findings": 1, "files": ["app/infra/main.tf"]},
     ]
@@ -176,6 +186,7 @@ def test_suppressions_report_every_state_with_the_finding_text_untrusted(tmp_pat
     got = _call(_out(tmp_path, mapping), "suppressions").structured_content
     assert got["applied"][0]["finding"] == {"tool": "trivy", "rule_id": "CVE-1", "target": "go.mod", "untrusted": {"message": "pkg 1.0: bad"}}
     assert (got["expiring"], got["expired"], got["pending"], got["unused"]) == (["suppressions/s1"], ["suppressions/s2"], ["suppressions/s3"], ["suppressions/s4"])
+    assert got["counts"] == {"applied": 1, "expiring": 1, "expired": 1, "pending": 1, "unused": 1}
 
 
 def test_gate_reports_what_grc_gate_would(tmp_path: Path) -> None:

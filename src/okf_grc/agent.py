@@ -35,6 +35,9 @@ MAX_TOKENS = 4096  # per model reply
 # A control a draft cites: a full key, or a bare SOC 2 code such as cc6.1 (read as soc2:cc6.1).
 FULL_KEY = re.compile(r"\b(soc2:(?:cc|a)\d+\.\d+|iso42001:a\.\d+|eu-ai-act:art-\d+)\b", re.IGNORECASE)
 BARE_SOC2 = re.compile(r"(?<![\w:.-])((?:cc|a)\d+\.\d+)\b", re.IGNORECASE)
+WORDS = ("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen "
+         "seventeen eighteen nineteen twenty").split()
+NUMBER_WORD = re.compile(r"\b(" + "|".join(WORDS) + r")\b", re.IGNORECASE)  # "Seven controls" is a number too
 UUID = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.IGNORECASE)  # run ids: names, not numbers
 SEGMENT = re.compile(r"(?<=[.;:!?])\s+|\n+")  # sentences and lines: a status must sit next to its control
 USAGE_KEYS = ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")
@@ -311,7 +314,8 @@ def validate(workflow: Workflow, transcript: Transcript, mapping: Json) -> list[
     allowed = set(NUMBER.findall(UUID.sub(" ", " ".join(call["result"] for call in transcript["tool_calls"]))))
     texts, numbers, objects = _walk(draft)
     text = normalize("\n".join(texts))
-    invented = sorted({n for n in NUMBER.findall(UUID.sub(" ", text)) if n not in allowed} | {f"{n:g}" for n in numbers if f"{n:g}" not in allowed})
+    as_digits = NUMBER_WORD.sub(lambda m: str(WORDS.index(m.group(1).lower())), UUID.sub(" ", text))
+    invented = sorted({n for n in NUMBER.findall(as_digits) if n not in allowed} | {f"{n:g}" for n in numbers if f"{n:g}" not in allowed})
     if invented:
         errors.append(f"numbers not in any tool result of this run: {invented}")
     if unknown := sorted(_cited(text) - set(statuses)):
@@ -368,11 +372,21 @@ def run_workflow(workflow: Workflow, provider: Provider, out: Path, limits: Limi
     return record
 
 
-WORKFLOWS: dict[str, Workflow] = {}  # filled by okf_grc.agents as workflows are added
+def _workflows() -> dict[str, Workflow]:
+    from okf_grc.agents.posture import (
+        POSTURE,  # imported here: workflow modules import this one
+    )
+
+    return {w.name: w for w in (POSTURE,)}
+
+
+WORKFLOWS: dict[str, Workflow] = {}  # filled on first use by _workflows()
 PROVIDERS: dict[str, Provider] = {"claude-cli": run_claude, "anthropic": run_anthropic, "replay": run_replay}
 
 
 def main(argv: list[str] | None = None) -> None:
+    if not WORKFLOWS:
+        WORKFLOWS.update(_workflows())
     parser = argparse.ArgumentParser(prog="grc agent", description=__doc__)
     parser.add_argument("workflow", help=f"one of: {', '.join(sorted(WORKFLOWS)) or '(none yet)'}")
     parser.add_argument("--out", type=Path, default=Path("out"), help="where `grc run` wrote its outputs")
