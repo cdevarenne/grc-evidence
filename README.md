@@ -67,7 +67,7 @@ Supported platforms: macOS arm64 and Linux x86_64 (the pinned scanner binaries).
 
 ## Use it
 
-- **With a coding agent, in this repo:** the `grc-continuous-compliance` skill
+- **With a coding agent:** the `grc-continuous-compliance` skill (`grc install-skill` adds it to another repo)
   runs the pipeline and summarizes it, and leaves every status, mapping, and
   suppression decision to a person. See [docs/using-the-skill.md](docs/using-the-skill.md).
 - **In another repo:** install the engine, `grc init`, then `grc run`. See
@@ -108,7 +108,7 @@ directly and does not use the graph.*
 | `app/` | clean-room Django/DRF sample app, Dockerfile, Kubernetes, Terraform |
 | `knowledge/` | the OKF bundle: controls, stack, guardrail policies, scanners |
 | `policies/` | Rego guardrails (+ tests) and a vendored Semgrep rule |
-| `.claude/skills/grc-continuous-compliance/` | the skill (`SKILL.md`) |
+| `.claude/skills/grc-continuous-compliance/` | the skill (`SKILL.md`), a copy of `src/okf_grc/data/skill/` |
 | `src/okf_grc/` | the engine: the `okf-grc` package and its `grc` CLI; `data/` holds `tools.lock`, the scanner bootstrap, and the base bundle and policies that `knowledge/` and `policies/` copy |
 | `docs/` | design spec, implementation plan, OSCAL subset |
 | `examples/` | a sample report and OSCAL documents produced by `make examples`; triage eval results |

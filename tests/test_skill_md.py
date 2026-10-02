@@ -3,14 +3,15 @@ from pathlib import Path
 
 import yaml
 
+from okf_grc import data
 from okf_grc.cli import COMMANDS
 
-SKILL = Path(__file__).parent.parent / ".claude" / "skills" / "grc-continuous-compliance" / "SKILL.md"
+SKILL = Path(str(data.path("skill"))) / "SKILL.md"  # the packaged skill; a repo installs a copy (#106)
 
 
 def test_frontmatter_names_the_skill() -> None:
     fm = yaml.safe_load(SKILL.read_text().split("---\n")[1])
-    assert fm["name"] == SKILL.parent.name
+    assert fm["name"] == "grc-continuous-compliance"
     assert len(fm["description"]) > 100
     for framework in ("SOC 2", "ISO/IEC 42001", "EU AI Act"):
         assert framework in " ".join(fm["description"].split()), framework
@@ -34,5 +35,5 @@ def test_enrich_and_propose_use_the_validated_llm_step() -> None:
 
 
 def test_every_grc_command_it_names_exists() -> None:
-    named = set(re.findall(r"`grc (\w+)", SKILL.read_text()))
+    named = set(re.findall(r"`grc ([a-z][\w-]*)", SKILL.read_text()))
     assert named and named <= set(COMMANDS), named - set(COMMANDS)

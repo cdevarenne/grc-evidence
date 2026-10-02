@@ -38,6 +38,7 @@ this repository's own.
 * [Suppressions](suppressions/) - reviewed, expiring false positives and accepted risks; never hidden
 * [OSCAL output](oscal/component-definition.md) - the machine-readable output target
 """
+SKILL = Path(".claude/skills/grc-continuous-compliance/SKILL.md")  # where Claude Code finds a project skill
 GITIGNORED = (".tools/", "out/")  # scanners and run outputs: local, never committed
 STACK_INDEX = "# Stack\n\nThis repository's components. Each one links the controls it implements.\n\n{entries}"
 SUPPRESSIONS_INDEX = "# Suppressions\n\nOne concept per reviewed decision about one exact finding, with an owner, a reason, and an expiry.\n"
@@ -143,8 +144,8 @@ def check(repo: Path, config: Config) -> list[str]:
     knowledge, installed, problems = repo / config.knowledge, version("okf-grc"), []
     if (recorded := recorded_base_version(knowledge)) != installed:
         problems.append(f"{config.knowledge}/index.md: base_version {recorded!r}, installed engine {installed!r}")
-    with as_file(data.path("base")) as base, as_file(data.path("policies")) as policies:
-        for source, copy in _copies(repo, config, base, policies):
+    with as_file(data.path("base")) as base, as_file(data.path("policies")) as policies, as_file(data.path("skill")) as skill:
+        for source, copy in _copies(repo, config, base, policies, skill):
             if copy.name == "index.md":
                 continue
             if not copy.is_file():
@@ -168,8 +169,8 @@ def sync_base(repo: Path, config: Config) -> list[str]:
     one whose lines all appear in the base's is overwritten. A file the base no longer has is left in place.
     """
     installed, changes = version("okf-grc"), []
-    with as_file(data.path("base")) as base, as_file(data.path("policies")) as policies:
-        for source, copy in _copies(repo, config, base, policies):
+    with as_file(data.path("base")) as base, as_file(data.path("policies")) as policies, as_file(data.path("skill")) as skill:
+        for source, copy in _copies(repo, config, base, policies, skill):
             rel = copy.relative_to(repo).as_posix()
             if copy.is_file() and copy.read_bytes() == source.read_bytes():
                 continue
@@ -193,10 +194,27 @@ def _lines(path: Path) -> set[str]:
     return set(path.read_text(encoding="utf-8").splitlines())
 
 
-def _copies(repo: Path, config: Config, base: Path, policies: Path) -> list[tuple[Path, Path]]:
-    """Each base file and where the repo keeps its copy; the base's root `index.md` is the repo's own."""
+def _copies(repo: Path, config: Config, base: Path, policies: Path, skill: Path) -> list[tuple[Path, Path]]:
+    """Each base file and where the repo keeps its copy; the base's root `index.md` is the repo's own.
+
+    The agent skill counts only once `grc install-skill` has put it in the repo.
+    """
     pairs = [(base / rel, repo / config.knowledge / rel) for rel in _tree(base) if rel != Path("index.md")]
-    return pairs + [(policies / rel, repo / "policies" / rel) for rel in _tree(policies)]
+    pairs += [(policies / rel, repo / "policies" / rel) for rel in _tree(policies)]
+    return pairs + ([(skill / SKILL.name, repo / SKILL)] if (repo / SKILL).is_file() else [])
+
+
+def install_skill(repo: Path) -> str:
+    """Write the engine's agent skill where Claude Code finds it; what happened."""
+    dest, installed = repo / SKILL, version("okf-grc")
+    with as_file(data.path("skill")) as skill:
+        text = (skill / SKILL.name).read_bytes()
+    if dest.is_file() and dest.read_bytes() == text:
+        return f"ok: {SKILL.as_posix()} already matches {installed}"
+    verb = "updated" if dest.is_file() else "added"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(text)
+    return f"{verb} {SKILL.as_posix()} ({installed}); grc sync-base keeps it current"
 
 
 def _flow(values: Iterable[str]) -> str:
@@ -233,6 +251,11 @@ def check_main(argv: list[str] | None = None) -> None:
         print("\n".join(problems))
         raise SystemExit(1)
     print(f"ok: copies match base {version('okf-grc')}; every concept is verified")
+
+
+def install_skill_main(argv: list[str] | None = None) -> None:
+    argparse.ArgumentParser(prog="grc install-skill", description="Install the engine's agent skill for Claude Code.").parse_args(argv)
+    print(install_skill(Path.cwd()))
 
 
 def sync_base_main(argv: list[str] | None = None) -> None:

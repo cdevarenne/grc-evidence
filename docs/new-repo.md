@@ -13,6 +13,7 @@ grc init        # knowledge/ and policies/ copied from the base bundle; starter 
 grc bootstrap   # the pinned scanners, into ./.tools
 grc check       # base copies unchanged, every concept reviewed by a person (stubs are not, yet)
 grc run         # out/: findings, mapping, OSCAL, report, run.json
+grc install-skill   # optional: the agent skill, for Claude Code (docs/using-the-skill.md)
 ```
 
 Edit `grc.yaml` to match the repo's layout, link each stack stub to the

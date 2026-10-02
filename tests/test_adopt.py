@@ -168,3 +168,25 @@ def test_init_never_writes_into_a_submodule(tmp_path: Path) -> None:
 def test_starter_inventory_documents_the_path_that_ties_a_system_to_its_component() -> None:
     """ai_inventory_complete matches a system to its assistant component by `path`; the starter must say so."""
     assert "path (its component's)" in adopt.INVENTORY
+
+
+def test_the_skill_installs_and_then_syncs_like_the_base(tmp_path: Path) -> None:
+    """#106: no skill is fine; once installed, check reports drift and sync-base restores it."""
+    adopt.init(tmp_path)
+    (tmp_path / "knowledge/stack/index.md").write_text("# Stack\n")
+    config = load_config(tmp_path)
+    assert adopt.check(tmp_path, config) == [] and adopt.sync_base(tmp_path, config) == []
+    assert adopt.install_skill(tmp_path).startswith("added .claude/skills/grc-continuous-compliance/SKILL.md")
+    assert adopt.install_skill(tmp_path).startswith("ok: ")
+    skill = tmp_path / adopt.SKILL
+    assert skill.read_bytes() == (Path(str(data.path("skill"))) / "SKILL.md").read_bytes()
+    skill.write_text(skill.read_text() + "A local edit.\n")
+    assert adopt.check(tmp_path, config) == [f".claude/skills/grc-continuous-compliance/SKILL.md: differs from base {version('okf-grc')}"]
+    assert adopt.sync_base(tmp_path, config) == ["updated .claude/skills/grc-continuous-compliance/SKILL.md"]
+    assert adopt.check(tmp_path, config) == []
+
+
+def test_cli_installs_the_skill(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.chdir(tmp_path)
+    cli.main(["install-skill"])
+    assert "added .claude/skills/grc-continuous-compliance/SKILL.md" in capsys.readouterr().out

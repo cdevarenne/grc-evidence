@@ -34,7 +34,7 @@ STEPS: dict[str, ModuleType] = {
     "scan": run_scan, "map": map_findings, "oscal": to_oscal, "report": render_report, "manifest": manifest,
     "triage": triage, "gate": gate,
 }
-COMMANDS = ("bootstrap", "init", "check", "sync-base", "run", "narrate", *STEPS)
+COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "run", "narrate", *STEPS)
 
 
 def bootstrap() -> None:
@@ -135,6 +135,8 @@ def main(argv: list[str] | None = None) -> None:
             adopt.check_main(args.args)
         elif args.command == "sync-base":
             adopt.sync_base_main(args.args)
+        elif args.command == "install-skill":
+            adopt.install_skill_main(args.args)
         elif args.command == "narrate":
             narrate_run(args.args)
         elif args.command == "run":
