@@ -1,9 +1,9 @@
 {
   "assessment-plan": {
-    "uuid": "4be981cd-da6e-5e74-8c3e-3354503a5c6e",
+    "uuid": "e63408f1-100e-5da6-8392-b332ba492db6",
     "metadata": {
       "title": "okf-grc-skill automated assessment plan",
-      "last-modified": "2026-10-02T02:51:30+00:00",
+      "last-modified": "2026-10-02T20:10:03+00:00",
       "version": "0.1.0",
       "oscal-version": "1.2.3"
     },
