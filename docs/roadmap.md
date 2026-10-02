@@ -36,6 +36,10 @@ engine errors, version-checked `mapping.json` readers, bounded batch polling.
 any repo, `grc sync-base` keeps it current, and it reads the layout from
 `grc.yaml` instead of assuming this repo's.
 
+`1.6.0` adds `grc mcp`, an MCP server whose tools run the pipeline and read
+its outputs (Spec G, G1), and a stricter `grc gate`: coverage gaps and repeats
+count, and a new code or configuration finding fails at any severity.
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization
