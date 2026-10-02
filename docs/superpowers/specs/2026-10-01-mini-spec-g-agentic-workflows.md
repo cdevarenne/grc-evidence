@@ -67,10 +67,10 @@ shell access.
 
 - Tools: `scan` (runs `grc run`; returns the `run.json` summary),
   `control_status` (one control or all), `gaps` (coverage gaps grouped by rule),
-  `findings` (by control, rule, or file), `diff` (control status and findings
-  between two runs), `draft_mapping` (a `rule_ids` addition as patch text),
-  `draft_suppression` (a suppression concept as text, validated by the bundle
-  loader). Resources: `report.md` and the OSCAL documents.
+  `findings` (by control, rule, or file), `suppressions`, and `gate` (the
+  comparison with the committed baseline). Resources: `report.md`, `run.json`,
+  and the OSCAL documents. Decided 2026-10-02 (G1 plan): `draft_mapping` and
+  `draft_suppression` arrive with G4 and G5, and a run-to-run `diff` with G3.
 - No tool writes to `knowledge/`; drafts are returned as text.
 - Scanner-derived strings are returned inside a field marked untrusted.
 - Tests: each tool against fixture outputs; drafts load as valid concepts; no
@@ -148,8 +148,8 @@ does not run.
    G1 exists.
 3. **Where drafts go on this repo,** which is trunk-based with no pull
    requests: patch files under `out/agent/`, or issues.
-4. **Untrusted-text marking.** A field convention in tool results, or a
-   separate resource the model must request explicitly.
+4. **Untrusted-text marking.** Decided 2026-10-02: scanner-derived strings
+   appear only under a field named `untrusted` (G1 plan).
 5. **CI budget.** Whether G7 is worth a paid key, and the per-run cap.
 
 ## 7. Order
