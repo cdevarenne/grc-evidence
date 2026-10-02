@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -20,6 +21,8 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Any, TypedDict
 
+from okf_grc.claims import FORBIDDEN, NUMBER, STATUS, normalize
+from okf_grc.contract import read_mapping
 from okf_grc.errors import GrcError
 from okf_grc.llm import DEFAULT_MODEL, PRICES, cost_usd
 
@@ -29,6 +32,11 @@ DEFAULT_BUDGET_USD = 0.25
 DEFAULT_MAX_TURNS = 8
 FIXTURES = Path("tests/fixtures/agent")
 MAX_TOKENS = 4096  # per model reply
+# A control a draft cites: a full key, or a bare SOC 2 code such as cc6.1 (read as soc2:cc6.1).
+FULL_KEY = re.compile(r"\b(soc2:(?:cc|a)\d+\.\d+|iso42001:a\.\d+|eu-ai-act:art-\d+)\b", re.IGNORECASE)
+BARE_SOC2 = re.compile(r"(?<![\w:.-])((?:cc|a)\d+\.\d+)\b", re.IGNORECASE)
+UUID = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.IGNORECASE)  # run ids: names, not numbers
+SEGMENT = re.compile(r"(?<=[.;:!?])\s+|\n+")  # sentences and lines: a status must sit next to its control
 USAGE_KEYS = ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")
 STRUCTURED_OUTPUT = "StructuredOutput"  # how Claude Code returns the --json-schema draft: its own, not a workflow tool
 
@@ -266,13 +274,59 @@ def run_replay(workflow: Workflow, out: Path, limits: Limits, fixtures: Path = F
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def validate(workflow: Workflow, transcript: Transcript) -> list[str]:
-    """Why the draft cannot be written; empty when it can."""
+def _cited(text: str) -> set[str]:
+    """The control keys a text names."""
+    return {k.lower() for k in FULL_KEY.findall(text)} | {f"soc2:{k.lower()}" for k in BARE_SOC2.findall(text)}
+
+
+def _walk(value: Any) -> tuple[list[str], list[float], list[Json]]:
+    """Every string, every number, and every object in a draft."""
+    if isinstance(value, dict):
+        parts = [_walk(v) for v in value.values()]
+        return [t for p in parts for t in p[0]], [n for p in parts for n in p[1]], [value, *(o for p in parts for o in p[2])]
+    if isinstance(value, list):
+        parts = [_walk(v) for v in value]
+        return [t for p in parts for t in p[0]], [n for p in parts for n in p[1]], [o for p in parts for o in p[2]]
+    if isinstance(value, str):
+        return [value], [], []
+    if isinstance(value, int | float) and not isinstance(value, bool):
+        return [], [value], []
+    return [], [], []
+
+
+def validate(workflow: Workflow, transcript: Transcript, mapping: Json) -> list[str]:
+    """Why the draft cannot be written; empty when it can.
+
+    The model may say only what the tools showed it in this run: every number in the draft appears in a tool
+    result, every control it names exists, a status it gives a control is that control's, and no control is called
+    satisfied or compliant. The providers enforce the draft's schema; its required fields are checked again here.
+    """
     if transcript["stopped"]:
         return [f"the run stopped: {transcript['stopped']}"]
-    if not isinstance(transcript["output"], dict):
+    draft = transcript["output"]
+    if not isinstance(draft, dict):
         return ["the run produced no structured draft"]
-    return []
+    errors = [f"missing field {field!r}" for field in workflow.schema.get("required", []) if field not in draft]
+    statuses = {key: entry["status"] for key, entry in mapping["controls"].items()}
+    allowed = set(NUMBER.findall(UUID.sub(" ", " ".join(call["result"] for call in transcript["tool_calls"]))))
+    texts, numbers, objects = _walk(draft)
+    text = normalize("\n".join(texts))
+    invented = sorted({n for n in NUMBER.findall(UUID.sub(" ", text)) if n not in allowed} | {f"{n:g}" for n in numbers if f"{n:g}" not in allowed})
+    if invented:
+        errors.append(f"numbers not in any tool result of this run: {invented}")
+    if unknown := sorted(_cited(text) - set(statuses)):
+        errors.append(f"controls that do not exist: {unknown}")
+    if m := FORBIDDEN.search(text):
+        errors.append(f"forbidden claim {m.group(0)!r}: a scan shows violations or their absence, never compliance")
+    for obj in objects:
+        keys = _cited(str(obj.get("key", "")))
+        if len(keys) == 1 and "status" in obj and (key := keys.pop()) in statuses and obj["status"] != statuses[key]:
+            errors.append(f"{key}: draft says {obj['status']!r}, status is {statuses[key]!r}")
+    for segment in SEGMENT.split(text):
+        keys = _cited(segment) & set(statuses)
+        if len(keys) == 1 and (wrong := sorted({s for s in STATUS.findall(segment) if s != statuses[next(iter(keys))]})):
+            errors.append(f"{next(iter(keys))}: draft says {wrong} in {segment.strip()[:80]!r}, status is {statuses[next(iter(keys))]!r}")
+    return errors
 
 
 def run_workflow(workflow: Workflow, provider: Provider, out: Path, limits: Limits, now: datetime | None = None) -> Json:
@@ -281,10 +335,14 @@ def run_workflow(workflow: Workflow, provider: Provider, out: Path, limits: Limi
         outputs_run = json.loads((out / "run.json").read_text(encoding="utf-8"))["run_id"]
     except (FileNotFoundError, KeyError, json.JSONDecodeError) as e:
         raise AgentError(f"no readable {out / 'run.json'}: run `grc run` first") from e
+    try:
+        mapping = read_mapping(out / "mapping.json")
+    except FileNotFoundError as e:
+        raise AgentError(f"no {out / 'mapping.json'}: run `grc run` first") from e
     now = now or datetime.now(UTC)
     started = time.monotonic()
     transcript = provider(workflow, out, limits)
-    problems = validate(workflow, transcript)
+    problems = validate(workflow, transcript, mapping)
     name = f"{workflow.name}-{now.strftime('%Y%m%dT%H%M%SZ')}"
     folder = out / "agent"
     folder.mkdir(parents=True, exist_ok=True)

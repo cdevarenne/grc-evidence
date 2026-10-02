@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import re
 from pathlib import Path
 from typing import Any
 
+from okf_grc.claims import FORBIDDEN, NUMBER, STATUS, normalize
 from okf_grc.contract import read_mapping
 from okf_grc.digest import bundle_digest, dumps, scan_digest
 from okf_grc.llm import LLM, LLMError, Request
@@ -16,11 +16,6 @@ from okf_grc.okf_lib import FRAMEWORK_TITLES, load_bundle
 
 Json = dict[str, Any]
 MAX_TOKENS = 2000
-STATUSES = ("not-satisfied", "no-violations-detected", "not-assessed", "not-applicable")
-_FORBIDDEN = re.compile(r"(?<![\w-])(satisfied|compliant|passed)\b", re.IGNORECASE)
-_STATUS = re.compile("|".join(STATUSES))
-_NUMBER = re.compile(r"\d+(?:\.\d+)*")
-_NOT_SATISFIED = re.compile(r"\bnot\s+satisfied\b", re.IGNORECASE)
 
 SYSTEM = """You write short, plain-English notes for a SOC 2 / AI-governance auditor.
 
@@ -64,7 +59,7 @@ def allowed_numbers(bundle_doc: Json, scan_doc: Json) -> dict[str, set[str]]:
     for key in bundle_doc:
         text = " ".join([key, FRAMEWORK_TITLES.get(key.partition(":")[0], ""), dumps(bundle_doc[key]),
                          dumps(scan_doc["controls"].get(key, {}))])
-        allowed[key] = set(_NUMBER.findall(text))
+        allowed[key] = set(NUMBER.findall(text))
     return allowed
 
 
@@ -81,13 +76,13 @@ def validate(output: Json, mapping: Json, allowed: dict[str, set[str]]) -> list[
     if extra := sorted(got - expected):
         errors.append(f"controls not in the bundle: {extra}")
     for key in sorted(expected & got):
-        text = _NOT_SATISFIED.sub("not-satisfied", " ".join(str(v) for v in output[key].values()))
+        text = normalize(" ".join(str(v) for v in output[key].values()))
         status = mapping["controls"][key]["status"]
-        if m := _FORBIDDEN.search(text):
+        if m := FORBIDDEN.search(text):
             errors.append(f"{key}: forbidden status word {m.group(0)!r}")
-        if wrong := sorted({s for s in _STATUS.findall(text) if s != status}):
+        if wrong := sorted({s for s in STATUS.findall(text) if s != status}):
             errors.append(f"{key}: claims {wrong}, status is {status!r}")
-        if invented := sorted(set(_NUMBER.findall(text)) - allowed.get(key, set())):
+        if invented := sorted(set(NUMBER.findall(text)) - allowed.get(key, set())):
             errors.append(f"{key}: numbers not in the input {invented}")
     return errors
 

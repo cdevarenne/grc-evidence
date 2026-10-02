@@ -3,6 +3,7 @@
 import io
 import json
 import sys
+import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -35,10 +36,7 @@ def _transcript(**changes: Any) -> Transcript:
 
 
 def _out(tmp_path: Path) -> Path:
-    out = tmp_path / "out"
-    out.mkdir()
-    (out / "run.json").write_text(json.dumps({"run_id": "run-1"}))
-    return out
+    return _api_out(tmp_path)
 
 
 def test_claude_runs_isolated_with_only_the_workflows_tools() -> None:
@@ -122,7 +120,7 @@ def test_a_run_writes_its_record_draft_and_ledger_line_and_nothing_else(tmp_path
     out = _out(tmp_path)
     record = agent.run_workflow(WORKFLOW, lambda w, o, lim: _transcript(), out, Limits(), NOW)
     folder = out / "agent"
-    assert sorted(p.name for p in tmp_path.rglob("*") if p.is_file()) == ["probe-20261002T120000Z.json", "probe-20261002T120000Z.md", "run.json", "usage.jsonl"]
+    assert sorted(p.name for p in tmp_path.rglob("*") if p.is_file()) == ["mapping.json", "probe-20261002T120000Z.json", "probe-20261002T120000Z.md", "run.json", "usage.jsonl"]
     assert (folder / "probe-20261002T120000Z.md").read_text() == "# Probe\n\nTwo gaps.\n"
     assert record["validation"] == {"passed": True, "problems": []} and record["outputs_run_id"] == "run-1"
     assert json.loads((folder / "probe-20261002T120000Z.json").read_text()) == record
@@ -252,3 +250,66 @@ def test_a_final_reply_that_is_not_json_is_stopped(tmp_path: Path) -> None:
 def test_an_unpriced_model_cannot_be_budgeted(tmp_path: Path) -> None:
     with pytest.raises(AgentError, match="no price for 'claude-mystery'"):
         agent.run_anthropic(WORKFLOW, tmp_path, Limits(model="claude-mystery"))
+
+
+STATUS_RESULT = json.dumps({"run_id": "run-1", "controls": [
+    {"key": "soc2:cc6.1", "status": "not-satisfied", "findings": 2}, {"key": "soc2:cc7.1", "status": "not-satisfied", "findings": 1}]})
+SCHEMA = {"type": "object", "properties": {"summary": {"type": "string"}}, "required": ["summary"]}
+
+
+def _check(draft: dict, results: tuple[str, ...] = (STATUS_RESULT,)) -> list[str]:
+    """Validate a draft against the fixture mapping, as if the tools had returned `results`."""
+    from okf_grc.contract import read_mapping
+
+    mapping = read_mapping(_api_out(Path(tempfile.mkdtemp())) / "mapping.json")
+    calls = [{"name": "control_status", "arguments": {}, "result": r, "is_error": False} for r in results]
+    return agent.validate(WORKFLOW.__class__(**{**WORKFLOW.__dict__, "schema": SCHEMA}), _transcript(output=draft, tool_calls=calls), mapping)
+
+
+def test_an_invented_total_is_rejected() -> None:
+    """#120, the prototype's failure: right controls, right counts, and a sum no tool returned (here 4; really 3)."""
+    assert _check({"summary": "cc6.1 (2 findings) and cc7.1 (1 finding) are not-satisfied, totaling 4 findings."}) == [
+        "numbers not in any tool result of this run: ['4']"]
+    assert _check({"summary": "cc6.1 (2 findings) and cc7.1 (1 finding) are not-satisfied."}) == []
+
+
+def test_numbers_in_fields_count_too() -> None:
+    assert _check({"summary": "Two controls.", "count": 9}) == ["numbers not in any tool result of this run: ['9']"]
+    assert _check({"summary": "Two controls.", "count": 2}) == []
+
+
+def test_a_control_that_does_not_exist_is_rejected() -> None:
+    assert "controls that do not exist: ['soc2:cc9.9']" in _check({"summary": "Also cc9.9 needs work."})
+
+
+def test_a_status_must_be_the_controls_own() -> None:
+    """In a field next to the key, and in a sentence that names one control; "not satisfied" in plain words counts."""
+    wrong = _check({"summary": "See below.", "controls": [{"key": "soc2:cc6.1", "status": "no-violations-detected"}]})
+    assert wrong == ["soc2:cc6.1: draft says 'no-violations-detected', status is 'not-satisfied'"]
+    assert _check({"summary": "cc6.1 shows no-violations-detected."})[0].startswith("soc2:cc6.1: draft says ['no-violations-detected']")
+    assert _check({"summary": "cc6.1 is not satisfied. CC7.1 is not-satisfied too."}) == []
+
+
+def test_a_compliance_claim_is_rejected() -> None:
+    assert _check({"summary": "cc6.1 is compliant."})[0].startswith("forbidden claim 'compliant'")
+    assert _check({"summary": "cc6.1 is not satisfied."}) == []  # plain words for the status, not a claim
+
+
+def test_a_missing_field_is_rejected() -> None:
+    assert _check({"note": "x"}) == ["missing field 'summary'"]
+
+
+def test_a_rejected_draft_is_recorded_but_not_written(tmp_path: Path) -> None:
+    out = _out(tmp_path)
+    invented = _transcript(output={"summary": "There are 12 findings."}, tool_calls=[
+        {"name": "control_status", "arguments": {}, "result": STATUS_RESULT, "is_error": False}])
+    record = agent.run_workflow(WORKFLOW, lambda w, o, lim: invented, out, Limits(), NOW)
+    assert record["validation"] == {"passed": False, "problems": ["numbers not in any tool result of this run: ['12']"]}
+    assert record["draft"] is None and not list((out / "agent").glob("*.md"))
+
+
+def test_a_run_ids_digits_are_not_numbers_a_draft_may_cite() -> None:
+    """Every tool result carries a run id: its digit runs must not make an invented number look seen."""
+    result = json.dumps({"run_id": "82a46f28-3485-5abe-b1dc-2442fb88399b", "controls": [{"key": "soc2:cc6.1", "status": "not-satisfied", "findings": 2}]})
+    assert _check({"summary": "28 controls fail."}, (result,)) == ["numbers not in any tool result of this run: ['28']"]
+    assert _check({"summary": "Run 82a46f28-3485-5abe-b1dc-2442fb88399b: cc6.1 has 2 findings."}, (result,)) == []
