@@ -32,6 +32,10 @@ already fails, so a status-only gate passed a new critical CVE.
 closes the 2026-10-01 review's hygiene items: ruff and mypy in CI, one-line
 engine errors, version-checked `mapping.json` readers, bounded batch polling.
 
+`1.5.0` ships the agent skill with the engine: `grc install-skill` adds it to
+any repo, `grc sync-base` keeps it current, and it reads the layout from
+`grc.yaml` instead of assuming this repo's.
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization

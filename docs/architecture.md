@@ -2,7 +2,7 @@
 
 How okf-grc fits together today, where the proposed features would attach, and
 the order to build them in. Built parts are described from the code at
-`v1.4.0`; proposed parts are marked as such and are not specified unless a spec
+`v1.5.0`; proposed parts are marked as such and are not specified unless a spec
 is linked.
 
 ## What is built
