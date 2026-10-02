@@ -11,6 +11,14 @@ report.
 
 *Organize knowledge → derive intelligence → take action.*
 
+**See it on a real app:** [okf-grc-demo-boutique](https://github.com/cdevarenne/okf-grc-demo-boutique)
+applies the released engine to Google's
+[microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo),
+included unmodified: 422 findings mapped to controls (7 not satisfied), 42 of 47
+coverage-gap rules triaged into controls, a compliance gate on every pull
+request and a nightly scan, and an agent's draft shown with the review that
+corrected it.
+
 > **`app/` is intentionally vulnerable.** It exists only as a scan target, with
 > seeded issues listed in [`app/SEEDED.yaml`](app/SEEDED.yaml). Do not deploy it.
 
