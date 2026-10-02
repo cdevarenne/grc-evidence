@@ -26,12 +26,12 @@ class ScanError(GrcError, RuntimeError):
     """A scanner is missing, crashed, or produced unreadable output."""
 
 
-def _finding(tool: str, rule_id: str, severity: str, target: str, message: str) -> Finding:
+def _finding(tool: str, rule_id: str, severity: str, target: str, message: str, tags: Sequence[str] = ()) -> Finding:
     """One normalized finding. The target is a repo-relative POSIX path with no `./`, whichever scanner
     reported it, because suppressions match it exactly (target `.` would otherwise yield `./Dockerfile`)."""
     level = severity.lower() if severity.lower() in SEVERITIES else "unknown"
     path = PurePosixPath(target).as_posix()
-    return {"tool": tool, "rule_id": rule_id, "severity": level, "target": path, "message": message, "tags": []}
+    return {"tool": tool, "rule_id": rule_id, "severity": level, "target": path, "message": message, "tags": list(tags)}
 
 
 def normalize_semgrep(doc: dict[str, Any], target_dir: str) -> list[Finding]:
@@ -63,7 +63,7 @@ def normalize_trivy(doc: dict[str, Any], target_dir: str) -> list[Finding]:
                 findings.append(_finding("trivy", m["ID"], m["Severity"], target, f"{m['Title']}: {m['Message']}"))
         for v in result.get("Vulnerabilities") or []:
             message = f"{v['PkgName']} {v['InstalledVersion']}: {v['Title']}"
-            findings.append(_finding("trivy", v["VulnerabilityID"], v["Severity"], target, message))
+            findings.append(_finding("trivy", v["VulnerabilityID"], v["Severity"], target, message, ["vulnerability"]))
     return findings
 
 

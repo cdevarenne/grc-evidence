@@ -44,6 +44,7 @@ def test_trivy_config_misconfigurations() -> None:
         ("trivy", "DS-0026", "low", "app/Dockerfile"),
         ("trivy", "KSV-0013", "medium", "app/k8s/deployment.yaml"),
     ]
+    assert {tuple(f["tags"]) for f in normalize_trivy(_load("trivy-config.json"), "app")} == {()}
 
 
 def test_trivy_fs_vulnerabilities() -> None:
@@ -54,6 +55,7 @@ def test_trivy_fs_vulnerabilities() -> None:
         "app/requirements.txt",
     )
     assert finding["message"].startswith("Django 4.2.0: ")
+    assert finding["tags"] == ["vulnerability"]  # #113: the gate holds advisories to --fail-on
 
 
 def test_checkov_prefixes_target_and_marks_missing_severity_unknown() -> None:

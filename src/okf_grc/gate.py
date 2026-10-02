@@ -12,7 +12,8 @@ from okf_grc.contract import read_mapping
 Json = dict[str, Any]
 BASELINE = Path("expected/control-status.json")
 FAILING = "not-satisfied"
-RANKED = ("critical", "high", "medium", "low", "info")  # `unknown` is unranked: it never reaches a --fail-on level
+RANKED = ("critical", "high", "medium", "low", "info")  # --fail-on levels for vulnerabilities; `unknown` reaches none
+VULNERABILITY = "vulnerability"  # the tag run_scan puts on a dependency advisory (CVE, GHSA, GO, ...)
 
 
 def control_status(mapping: Json) -> dict[str, str]:
@@ -20,30 +21,49 @@ def control_status(mapping: Json) -> dict[str, str]:
     return {key: entry["status"] for key, entry in sorted(mapping["controls"].items())}
 
 
-def findings(mapping: Json) -> dict[str, Json]:
-    """Each mapped finding by identity (`tool:rule_id target`), accepted risks left out.
+def findings(mapping: Json) -> dict[str, list[Json]]:
+    """Each finding by identity (`tool:rule_id target`): those on controls and the coverage gaps, accepted risks left
+    out, each finding once though it may sit on several controls.
 
     The message is not part of the identity: a version bump on a still-vulnerable package is not a new finding.
+    Several findings can share one identity (one rule on several resources of a file); they are counted.
     """
-    return {
-        f"{f['tool']}:{f['rule_id']} {f['target']}": f
-        for entry in mapping["controls"].values()
-        for f in entry["findings"]
+    distinct = {
+        (f["tool"], f["rule_id"], f["target"], f["message"]): f
+        for f in [*(f for entry in mapping["controls"].values() for f in entry["findings"]), *(u["finding"] for u in mapping["unmapped"])]
         if not f.get("accepted")
     }
+    grouped: dict[str, list[Json]] = {}
+    for f in distinct.values():
+        grouped.setdefault(f"{f['tool']}:{f['rule_id']} {f['target']}", []).append(f)
+    return dict(sorted(grouped.items()))
 
 
 def baseline_doc(mapping: Json) -> Json:
-    """What `--write-baseline` records: control statuses and finding identities."""
-    return {"controls": control_status(mapping), "findings": sorted(findings(mapping))}
+    """What `--write-baseline` records: control statuses, and how many findings each identity has."""
+    return {"controls": control_status(mapping), "findings": {fid: len(fs) for fid, fs in findings(mapping).items()}}
+
+
+def _counts(baseline: Json) -> dict[str, int]:
+    """The baseline's finding counts; a list (written by 1.3 to 1.5) records each identity once."""
+    recorded = baseline["findings"]
+    return dict.fromkeys(recorded, 1) if isinstance(recorded, list) else recorded
+
+
+def _new(mapping: Json, baseline: Json) -> dict[str, list[Json]]:
+    """Identities with more findings than the baseline records."""
+    known = _counts(baseline)
+    return {fid: fs for fid, fs in findings(mapping).items() if len(fs) > known.get(fid, 0)}
 
 
 def problems(mapping: Json, baseline: Json, fail_on: str = "high") -> list[str]:
-    """Why the gate fails: a control newly `not-satisfied`, a new finding at or above `fail_on`, or an expired
-    suppression. Empty means it passes.
+    """Why the gate fails: a control newly `not-satisfied`, a new finding, or an expired suppression. Empty means it
+    passes.
 
-    A control already `not-satisfied` in the baseline does not fail again; improvements never fail. A baseline
-    without `findings` (written before they were recorded) skips the finding check.
+    A new code or configuration finding fails at any severity, `unknown` included: only a change to the repository
+    produces one. A new vulnerability finding (tagged at scan time) fails at or above `fail_on`, because a new
+    advisory can appear with no change at all. A control already `not-satisfied` in the baseline does not fail
+    again; improvements never fail. A baseline without `findings` skips the finding check.
     """
     statuses = baseline["controls"]
     found = [
@@ -52,12 +72,13 @@ def problems(mapping: Json, baseline: Json, fail_on: str = "high") -> list[str]:
         if status == FAILING and statuses.get(key) != FAILING
     ]
     if "findings" in baseline:
-        known, levels = set(baseline["findings"]), RANKED[: RANKED.index(fail_on) + 1]
-        found += [
-            f"new {f['severity']} finding: {fid}"
-            for fid, f in sorted(findings(mapping).items())
-            if fid not in known and f["severity"] in levels
-        ]
+        known, levels = _counts(baseline), RANKED[: RANKED.index(fail_on) + 1]
+        for fid, fs in _new(mapping, baseline).items():
+            count = f"{known.get(fid, 0)} -> {len(fs)}"
+            if not any(VULNERABILITY in f["tags"] for f in fs):
+                found.append(f"new finding: {fid} ({count})")
+            elif worst := next((level for level in levels if any(f["severity"] == level for f in fs)), None):
+                found.append(f"new {worst} vulnerability: {fid} ({count})")
     found += [f"suppression {sid} expired" for sid in mapping.get("expired_suppressions", [])]
     return found
 
@@ -71,8 +92,9 @@ def summary(mapping: Json, baseline: Json) -> str:
         mark = "" if before == status else ("regressed" if status == FAILING else "changed")
         lines.append(f"| `{key}` | {before} | {status} | {mark} |")
     if "findings" in baseline:
-        new = sorted(set(findings(mapping)) - set(baseline["findings"]))
-        lines += ["", f"Findings not in the baseline (any severity): {len(new)}"]
+        known = _counts(baseline)
+        new = sum(len(fs) - known.get(fid, 0) for fid, fs in _new(mapping, baseline).items())
+        lines += ["", f"Findings not in the baseline (any kind and severity): {new}"]
     return "\n".join(lines) + "\n"
 
 
@@ -81,7 +103,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--out", type=Path, default=Path("out"), help="where `grc run` wrote mapping.json")
     parser.add_argument("--baseline", type=Path, default=BASELINE)
     parser.add_argument("--write-baseline", action="store_true", help="record the current statuses and findings as the baseline")
-    parser.add_argument("--fail-on", choices=RANKED, default="high", help="fail on a new finding at or above this severity")
+    parser.add_argument("--fail-on", choices=RANKED, default="high", help="fail on a new vulnerability at or above this severity; any other new finding always fails")
     parser.add_argument("--summary", type=Path, default=None, help="append the status table to this file (CI job summary)")
     args = parser.parse_args(argv)
     mapping = read_mapping(args.out / "mapping.json")
