@@ -14,7 +14,7 @@ BASE = Path(str(data.path("base")))
 POLICIES = Path(str(data.path("policies")))
 BUNDLE = load_bundle(BASE)
 # A link to `stack/index.md` is fine: every adopter bundle has a stack section; its components are its own.
-SAMPLE_ONLY = re.compile(r"app/|sample app|\.\./stack/(?!index\.md)|suppressions/|drf-authenticated-writes", re.I)
+SAMPLE_ONLY = re.compile(r"app/|sample app|\.\./stack/(?!index\.md)|suppressions/|drf-authenticated-writes", re.IGNORECASE)
 
 
 def _files(root: Path, pattern: str) -> list[Path]:
@@ -34,7 +34,10 @@ def test_base_is_a_standalone_bundle() -> None:
             assert link in BUNDLE.concepts, f"{concept.path}: link to {link} leaves the base"
 
 
-@pytest.mark.parametrize("concept", sorted(BUNDLE.concepts.values(), key=lambda c: c.id), ids=lambda c: c.id)
+CONCEPTS = sorted(BUNDLE.concepts.values(), key=lambda c: c.id)
+
+
+@pytest.mark.parametrize("concept", CONCEPTS, ids=[c.id for c in CONCEPTS])
 def test_base_concepts_are_verified_and_name_no_sample_app(concept) -> None:
     assert any(str(e.get("by", "")).startswith("human:") for e in concept.frontmatter.get("verified") or [])
     assert not SAMPLE_ONLY.search((BASE / concept.path).read_text()), concept.path

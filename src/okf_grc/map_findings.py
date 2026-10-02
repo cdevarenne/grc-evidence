@@ -12,7 +12,15 @@ import yaml
 
 from okf_grc.config import load_config
 from okf_grc.data import SCHEMA_VERSION
-from okf_grc.okf_lib import EXPIRY_WARNING_DAYS, GUARDRAIL_TYPES, SCANNER_TYPE, Bundle, Suppression, applies, load_bundle
+from okf_grc.okf_lib import (
+    EXPIRY_WARNING_DAYS,
+    GUARDRAIL_TYPES,
+    SCANNER_TYPE,
+    Bundle,
+    Suppression,
+    applies,
+    load_bundle,
+)
 from okf_grc.run_scan import tools_not_run
 
 Finding = dict[str, Any]

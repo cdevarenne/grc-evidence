@@ -8,10 +8,10 @@ from pathlib import Path
 import pytest
 import yaml
 from jsonschema import Draft202012Validator, FormatChecker
+from oscal_schema import validate
 
 from okf_grc import data
 from okf_grc.to_oscal import PROP_NS
-from oscal_schema import validate
 
 ROOT = Path(__file__).parent.parent
 OUT = ROOT / "out"

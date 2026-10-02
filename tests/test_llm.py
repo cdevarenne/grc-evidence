@@ -8,7 +8,15 @@ from typing import Any
 
 import pytest
 
-from okf_grc.llm import REQUEST_TIMEOUT_S, LLM, BudgetExceeded, LLMError, Request, cost_usd, worst_case_usd
+from okf_grc.llm import (
+    LLM,
+    REQUEST_TIMEOUT_S,
+    BudgetExceeded,
+    LLMError,
+    Request,
+    cost_usd,
+    worst_case_usd,
+)
 
 SCHEMA = {"type": "object", "properties": {"x": {"type": "integer"}}, "required": ["x"], "additionalProperties": False}
 REQ = Request(task="t", system="stable bundle digest", user="per-run digest", schema=SCHEMA, max_tokens=100)

@@ -35,7 +35,7 @@ def test_control_key_normalizes_bare_soc2_tags() -> None:
 
 
 def test_lookup_by_key_and_bare_soc2_code() -> None:
-    assert AI.control("iso42001:a.6").title.startswith("A.6")
+    assert (control := AI.control("iso42001:a.6")) and control.title.startswith("A.6")
     assert AI.control("cc6.1") is AI.control("soc2:cc6.1")
     assert AI.control("a.6") is None
 

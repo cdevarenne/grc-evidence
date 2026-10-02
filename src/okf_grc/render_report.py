@@ -136,10 +136,14 @@ def _risk_posture(controls: list[tuple[str, Json]], unmapped: list[Json], suppre
     return [
         "## Risk posture",
         "",
-        f"{open_findings} open {findings_word} across {not_satisfied} of {applicable} {controls_word}: "
-        f"{_breakdown(total)}.",
-        f"{clean} {clean_clause} no violations.{accepted_clause} {not_assessed} not assessed.{na_clause} "
-        f"{len(unmapped)} {gaps_word} to triage.{suppressed_clause}",
+        (
+            f"{open_findings} open {findings_word} across {not_satisfied} of {applicable} {controls_word}: "
+            f"{_breakdown(total)}."
+        ),
+        (
+            f"{clean} {clean_clause} no violations.{accepted_clause} {not_assessed} not assessed.{na_clause} "
+            f"{len(unmapped)} {gaps_word} to triage.{suppressed_clause}"
+        ),
         "",
     ]
 
@@ -205,10 +209,12 @@ def _llm_footer(usage: list[Json]) -> list[str]:
         "",
         "---",
         "",
-        f"LLM step: {len(usage)} call(s), {billed} billed, model {models}, mode {modes}. "
-        f"Tokens: {total['input_tokens']} in, {total['output_tokens']} out, "
-        f"{total['cache_read_input_tokens']} cache read. Cost ${total['cost_usd']:.4f}. "
-        "The LLM wrote prose only; every status and count above is deterministic.",
+        (
+            f"LLM step: {len(usage)} call(s), {billed} billed, model {models}, mode {modes}. "
+            f"Tokens: {total['input_tokens']} in, {total['output_tokens']} out, "
+            f"{total['cache_read_input_tokens']} cache read. Cost ${total['cost_usd']:.4f}. "
+            "The LLM wrote prose only; every status and count above is deterministic."
+        ),
     ]
 
 

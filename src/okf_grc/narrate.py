@@ -16,10 +16,10 @@ from okf_grc.okf_lib import FRAMEWORK_TITLES, load_bundle
 Json = dict[str, Any]
 MAX_TOKENS = 2000
 STATUSES = ("not-satisfied", "no-violations-detected", "not-assessed", "not-applicable")
-_FORBIDDEN = re.compile(r"(?<![\w-])(satisfied|compliant|passed)\b", re.I)
+_FORBIDDEN = re.compile(r"(?<![\w-])(satisfied|compliant|passed)\b", re.IGNORECASE)
 _STATUS = re.compile("|".join(STATUSES))
 _NUMBER = re.compile(r"\d+(?:\.\d+)*")
-_NOT_SATISFIED = re.compile(r"\bnot\s+satisfied\b", re.I)
+_NOT_SATISFIED = re.compile(r"\bnot\s+satisfied\b", re.IGNORECASE)
 
 SYSTEM = """You write short, plain-English notes for a SOC 2 / AI-governance auditor.
 

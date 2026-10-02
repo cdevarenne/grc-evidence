@@ -96,8 +96,12 @@ def test_run_hands_the_report_its_narratives_and_ledger(monkeypatch: pytest.Monk
     seen: list[str] = []
     calls = _record_writing(monkeypatch)
     report = cli.STEPS["report"].main
-    monkeypatch.setattr(cli.STEPS["report"], "main", lambda argv: (seen.extend(
-        p.name for p in Path(argv[argv.index("--out") + 1]).iterdir()), report(argv)))
+
+    def report_seeing(argv: list[str]) -> None:
+        seen.extend(p.name for p in Path(argv[argv.index("--out") + 1]).iterdir())
+        report(argv)
+
+    monkeypatch.setattr(cli.STEPS["report"], "main", report_seeing)
     cli.main(["run", "--out", str(out)])
     assert "narratives.json" in seen and calls
 

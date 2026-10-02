@@ -12,7 +12,9 @@ IGNORES = yaml.safe_load((ROOT / "audit-ignore.yaml").read_text())["vulnerabilit
 
 def _recipe() -> str:
     makefile = (ROOT / "Makefile").read_text()
-    return re.search(r"^audit:\n((?:\t.*\n|  .*\n)+)", makefile, re.M).group(1)
+    match = re.search(r"^audit:\n((?:\t.*\n|  .*\n)+)", makefile, re.MULTILINE)
+    assert match is not None
+    return match.group(1)
 
 
 def test_audit_fails_on_fixable_high_and_critical_and_skips_the_sample_app() -> None:

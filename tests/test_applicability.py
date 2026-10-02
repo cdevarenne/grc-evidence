@@ -21,11 +21,13 @@ FINDINGS = json.loads((FIXTURES / "ai_findings.json").read_text())
     [({"risk_tier": "limited"}, False), ({"risk_tier": "high"}, True), ({}, True)],
 )
 def test_applies_reads_the_risk_tier(context: dict, expected: bool) -> None:
-    assert applies(AI.control("eu-ai-act:art-12"), context) is expected
+    assert (control := AI.control("eu-ai-act:art-12"))
+    assert applies(control, context) is expected
 
 
 def test_control_without_applies_when_always_applies() -> None:
-    assert applies(AI.control("eu-ai-act:art-50"), {"risk_tier": "minimal"})
+    assert (control := AI.control("eu-ai-act:art-50"))
+    assert applies(control, {"risk_tier": "minimal"})
 
 
 def test_limited_tier_marks_high_risk_article_not_applicable() -> None:

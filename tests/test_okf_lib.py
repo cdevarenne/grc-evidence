@@ -37,7 +37,7 @@ def test_links_resolve_absolute_and_relative_and_keep_broken() -> None:
 def test_controls_and_lookup_by_code() -> None:
     bundle = load_bundle(FIXTURE)
     assert [c.code for c in bundle.controls()] == ["cc6.1", "cc7.1", "cc7.2", "cc8.1"]
-    assert bundle.control("cc7.1").title.startswith("CC7.1")
+    assert (control := bundle.control("cc7.1")) and control.title.startswith("CC7.1")
     assert bundle.control("cc9.9") is None
 
 
@@ -124,7 +124,7 @@ def test_soc2_availability_tags_and_scanner_check_guardrails(tmp_path) -> None:
         "---\ntype: Scanner Check\ntitle: Limits\ntags: [a1.1]\nrule_ids:\n  - trivy:KSV-0011\n---\n# Rule\n\nx\n"
     )
     bundle = load_bundle(tmp_path)
-    assert bundle.control("a1.1").key == "soc2:a1.1"
+    assert (control := bundle.control("a1.1")) and control.key == "soc2:a1.1"
     assert [c.id for c in bundle.declaring("soc2:a1.1")] == ["policies/limits"]
     finding = {"tool": "trivy", "rule_id": "KSV-0011", "severity": "low", "target": "k8s/a.yaml", "message": "m", "tags": []}
     entry = map_findings(bundle, [finding])["controls"]["soc2:a1.1"]

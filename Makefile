@@ -49,6 +49,8 @@ render:
 	uvx --python 3.14 --from "$(OKF)" reference-agent visualize --bundle knowledge --out out/knowledge-viz.html
 
 test:
+	uv run ruff check
+	uv run mypy
 	uv run pytest
 	$(GRC) check
 	$(TOOLBIN)/conftest verify -p policies/rego --no-color

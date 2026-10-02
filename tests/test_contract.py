@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 from jsonschema import Draft202012Validator, FormatChecker, ValidationError
+from oscal_schema import validate as validate_oscal
 
 from okf_grc import data
 from okf_grc.config import load_config
@@ -19,7 +20,6 @@ from okf_grc.map_findings import map_findings, read_findings
 from okf_grc.okf_lib import load_bundle
 from okf_grc.run_scan import dedupe
 from okf_grc.to_oscal import PROP_NS, assessment_results
-from oscal_schema import validate as validate_oscal
 
 ROOT = Path(__file__).parent.parent
 FIXTURES = Path(__file__).parent / "fixtures"

@@ -8,7 +8,13 @@ from pathlib import Path
 import pytest
 
 from okf_grc.config import Config, ConfigError, load_config
-from okf_grc.run_scan import ScanError, conftest_inputs, scan, scanner_runs, tools_not_run
+from okf_grc.run_scan import (
+    ScanError,
+    conftest_inputs,
+    scan,
+    scanner_runs,
+    tools_not_run,
+)
 
 
 def _repo(tmp_path: Path, config: str | None = None) -> Path:

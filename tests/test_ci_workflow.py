@@ -16,6 +16,7 @@ def _workflow() -> dict[Any, Any]:
 def test_runs_on_pushes_to_main_and_pull_requests() -> None:
     wf = _workflow()
     triggers = wf.get("on", wf.get(True))  # PyYAML reads a bare `on:` key as True
+    assert triggers is not None
     assert set(triggers) == {"push", "pull_request"}
     assert triggers["push"] == {"branches": ["main"]}
 

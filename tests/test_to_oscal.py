@@ -2,13 +2,20 @@ import json
 from pathlib import Path
 
 import pytest
+from oscal_schema import validate
 
 from okf_grc.config import Config
 from okf_grc.map_findings import map_findings
 from okf_grc.okf_lib import Bundle, load_bundle
-from oscal_schema import validate
 from okf_grc.run_scan import conftest_inputs, load_pins, scanner_runs
-from okf_grc.to_oscal import AP_HREF, NO_SSP_HREF, PROP_NS, assessment_plan, assessment_results, component_definition
+from okf_grc.to_oscal import (
+    AP_HREF,
+    NO_SSP_HREF,
+    PROP_NS,
+    assessment_plan,
+    assessment_results,
+    component_definition,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 ROOT = Path(__file__).parent.parent

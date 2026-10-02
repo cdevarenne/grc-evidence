@@ -6,11 +6,11 @@ from datetime import date
 from pathlib import Path
 
 import pytest
+from oscal_schema import validate
 
 from okf_grc.digest import scan_digest
 from okf_grc.map_findings import map_findings
 from okf_grc.okf_lib import BundleError, load_bundle
-from oscal_schema import validate
 from okf_grc.render_report import render_report
 from okf_grc.to_oscal import assessment_results
 

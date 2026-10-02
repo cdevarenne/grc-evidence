@@ -29,9 +29,9 @@ SCANNER_TYPE = "Scanner"
 GUARDRAIL_TYPES = ("Rego Policy", "Semgrep Rule", "Scanner Check")  # Scanner Check: a guardrail third-party scanner rules enforce
 COMPONENT_TYPE = "Stack Component"
 _CONTROL_TAG = re.compile(r"^(?:(?:cc|a)\d+\.\d+|iso42001:a\.\d+|eu-ai-act:art-\d+)$")  # SOC 2: CC (common) and A (availability)
-_FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n?(.*)\Z", re.S)
+_FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n?(.*)\Z", re.DOTALL)
 _LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
-_H1 = re.compile(r"^# (.+?)\s*$", re.M)
+_H1 = re.compile(r"^# (.+?)\s*$", re.MULTILINE)
 _RULE_PATTERN = re.compile(r"[^*?\[\]]+\*?")
 
 
@@ -252,7 +252,7 @@ def _check_suppression(rel_path: str, fm: Mapping[str, Any], body: str) -> None:
     approved, expires = _date(rel_path, fm.get("approved"), "approved"), _date(rel_path, fm.get("expires"), "expires")
     if not approved < expires <= approved + timedelta(days=MAX_SUPPRESSION_DAYS):
         raise BundleError(f"{rel_path}: 'expires' must fall within {MAX_SUPPRESSION_DAYS} days after 'approved'")
-    if not re.search(r"^# Reason\s*\n\s*\S", body, re.M):
+    if not re.search(r"^# Reason\s*\n\s*\S", body, re.MULTILINE):
         raise BundleError(f"{rel_path}: a suppression needs a non-empty '# Reason' section")
 
 

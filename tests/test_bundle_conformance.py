@@ -35,8 +35,8 @@ def test_applies_when_uses_known_fields_and_tiers() -> None:
 
 def test_high_risk_articles_declare_their_tier() -> None:
     for n in (9, 10, 12, 13, 14, 15):
-        assert BUNDLE.control(f"eu-ai-act:art-{n}").frontmatter["applies_when"] == {"risk_tier": ["high"]}
-    assert "applies_when" not in BUNDLE.control("eu-ai-act:art-50").frontmatter
+        assert (article := BUNDLE.control(f"eu-ai-act:art-{n}")) and article.frontmatter["applies_when"] == {"risk_tier": ["high"]}
+    assert (art50 := BUNDLE.control("eu-ai-act:art-50")) and "applies_when" not in art50.frontmatter
 
 
 def test_inventory_tier_is_known() -> None:
@@ -107,7 +107,7 @@ def test_index_files_have_no_frontmatter_except_root_version() -> None:
 
 def test_log_dates_are_iso() -> None:
     for log in KNOWLEDGE.rglob("log.md"):
-        for heading in re.findall(r"^## (.+)$", log.read_text(encoding="utf-8"), re.M):
+        for heading in re.findall(r"^## (.+)$", log.read_text(encoding="utf-8"), re.MULTILINE):
             assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", heading), f"{log}: {heading}"
 
 

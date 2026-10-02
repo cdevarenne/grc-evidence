@@ -9,10 +9,17 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from okf_grc.okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, MAX_SUPPRESSION_DAYS, Bundle, Concept, load_bundle
 from okf_grc import data
 from okf_grc.config import Config, load_config
 from okf_grc.map_findings import NOT_RUN, SDK_GAP
+from okf_grc.okf_lib import (
+    COMPONENT_TYPE,
+    FRAMEWORK_TYPES,
+    MAX_SUPPRESSION_DAYS,
+    Bundle,
+    Concept,
+    load_bundle,
+)
 from okf_grc.run_scan import SEVERITIES, conftest_inputs, load_pins, scanner_runs
 
 OSCAL_VERSION = "1.2.3"
@@ -139,7 +146,7 @@ def _evidenced_by(bundle: Bundle, key: str) -> set[str]:
 
 
 def assessment_plan(
-    bundle: Bundle, mapping: Json, now: str, pins: dict[str, str], config: Config = Config(), repo: Path = Path()
+    bundle: Bundle, mapping: Json, now: str, pins: dict[str, str], config: Config | None = None, repo: Path = Path()
 ) -> Json:
     """What the automated scan intends to assess: every applicable control, the scanner runs, the components.
 
@@ -148,6 +155,7 @@ def assessment_plan(
     """
     in_scope = sorted(key for key, c in mapping["controls"].items() if c["status"] != "not-applicable")
     excluded = sorted(key for key, c in mapping["controls"].items() if c["status"] == "not-applicable")
+    config = config or Config()
     target = config.target
     runs = scanner_runs(config, conftest_inputs(repo, config))
     activities = []
@@ -173,15 +181,16 @@ def assessment_plan(
             activity["related-controls"] = {"control-selections": selections}
         activities.append(activity)
     components = [_component(comp) for comp in bundle.of_type(COMPONENT_TYPE)]
+    scope: Json = (
+        {"include-subjects": [{"subject-uuid": c["uuid"], "type": "component"} for c in components]}
+        if components
+        else {"include-all": {}}
+    )
     subjects = [
         {
             "type": "component",
             "description": "The stack components described in the knowledge bundle.",
-            **(
-                {"include-subjects": [{"subject-uuid": c["uuid"], "type": "component"} for c in components]}
-                if components
-                else {"include-all": {}}
-            ),
+            **scope,
         }
     ]
     tools = {run.tool: pins[run.pin] for run in runs}

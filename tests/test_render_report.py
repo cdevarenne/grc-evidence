@@ -102,4 +102,5 @@ def test_posture_counts_a_control_whose_only_findings_are_accepted_risks() -> No
     assert "1 control has only accepted risks." in report
     head = re.search(r"across (\d+) of (\d+) controls", report)
     rest = re.search(r"(\d+) controls? shows? no violations\. (\d+) controls? ha(?:s|ve) only accepted risks\. (\d+) not assessed", report)
+    assert head and rest
     assert int(head[1]) + sum(int(n) for n in rest.groups()) == int(head[2])

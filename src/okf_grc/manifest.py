@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import posixpath
 import json
+import posixpath
 import subprocess
 import uuid
 from collections.abc import Iterable
@@ -61,7 +61,7 @@ def repo_state(repo: Path, inputs: Iterable[str], exclude: Iterable[Path] = ()) 
     if commit is None:
         return {"commit": None, "dirty": None, "untracked": []}
     root = repo.resolve()
-    skip = [p.relative_to(root) for p in ((repo / q).resolve() for q in (".tools", *exclude)) if p.is_relative_to(root)]
+    skip = [p.relative_to(root) for p in ((repo / q).resolve() for q in (Path(".tools"), *exclude)) if p.is_relative_to(root)]
     listed = (_git(repo, "ls-files", "-z", "--others", "--exclude-standard", "--", *inputs) or "").split("\0")
     untracked = sorted(f for f in listed if f and not any(Path(f).is_relative_to(s) for s in skip))
     modified = bool(_git(repo, "status", "--porcelain", "--untracked-files=no", "--", *inputs))

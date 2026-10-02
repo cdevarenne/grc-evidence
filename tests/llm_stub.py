@@ -3,10 +3,10 @@
 import json
 from typing import Any
 
-from okf_grc.llm import CUSTOM_ID, LLMError, Request
+from okf_grc.llm import CUSTOM_ID, LLM, LLMError, Request
 
 
-class StubLLM:
+class StubLLM(LLM):
     """Returns canned outputs; records the requests it was given."""
 
     def __init__(self, outputs: dict[str, Any] | Exception) -> None:

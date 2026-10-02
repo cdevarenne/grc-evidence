@@ -3,8 +3,9 @@
 import json
 from pathlib import Path
 
-from okf_grc.digest import bundle_digest, scan_digest
 from llm_stub import StubLLM
+
+from okf_grc.digest import bundle_digest, scan_digest
 from okf_grc.map_findings import map_findings
 from okf_grc.okf_lib import FRAMEWORK_SCOPES, load_bundle
 from okf_grc.triage import SCOPE_RULE, SYSTEM, request, triage
