@@ -27,6 +27,11 @@ an adopter can take a newer base.
 on controls newly `not-satisfied`: on `microservices-demo` every SOC 2 control
 already fails, so a status-only gate passed a new critical CVE.
 
+`1.4.0` lets a repo with no Kubernetes or Terraform files turn Conftest off
+(`conftest.inputs: []`; its controls read `not-assessed`, not clean), and
+closes the 2026-10-01 review's hygiene items: ruff and mypy in CI, one-line
+engine errors, version-checked `mapping.json` readers, bounded batch polling.
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization
