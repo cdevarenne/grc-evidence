@@ -16,6 +16,8 @@ grc run         # out/: findings, mapping, OSCAL, report, run.json
 grc install-skill   # optional: the agent skill, for Claude Code (docs/using-the-skill.md)
 ```
 
+With the `mcp` extra installed, `grc mcp` serves the results to any MCP-capable agent ([docs/mcp.md](mcp.md)).
+
 Edit `grc.yaml` to match the repo's layout, link each stack stub to the
 controls its component implements, and set the AI risk tier in
 `ai-inventory.yaml` with a recorded reason.

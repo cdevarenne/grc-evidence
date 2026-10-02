@@ -14,7 +14,7 @@ is linked.
 | **Layout** | `grc.yaml`: which files each scanner reads and which policies it applies, checked to stay inside the repo. | `src/okf_grc/config.py` |
 | **Output contract** | `findings.json`, `mapping.json`, and `run.json` (commit, versions, layout, the sha256 of every output), each with a JSON Schema and a `schema_version`. OSCAL 1.2.3 component definition, assessment plan, and assessment results carrying the run id. | `src/okf_grc/data/schemas/`, `docs/oscal-subset.md` |
 | **LLM steps** | Optional, never change a status: `grc narrate` (prose per control, validated) and `grc triage` (proposed control or `none` per coverage gap, for a person to apply). | `src/okf_grc/narrate.py`, `triage.py`, `llm.py` |
-| **Agent entry** | A skill (`SKILL.md`) that calls `grc` and leaves every status, mapping, and suppression decision to a person. | `.claude/skills/grc-continuous-compliance/` |
+| **Agent entry** | A skill (`SKILL.md`) that calls `grc` and leaves every status, mapping, and suppression decision to a person; and `grc mcp`, an MCP server whose tools run the pipeline and read its outputs, with scanner text marked untrusted. | `src/okf_grc/data/skill/`, `src/okf_grc/mcp_server.py`, `docs/mcp.md` |
 | **Adoption** | `grc init` copies the base bundle and policies into a repo and writes starters; `grc check` reports drift from the base and unreviewed concepts; `grc sync-base` updates the copies to a newer engine's base. | `src/okf_grc/adopt.py` |
 | **CI** | Tests on every push and pull request; a version tag releases. | `.github/workflows/` |
 
@@ -46,7 +46,7 @@ flowchart TB
 
   skill["Skill (SKILL.md)"]
   ci["CI: tests, release"]
-  mcp["MCP server"]:::proposed
+  mcp["MCP server (grc mcp)"]
   agent["Agentic pipeline"]:::proposed
   conn["GRC connectors<br/>(e.g. Vanta)"]:::proposed
   store["Data layer (Spec E)"]:::proposed
@@ -60,7 +60,8 @@ flowchart TB
   manifest --> files
   skill --> engine
   ci --> engine
-  files -.-> mcp
+  mcp --> engine
+  files --> mcp
   agent -.-> mcp
   agent -.-> conn
   files -.-> conn
@@ -76,17 +77,16 @@ flowchart TB
 |---|---|---|
 | Adopter repo for `microservices-demo`, with CI | Spec F Part B | Prove the engine on code it was not built around |
 | Data layer | [Spec E](superpowers/specs/2026-09-29-mini-spec-e-compliance-data-layer.md) | Postgres + pgvector projection of the bundle and of scan history |
-| MCP server | Spec F §7 | Any MCP-capable agent can run a scan and read results |
 | GRC platform connectors | Spec F §7 | Push results to a platform such as Vanta |
 | Agentic pipeline | Spec F §7 | An agent runs this and other tools, triages, and calls the connectors, with approval gates |
 | strongdm/comply | #52 | Policies and procedures next to the scan evidence |
-| Document ingestion with Airflow | #53 | A team's own documents into the agentic loop |
+| Document ingestion (Airflow not required) | #53 | A team's own documents into the agentic loop |
 
 ## Recommended order
 
 1. Fix #56 (stale narratives) before anything publishes the report.
 2. Spec F Part B: the adopter repo and its CI.
-3. MCP server, read-mostly.
+3. MCP server, read-mostly: built in 1.6.0 ([docs/mcp.md](mcp.md)).
 4. The agentic workflow, narrowed to proposing:
    [Spec G](superpowers/specs/2026-10-01-mini-spec-g-agentic-workflows.md).
 5. One GRC connector, after its semantic mapping is written down.
