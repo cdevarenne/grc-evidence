@@ -10,6 +10,8 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+    cooldown:
+      default-days: 7
   - package-ecosystem: uv
     directory: /
     exclude-paths:
@@ -20,3 +22,5 @@ updates:
     groups:
       python:
         patterns: ["*"]
+    cooldown:
+      default-days: 7

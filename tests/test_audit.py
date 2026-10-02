@@ -21,7 +21,7 @@ def test_audit_fails_on_fixable_high_and_critical_and_skips_the_sample_app() -> 
     recipe = _recipe()
     for flag in ("--ignore-unfixed", "--severity HIGH,CRITICAL", "--exit-code 1", "--ignorefile audit-ignore.yaml", "--skip-dirs app"):
         assert flag in recipe, flag
-    assert "zizmor" in recipe and ".github/workflows" in recipe
+    assert "zizmor --no-progress .github\n" in recipe  # workflows and dependabot.yml (#105)
 
 
 def test_each_exception_is_exact_explained_and_expiring() -> None:

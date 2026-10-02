@@ -26,7 +26,7 @@ lock-scanners:
 audit:
 	$(TOOLBIN)/trivy fs --quiet --scanners vuln --ignore-unfixed --severity HIGH,CRITICAL --exit-code 1 \
 	  --ignorefile audit-ignore.yaml --skip-dirs app --skip-dirs .tools --skip-dirs out --skip-dirs .venv .
-	uv run zizmor --no-progress .github/workflows
+	uv run zizmor --no-progress .github
 
 # knowledge/ and policies/ hold copies of the base bundle; edit src/okf_grc/data/ and sync (#64).
 sync-base:
