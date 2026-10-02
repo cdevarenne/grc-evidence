@@ -61,14 +61,15 @@ def test_every_workflow_schema_is_closed_as_the_api_requires() -> None:
 RECORDED = Path(__file__).parent / "fixtures" / "agent"
 
 
-UNBOUND_IN_1_7 = {"posture.json": [41], "posture.anthropic.json": [7, 5, 10, 7]}
+UNBOUND_IN_1_7 = {"posture.json": [41, 2], "posture.anthropic.json": [7, 5, 10, 7]}
 
 
 @pytest.mark.parametrize("recording", UNBOUND_IN_1_7)
 def test_drafts_that_passed_in_1_7_are_rejected_by_binding(recording: str) -> None:
     """#124: real runs recorded under 1.7.0 passed its validation. Binding rejects the numbers that sat next to
-    nothing they count: a group named in words ("namespace isolation violations (41)"), and per-tool counts the
-    model added up itself ("checkov (7), trivy (5)")."""
+    nothing they count: a group named in words ("namespace isolation violations (41)"), how many findings a
+    suppression covers (no tool reported it then), and per-tool counts the model added up itself ("checkov (7),
+    trivy (5)")."""
     transcript = json.loads((RECORDED / recording).read_text())
     mapping = read_mapping(RECORDED / ("demo-out" if recording == "posture.json" else "sample-out") / "mapping.json")
     problems = agent.validate(POSTURE, transcript, mapping)
@@ -90,15 +91,30 @@ def test_both_providers_record_the_same_shape() -> None:
     assert (cli["billed"], api["billed"]) == (False, True)
 
 
-def test_the_demo_runs_misattributed_number_is_now_rejected_and_corrected(tmp_path: Path) -> None:
-    """#124, recorded on the demo repo's outputs with binding: the first draft put 11 next to soc2:cc7.1 ("11 rules
-    at 4 findings each", a count no tool reports) and was rejected; the corrected draft, written by the correction
-    round, passed."""
+def test_the_1_8_0_demo_drafts_under_1_8_1() -> None:
+    """Recorded on the demo repo's outputs with okf-grc 1.8.0. Its first draft put 11 next to soc2:cc7.1 ("11 rules
+    at 4 findings each", a count no tool reports) and was rejected; 1.8.0 passed the corrected draft. Under 1.8.1 (#125)
+    the corrected draft is rejected too: "2 CKV_K8S_21 findings" for the suppression is a count no tool reported then
+    (`findings_by_suppression` reports it now), and in 1.8.0 it passed only because 2 was also a reported total."""
     recorded = json.loads((RECORDED / "posture.corrected.json").read_text())
+    mapping = read_mapping(RECORDED / "demo-out" / "mapping.json")
+
+    def unbound(transcript: agent.Transcript) -> list[int]:
+        (numbers,) = [p for p in agent.validate(POSTURE, transcript, mapping) if p.startswith("numbers that are not the count")]
+        return [int(item.split()[0]) for item in eval(numbers.split(": ", 1)[1])]
+
+    assert unbound(recorded["rejected"]) == [2, 11]
+    assert unbound(recorded["corrected"]) == [2]
+
+
+def test_a_demo_run_with_binding_is_rejected_then_corrected(tmp_path: Path) -> None:
+    """#125, recorded on the demo repo's outputs: the first draft gave three rules a range ("each have 12-13
+    findings") and was rejected; the correction round put each count next to its rule, and that draft passed."""
+    recorded = json.loads((RECORDED / "posture.bound.json").read_text())
     out = tmp_path / "out"
     shutil.copytree(RECORDED / "demo-out", out)
     runs = iter([recorded["rejected"], recorded["corrected"]])
     record = agent.run_workflow(POSTURE, lambda w, o, lim: next(runs), out, agent.Limits())
     (attempt,) = record["rejected_attempts"]
-    assert "11 in 'Address soc2:cc7.1" in attempt["problems"][0]
+    assert "13 in 'Fix soc2:cc8.1 (61 findings)" in attempt["problems"][0]
     assert record["validation"] == {"passed": True, "problems": []} and record["draft"]

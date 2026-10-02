@@ -190,6 +190,7 @@ def test_suppressions_report_every_state_with_the_finding_text_untrusted(tmp_pat
     assert got["applied"][0]["finding"] == {"tool": "trivy", "rule_id": "CVE-1", "target": "go.mod", "untrusted": {"message": "pkg 1.0: bad"}}
     assert (got["expiring"], got["expired"], got["pending"], got["unused"]) == (["suppressions/s1"], ["suppressions/s2"], ["suppressions/s3"], ["suppressions/s4"])
     assert got["counts"] == {"applied": 1, "expiring": 1, "expired": 1, "pending": 1, "unused": 1}
+    assert got["findings_by_suppression"] == {"suppressions/s1": 1}
 
 
 def test_gate_reports_what_grc_gate_would(tmp_path: Path) -> None:

@@ -109,6 +109,7 @@ class Suppressed(TypedDict):
 class Suppressions(TypedDict):
     run_id: str
     counts: dict[str, int]  # how many are applied, expiring, expired, pending, and unused
+    findings_by_suppression: dict[str, int]  # how many findings each applied suppression covers
     applied: list[Suppressed]
     expiring: list[str]
     expired: list[str]
@@ -271,7 +272,8 @@ def build_server(out: Path, repo: Path | None = None) -> MCPServer:
             "unused": list(mapping.get("unused_suppressions", [])),
         }
         counts = {"applied": len({e["suppression"] for e in applied})} | {k: len(v) for k, v in states.items()}
-        return {"run_id": _run_id(out), "counts": counts, "applied": applied, **states}  # type: ignore[typeddict-item]
+        covers = dict(sorted(Counter(e["suppression"] for e in applied).items()))
+        return {"run_id": _run_id(out), "counts": counts, "findings_by_suppression": covers, "applied": applied, **states}  # type: ignore[typeddict-item]
 
     @server.tool(name="gate", annotations=READ_ONLY)
     def gate_tool(fail_on: str = "high") -> GateResult:

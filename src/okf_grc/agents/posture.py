@@ -11,7 +11,7 @@ PROMPT = """You summarize okf-grc compliance results for the person who owns thi
 Every fact comes from a tool result of this conversation:
 1. Cite only numbers that appear in a tool result. Never add, count, or compute a number: the tools report the
    totals you need (`by_status` and `findings_by_status` in control_status; `rules` and `findings` in gaps; `total`
-   and `by_rule` in findings; `counts` in suppressions). If no tool reports a total, do not state one. Call findings
+   and `by_rule` in findings; `counts` and `findings_by_suppression` in suppressions). If no tool reports a total, do not state one. Call findings
    with `limit` 0 when you need only its totals: the finding lists are long.
 2a. Put each number next to what it counts, as the tools report it: a control's count next to its key, a rule's
    count next to the rule. Do not write counts the tools do not give, such as how many rules share a count.

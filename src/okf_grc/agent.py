@@ -40,6 +40,12 @@ WORDS = ("zero one two three four five six seven eight nine ten eleven twelve th
 NUMBER_WORD = re.compile(r"\b(" + "|".join(WORDS) + r")\b", re.IGNORECASE)  # "Seven controls" is a number too
 DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")  # a date the tools reported, such as an expiry: a name, not a count
 FRAMEWORK_NAME = re.compile(r"\b(?:SOC\s?2|ISO(?:/IEC)?\s?42001(?::2023)?|(?:NIST\s)?(?:SP\s)?800-53|2024/1689|Art(?:icle)?\.?\s?\d+)\b", re.IGNORECASE)
+MONTHS = ("january february march april may june july august september october november december").split()
+DATE_IN_WORDS = re.compile(r"\b(" + "|".join(MONTHS) + r")\s+(\d{1,2})\b(?:,?\s+\d{4})?", re.IGNORECASE)
+# A number this soon after an identifier ("CVE-1 (4), and 7 more"), or right before one ("12 deny_latest_tag"), is that
+# identifier's count, never a total that happens to match. Farther before one ("5 coverage gaps (rule, ...)",
+# "188 findings in soc2:cc6.1") it may count something larger, so a reported total or a nearby count binds it.
+AFTER_AN_IDENTIFIER, BEFORE_AN_IDENTIFIER = 16, 3
 INTEGER = re.compile(r"(?<![\w.])\d+(?![\w.]\w)")
 UUID = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.IGNORECASE)  # run ids: names, not numbers
 CLAUSE = re.compile(r"(?<=[.;!?])\s+|\n+")  # sentences and lines, keeping "rule: 13" together
@@ -332,7 +338,8 @@ class Facts:
     counts: dict[str, set[int]]
     totals: set[int]
     verbatim: tuple[str, ...]
-    years: set[int]  # of the dates the tools reported, such as "expires in 2026": names, not counts  # strings with digits, longest first: masked in a draft, so their digits are not counts
+    years: set[int]  # of the dates the tools reported, such as "expires in 2026": names, not counts
+    days: set[tuple[int, int]]  # (month, day) of the dates the tools reported, for dates written with a month name  # strings with digits, longest first: masked in a draft, so their digits are not counts
 
 
 def _names(identifier: str) -> list[str]:
@@ -376,11 +383,14 @@ def facts(calls: list[ToolCall]) -> Facts:
             add(rule, n)
         for gap in result.get("gaps", []):
             add(gap.get("rule", ""), gap.get("findings"))
+        for suppression, n in result.get("findings_by_suppression", {}).items():
+            add(suppression, n)
         for field in ("by_status", "findings_by_status", "counts"):
             totals.update(v for v in result.get(field, {}).values() if isinstance(v, int))
         totals.update(v for field in ("total", "rules", "findings") if isinstance(v := result.get(field), int) and not isinstance(v, bool))
-    years = {int(d[:4]) for v in verbatim for d in DATE.findall(v)}
-    return Facts(counts, totals, tuple(sorted(verbatim, key=len, reverse=True)), years)
+    dates = [d for v in verbatim for d in DATE.findall(v)]
+    years, days = {int(d[:4]) for d in dates}, {(int(d[5:7]), int(d[8:10])) for d in dates}
+    return Facts(counts, totals, tuple(sorted(verbatim, key=len, reverse=True)), years, days)
 
 
 def _blank(text: str, pattern: re.Pattern[str]) -> str:
@@ -398,19 +408,27 @@ def _unbound(text: str, known: Facts, context: str | None) -> list[str]:
         masked = clause
         for pattern in (UUID, DATE, FRAMEWORK_NAME):
             masked = _blank(masked, pattern)
+        masked = DATE_IN_WORDS.sub(lambda m: " " * len(m.group()) if (MONTHS.index(m.group(1).lower()) + 1, int(m.group(2))) in known.days
+                                   else m.group(), masked)
         # Identifiers first, so a count can bind to one; then other strings the tools returned verbatim.
         spans = [(m.start(), m.end(), m.group(1).lower()) for m in identifier.finditer(masked)] if identifier else []
         for start, stop, _ in spans:
             masked = masked[:start] + " " * (stop - start) + masked[stop:]
         for literal in known.verbatim:
             masked = _blank(masked, re.compile(re.escape(literal), re.IGNORECASE))
-        numbers = [(m.start(), int(m.group())) for m in INTEGER.finditer(masked)]
-        numbers += [(m.start(), WORDS.index(m.group(1).lower())) for m in NUMBER_WORD.finditer(masked)]
-        for at, n in sorted(numbers):
-            before = [name for start, stop, name in spans if stop <= at]
-            after = [name for start, stop, name in spans if start > at]
-            near = (known.counts[before[-1]] if before else set()) | (known.counts[after[0]] if after else set())
-            if n not in known.totals | known.years | own | near:
+        numbers = [(m.start(), m.end(), int(m.group())) for m in INTEGER.finditer(masked)]
+        numbers += [(m.start(), m.end(), WORDS.index(m.group(1).lower())) for m in NUMBER_WORD.finditer(masked)]
+        for at, end, n in sorted(numbers):
+            before = [(stop, name) for start, stop, name in spans if stop <= at]
+            after = [(start, name) for start, stop, name in spans if start >= end]
+            beside = {name for stop, name in before[-1:] if at - stop <= AFTER_AN_IDENTIFIER}
+            beside |= {name for start, name in after[:1] if start - end <= BEFORE_AN_IDENTIFIER}
+            if beside:  # right next to an identifier: its count (or its object's), never a total that happens to match
+                allowed = {c for name in beside for c in known.counts[name]} | own
+            else:
+                near = (known.counts[before[-1][1]] if before else set()) | (known.counts[after[0][1]] if after else set())
+                allowed = known.totals | known.years | own | near
+            if n not in allowed:
                 unbound.append(f"{n} in {clause.strip()[:80]!r}")
     return unbound
 

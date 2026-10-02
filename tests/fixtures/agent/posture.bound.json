@@ -1,0 +1,370 @@
+{
+ "rejected": {
+  "provider": "claude-cli",
+  "model": "claude-haiku-4-5",
+  "tool_calls": [
+   {
+    "name": "control_status",
+    "arguments": {},
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"by_status\":{\"no-violations-detected\":2,\"not-applicable\":6,\"not-assessed\":4,\"not-satisfied\":7},\"findings_by_status\":{\"no-violations-detected\":0,\"not-applicable\":0,\"not-assessed\":0,\"not-satisfied\":417},\"controls\":[{\"key\":\"eu-ai-act:art-10\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"eu-ai-act:art-12\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[\"scanners/semgrep\"],\"satisfied_by\":[\"policies/llm-prompt-logged\"]},{\"key\":\"eu-ai-act:art-13\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"eu-ai-act:art-14\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"eu-ai-act:art-15\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"eu-ai-act:art-50\",\"status\":\"not-assessed\",\"reason\":\"rules-do-not-cover-sdk\",\"findings\":0,\"evidenced_by\":[\"scanners/semgrep\"],\"satisfied_by\":[\"policies/llm-no-ai-disclosure\"]},{\"key\":\"eu-ai-act:art-9\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"iso42001:a.4\",\"status\":\"no-violations-detected\",\"reason\":null,\"findings\":0,\"evidenced_by\":[\"scanners/conftest\"],\"satisfied_by\":[\"policies/ai-inventory-complete\"]},{\"key\":\"iso42001:a.5\",\"status\":\"not-assessed\",\"reason\":null,\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"iso42001:a.6\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":1,\"evidenced_by\":[\"scanners/semgrep\"],\"satisfied_by\":[\"policies/llm-hardcoded-key\",\"policies/llm-unbounded-call\"]},{\"key\":\"iso42001:a.7\",\"status\":\"no-violations-detected\",\"reason\":null,\"findings\":0,\"evidenced_by\":[\"scanners/semgrep\"],\"satisfied_by\":[\"policies/llm-prompt-logged\"]},{\"key\":\"iso42001:a.8\",\"status\":\"not-assessed\",\"reason\":null,\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"iso42001:a.9\",\"status\":\"not-assessed\",\"reason\":null,\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"soc2:a1.1\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":52,\"evidenced_by\":[\"scanners/checkov\",\"scanners/trivy\"],\"satisfied_by\":[\"policies/health-checks\",\"policies/set-resource-limits\"]},{\"key\":\"soc2:cc6.1\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":188,\"evidenced_by\":[\"scanners/checkov\",\"scanners/conftest\",\"scanners/semgrep\",\"scanners/trivy\"],\"satisfied_by\":[\"policies/gke-access\",\"policies/harden-container-runtime\",\"policies/isolate-workloads\",\"policies/llm-hardcoded-key\",\"policies/require-non-root\"]},{\"key\":\"soc2:cc6.6\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":6,\"evidenced_by\":[\"scanners/checkov\",\"scanners/conftest\",\"scanners/trivy\"],\"satisfied_by\":[\"policies/no-public-bucket\",\"policies/private-gke-control-plane\"]},{\"key\":\"soc2:cc7.1\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":108,\"evidenced_by\":[\"scanners/trivy\"],\"satisfied_by\":[]},{\"key\":\"soc2:cc7.2\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":1,\"evidenced_by\":[\"scanners/checkov\"],\"satisfied_by\":[\"policies/network-flow-logs\"]},{\"key\":\"soc2:cc8.1\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":61,\"evidenced_by\":[\"scanners/checkov\",\"scanners/conftest\",\"scanners/trivy\"],\"satisfied_by\":[\"policies/deny-latest-tag\",\"policies/pin-image-provenance\"]}]}",
+    "is_error": false
+   },
+   {
+    "name": "gaps",
+    "arguments": {},
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"rules\":5,\"findings\":5,\"gaps\":[{\"rule\":\"checkov:CKV_GCP_21\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/terraform/main.tf\"]},{\"rule\":\"checkov:CKV_GCP_70\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/terraform/main.tf\"]},{\"rule\":\"checkov:CKV_K8S_15\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/kubernetes-manifests/cartservice.yaml\"]},{\"rule\":\"trivy:DS-0029\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/src/cartservice/src/Dockerfile.debug\"]},{\"rule\":\"trivy:GCP-0051\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/terraform/main.tf\"]}]}",
+    "is_error": false
+   },
+   {
+    "name": "suppressions",
+    "arguments": {},
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"counts\":{\"applied\":1,\"expiring\":0,\"expired\":0,\"pending\":0,\"unused\":0},\"findings_by_suppression\":{\"suppressions/loadgenerator-default-namespace\":2},\"applied\":[{\"suppression\":\"suppressions/loadgenerator-default-namespace\",\"kind\":\"accepted-risk\",\"owner\":\"human:cdevarenne\",\"expires\":\"2026-12-30\",\"reason\":\"The load generator sends synthetic shopper traffic to exercise the demo. It\\nholds no customer data and no credentials, and no other service calls it, so\\nrunning it in the default namespace does not widen anyone's access to the shop.\\nIt stays on [CC6.1 \u2014 Logical Access](../controls/cc6.1.md) as a known, accepted\\nrisk; every other service's namespace finding still counts.\",\"controls\":[\"soc2:cc6.1\"],\"finding\":{\"tool\":\"checkov\",\"rule_id\":\"CKV_K8S_21\",\"target\":\"upstream/kubernetes-manifests/loadgenerator.yaml\",\"untrusted\":{\"message\":\"The default namespace should not be used (Deployment.default.loadgenerator)\"}}},{\"suppression\":\"suppressions/loadgenerator-default-namespace\",\"kind\":\"accepted-risk\",\"owner\":\"human:cdevarenne\",\"expires\":\"2026-12-30\",\"reason\":\"The load generator sends synthetic shopper traffic to exercise the demo. It\\nholds no customer data and no credentials, and no other service calls it, so\\nrunning it in the default namespace does not widen anyone's access to the shop.\\nIt stays on [CC6.1 \u2014 Logical Access](../controls/cc6.1.md) as a known, accepted\\nrisk; every other service's namespace finding still counts.\",\"controls\":[\"soc2:cc6.1\"],\"finding\":{\"tool\":\"checkov\",\"rule_id\":\"CKV_K8S_21\",\"target\":\"upstream/kubernetes-manifests/loadgenerator.yaml\",\"untrusted\":{\"message\":\"The default namespace should not be used (ServiceAccount.default.loadgenerator)\"}}}],\"expiring\":[],\"expired\":[],\"pending\":[],\"unused\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":422,\"by_rule\":{\"checkov:CKV_K8S_21\":41,\"trivy:KSV-0020\":16,\"trivy:KSV-0021\":16,\"trivy:KSV-0104\":16,\"checkov:CKV_K8S_31\":14,\"checkov:CKV_K8S_38\":14,\"checkov:CKV_K8S_40\":14,\"trivy:KSV-0110\":14,\"checkov:CKV_DOCKER_2\":13,\"checkov:CKV_K8S_43\":13,\"trivy:DS-0026\":13,\"trivy:KSV-0030\":13,\"checkov:CKV_DOCKER_3\":12,\"checkov:CKV_K8S_14\":12,\"conftest:deny_latest_tag\":12,\"trivy:DS-0002\":12,\"trivy:KSV-0013\":12,\"checkov:CKV_DOCKER_7\":4,\"trivy:CVE-2026-25645\":4,\"trivy:CVE-2026-41907\":4,\"trivy:CVE-2026-44431\":4,\"trivy:CVE-2026-44432\":4,\"trivy:CVE-2026-45409\":4,\"trivy:CVE-2026-48712\":4,\"trivy:CVE-2026-54269\":4,\"trivy:CVE-2026-97687\":4,\"trivy:CVE-2026-97688\":4,\"trivy:CVE-2026-97689\":4,\"trivy:DS-0001\":4,\"trivy:GO-2026-5932\":4,\"checkov:CKV_K8S_8\":3,\"checkov:CKV_K8S_9\":3,\"trivy:CVE-2026-56855\":3,\"trivy:CVE-2026-78662\":3,\"trivy:KSV-0011\":3,\"trivy:KSV-0015\":3,\"trivy:KSV-0016\":3,\"trivy:KSV-0018\":3,\"checkov:CKV_K8S_10\":2,\"checkov:CKV_K8S_11\":2,\"checkov:CKV_K8S_12\":2,\"checkov:CKV_K8S_13\":2,\"checkov:CKV_TF_1\":2,\"trivy:CVE-2026-101915\":2,\"trivy:CVE-2026-101916\":2,\"trivy:CVE-2026-12143\":2,\"trivy:CVE-2026-30922\":2,\"trivy:CVE-2026-3449\":2,\"trivy:CVE-2026-41242\":2,\"trivy:CVE-2026-44288\":2,\"trivy:CVE-2026-44289\":2,\"trivy:CVE-2026-44290\":2,\"trivy:CVE-2026-44291\":2,\"trivy:CVE-2026-44292\":2,\"trivy:CVE-2026-44293\":2,\"trivy:CVE-2026-44294\":2,\"trivy:CVE-2026-45740\":2,\"trivy:CVE-2026-54285\":2,\"trivy:CVE-2026-59877\":2,\"trivy:CVE-2026-59884\":2,\"trivy:CVE-2026-59885\":2,\"trivy:CVE-2026-59886\":2,\"checkov:CKV_GCP_12\":1,\"checkov:CKV_GCP_13\":1,\"checkov:CKV_GCP_20\":1,\"checkov:CKV_GCP_21\":1,\"checkov:CKV_GCP_25\":1,\"checkov:CKV_GCP_61\":1,\"checkov:CKV_GCP_64\":1,\"checkov:CKV_GCP_65\":1,\"checkov:CKV_GCP_66\":1,\"checkov:CKV_GCP_69\":1,\"checkov:CKV_GCP_70\":1,\"checkov:CKV_K8S_15\":1,\"checkov:CKV_K8S_22\":1,\"semgrep:llm-unbounded-call\":1,\"trivy:CVE-2025-61765\":1,\"trivy:CVE-2025-71176\":1,\"trivy:CVE-2026-27794\":1,\"trivy:CVE-2026-28277\":1,\"trivy:CVE-2026-34070\":1,\"trivy:CVE-2026-40087\":1,\"trivy:CVE-2026-41182\":1,\"trivy:CVE-2026-44843\":1,\"trivy:CVE-2026-45134\":1,\"trivy:CVE-2026-4539\":1,\"trivy:CVE-2026-48775\":1,\"trivy:CVE-2026-48776\":1,\"trivy:CVE-2026-48802\":1,\"trivy:CVE-2026-48804\":1,\"trivy:CVE-2026-48809\":1,\"trivy:CVE-2026-55443\":1,\"trivy:CVE-2026-63374\":1,\"trivy:CVE-2026-64847\":1,\"trivy:DS-0029\":1,\"trivy:GCP-0050\":1,\"trivy:GCP-0051\":1,\"trivy:GCP-0059\":1,\"trivy:GCP-0061\":1,\"trivy:GHSA-6v7p-g79w-8964\":1,\"trivy:GHSA-f4xh-w4cj-qxq8\":1,\"trivy:KSV-0014\":1,\"trivy:KSV-0125\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "iso42001:a.6",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":1,\"by_rule\":{\"semgrep:llm-unbounded-call\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:a1.1",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":52,\"by_rule\":{\"checkov:CKV_DOCKER_2\":13,\"trivy:DS-0026\":13,\"checkov:CKV_K8S_8\":3,\"checkov:CKV_K8S_9\":3,\"trivy:KSV-0011\":3,\"trivy:KSV-0015\":3,\"trivy:KSV-0016\":3,\"trivy:KSV-0018\":3,\"checkov:CKV_K8S_10\":2,\"checkov:CKV_K8S_11\":2,\"checkov:CKV_K8S_12\":2,\"checkov:CKV_K8S_13\":2},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc6.1",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":188,\"by_rule\":{\"checkov:CKV_K8S_21\":41,\"trivy:KSV-0020\":16,\"trivy:KSV-0021\":16,\"trivy:KSV-0104\":16,\"checkov:CKV_K8S_31\":14,\"checkov:CKV_K8S_38\":14,\"checkov:CKV_K8S_40\":14,\"trivy:KSV-0110\":14,\"trivy:KSV-0030\":13,\"checkov:CKV_DOCKER_3\":12,\"trivy:DS-0002\":12,\"checkov:CKV_GCP_13\":1,\"checkov:CKV_GCP_65\":1,\"checkov:CKV_GCP_69\":1,\"checkov:CKV_K8S_22\":1,\"trivy:GCP-0050\":1,\"trivy:KSV-0014\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc6.6",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":6,\"by_rule\":{\"checkov:CKV_GCP_12\":1,\"checkov:CKV_GCP_20\":1,\"checkov:CKV_GCP_25\":1,\"checkov:CKV_GCP_64\":1,\"trivy:GCP-0059\":1,\"trivy:GCP-0061\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc7.1",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":108,\"by_rule\":{\"trivy:CVE-2026-25645\":4,\"trivy:CVE-2026-41907\":4,\"trivy:CVE-2026-44431\":4,\"trivy:CVE-2026-44432\":4,\"trivy:CVE-2026-45409\":4,\"trivy:CVE-2026-48712\":4,\"trivy:CVE-2026-54269\":4,\"trivy:CVE-2026-97687\":4,\"trivy:CVE-2026-97688\":4,\"trivy:CVE-2026-97689\":4,\"trivy:GO-2026-5932\":4,\"trivy:CVE-2026-56855\":3,\"trivy:CVE-2026-78662\":3,\"trivy:CVE-2026-101915\":2,\"trivy:CVE-2026-101916\":2,\"trivy:CVE-2026-12143\":2,\"trivy:CVE-2026-30922\":2,\"trivy:CVE-2026-3449\":2,\"trivy:CVE-2026-41242\":2,\"trivy:CVE-2026-44288\":2,\"trivy:CVE-2026-44289\":2,\"trivy:CVE-2026-44290\":2,\"trivy:CVE-2026-44291\":2,\"trivy:CVE-2026-44292\":2,\"trivy:CVE-2026-44293\":2,\"trivy:CVE-2026-44294\":2,\"trivy:CVE-2026-45740\":2,\"trivy:CVE-2026-54285\":2,\"trivy:CVE-2026-59877\":2,\"trivy:CVE-2026-59884\":2,\"trivy:CVE-2026-59885\":2,\"trivy:CVE-2026-59886\":2,\"trivy:CVE-2025-61765\":1,\"trivy:CVE-2025-71176\":1,\"trivy:CVE-2026-27794\":1,\"trivy:CVE-2026-28277\":1,\"trivy:CVE-2026-34070\":1,\"trivy:CVE-2026-40087\":1,\"trivy:CVE-2026-41182\":1,\"trivy:CVE-2026-44843\":1,\"trivy:CVE-2026-45134\":1,\"trivy:CVE-2026-4539\":1,\"trivy:CVE-2026-48775\":1,\"trivy:CVE-2026-48776\":1,\"trivy:CVE-2026-48802\":1,\"trivy:CVE-2026-48804\":1,\"trivy:CVE-2026-48809\":1,\"trivy:CVE-2026-55443\":1,\"trivy:CVE-2026-63374\":1,\"trivy:CVE-2026-64847\":1,\"trivy:GHSA-6v7p-g79w-8964\":1,\"trivy:GHSA-f4xh-w4cj-qxq8\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc7.2",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":1,\"by_rule\":{\"checkov:CKV_GCP_61\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc8.1",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":61,\"by_rule\":{\"checkov:CKV_K8S_43\":13,\"checkov:CKV_K8S_14\":12,\"conftest:deny_latest_tag\":12,\"trivy:KSV-0013\":12,\"checkov:CKV_DOCKER_7\":4,\"trivy:DS-0001\":4,\"checkov:CKV_TF_1\":2,\"checkov:CKV_GCP_66\":1,\"trivy:KSV-0125\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   }
+  ],
+  "denials": [],
+  "turns": 3,
+  "usage": {
+   "input_tokens": 2784,
+   "output_tokens": 3771,
+   "cache_creation_input_tokens": 9537,
+   "cache_read_input_tokens": 6694
+  },
+  "cost_usd": 0.03422965,
+  "billed": false,
+  "output": {
+   "summary": "Seven controls are not-satisfied with 417 total findings. The largest violation groups are Kubernetes namespace isolation (checkov:CKV_K8S_21, 41 findings in soc2:cc6.1), vulnerable dependencies (multiple CVEs with 4 findings each in soc2:cc7.1), and container health checks (checkov:CKV_DOCKER_2 and trivy:DS-0026, 13 findings each in soc2:a1.1). Five coverage gaps remain unmapped to controls.",
+   "not_satisfied": [
+    {
+     "key": "iso42001:a.6",
+     "status": "not-satisfied",
+     "findings": 1,
+     "largest_groups": "semgrep:llm-unbounded-call (1)"
+    },
+    {
+     "key": "soc2:a1.1",
+     "status": "not-satisfied",
+     "findings": 52,
+     "largest_groups": "checkov:CKV_DOCKER_2 (13), trivy:DS-0026 (13)"
+    },
+    {
+     "key": "soc2:cc6.1",
+     "status": "not-satisfied",
+     "findings": 188,
+     "largest_groups": "checkov:CKV_K8S_21 (41), trivy:KSV-0020 (16), trivy:KSV-0021 (16), trivy:KSV-0104 (16)"
+    },
+    {
+     "key": "soc2:cc6.6",
+     "status": "not-satisfied",
+     "findings": 6,
+     "largest_groups": "checkov:CKV_GCP_12 (1), checkov:CKV_GCP_20 (1), checkov:CKV_GCP_25 (1), checkov:CKV_GCP_64 (1), trivy:GCP-0059 (1), trivy:GCP-0061 (1)"
+    },
+    {
+     "key": "soc2:cc7.1",
+     "status": "not-satisfied",
+     "findings": 108,
+     "largest_groups": "trivy:CVE-2026-25645 (4), trivy:CVE-2026-41907 (4), trivy:CVE-2026-44431 (4), trivy:CVE-2026-44432 (4), trivy:CVE-2026-45409 (4), trivy:CVE-2026-48712 (4), trivy:CVE-2026-54269 (4), trivy:CVE-2026-97687 (4), trivy:CVE-2026-97688 (4), trivy:CVE-2026-97689 (4), trivy:GO-2026-5932 (4)"
+    },
+    {
+     "key": "soc2:cc7.2",
+     "status": "not-satisfied",
+     "findings": 1,
+     "largest_groups": "checkov:CKV_GCP_61 (1)"
+    },
+    {
+     "key": "soc2:cc8.1",
+     "status": "not-satisfied",
+     "findings": 61,
+     "largest_groups": "checkov:CKV_K8S_43 (13), checkov:CKV_K8S_14 (12), conftest:deny_latest_tag (12), trivy:KSV-0013 (12)"
+    }
+   ],
+   "gaps": [
+    {
+     "rule": "checkov:CKV_GCP_21",
+     "findings": 1
+    },
+    {
+     "rule": "checkov:CKV_GCP_70",
+     "findings": 1
+    },
+    {
+     "rule": "checkov:CKV_K8S_15",
+     "findings": 1
+    },
+    {
+     "rule": "trivy:DS-0029",
+     "findings": 1
+    },
+    {
+     "rule": "trivy:GCP-0051",
+     "findings": 1
+    }
+   ],
+   "suppressions": "One suppression applied: suppressions/loadgenerator-default-namespace covering 2 findings (checkov:CKV_K8S_21 instances in upstream/kubernetes-manifests/loadgenerator.yaml), expires 2026-12-30. Owner: human:cdevarenne. Reason: Load generator runs in default namespace without customer data or credentials. No suppressions expiring, expired, pending, or unused.",
+   "next_steps": [
+    "Address soc2:cc7.1 (108 findings): manage vulnerable dependencies across container images identified by Trivy CVE scanning.",
+    "Resolve soc2:cc6.1 (188 findings): enforce Kubernetes namespace isolation and enforce pod security standards, starting with checkov:CKV_K8S_21 (41 findings).",
+    "Fix soc2:cc8.1 (61 findings): implement image tag pinning and provenance verification (checkov:CKV_K8S_43, checkov:CKV_K8S_14, conftest:deny_latest_tag each have 12\u201313 findings).",
+    "Reduce soc2:a1.1 (52 findings): add health checks and resource limits to container deployments (checkov:CKV_DOCKER_2, trivy:DS-0026).",
+    "Close 5 coverage gaps by mapping rules to controls: checkov:CKV_GCP_21, checkov:CKV_GCP_70, checkov:CKV_K8S_15, trivy:DS-0029, trivy:GCP-0051.",
+    "Resolve iso42001:a.6 and soc2:cc7.2 single findings and verify the loadgenerator suppression renewal plan before 2026-12-30."
+   ]
+  },
+  "stopped": null
+ },
+ "corrected": {
+  "provider": "claude-cli",
+  "model": "claude-haiku-4-5",
+  "tool_calls": [
+   {
+    "name": "control_status",
+    "arguments": {},
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"by_status\":{\"no-violations-detected\":2,\"not-applicable\":6,\"not-assessed\":4,\"not-satisfied\":7},\"findings_by_status\":{\"no-violations-detected\":0,\"not-applicable\":0,\"not-assessed\":0,\"not-satisfied\":417},\"controls\":[{\"key\":\"eu-ai-act:art-10\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"eu-ai-act:art-12\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[\"scanners/semgrep\"],\"satisfied_by\":[\"policies/llm-prompt-logged\"]},{\"key\":\"eu-ai-act:art-13\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"eu-ai-act:art-14\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"eu-ai-act:art-15\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"eu-ai-act:art-50\",\"status\":\"not-assessed\",\"reason\":\"rules-do-not-cover-sdk\",\"findings\":0,\"evidenced_by\":[\"scanners/semgrep\"],\"satisfied_by\":[\"policies/llm-no-ai-disclosure\"]},{\"key\":\"eu-ai-act:art-9\",\"status\":\"not-applicable\",\"reason\":\"control-not-applicable\",\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"iso42001:a.4\",\"status\":\"no-violations-detected\",\"reason\":null,\"findings\":0,\"evidenced_by\":[\"scanners/conftest\"],\"satisfied_by\":[\"policies/ai-inventory-complete\"]},{\"key\":\"iso42001:a.5\",\"status\":\"not-assessed\",\"reason\":null,\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"iso42001:a.6\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":1,\"evidenced_by\":[\"scanners/semgrep\"],\"satisfied_by\":[\"policies/llm-hardcoded-key\",\"policies/llm-unbounded-call\"]},{\"key\":\"iso42001:a.7\",\"status\":\"no-violations-detected\",\"reason\":null,\"findings\":0,\"evidenced_by\":[\"scanners/semgrep\"],\"satisfied_by\":[\"policies/llm-prompt-logged\"]},{\"key\":\"iso42001:a.8\",\"status\":\"not-assessed\",\"reason\":null,\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"iso42001:a.9\",\"status\":\"not-assessed\",\"reason\":null,\"findings\":0,\"evidenced_by\":[],\"satisfied_by\":[]},{\"key\":\"soc2:a1.1\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":52,\"evidenced_by\":[\"scanners/checkov\",\"scanners/trivy\"],\"satisfied_by\":[\"policies/health-checks\",\"policies/set-resource-limits\"]},{\"key\":\"soc2:cc6.1\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":188,\"evidenced_by\":[\"scanners/checkov\",\"scanners/conftest\",\"scanners/semgrep\",\"scanners/trivy\"],\"satisfied_by\":[\"policies/gke-access\",\"policies/harden-container-runtime\",\"policies/isolate-workloads\",\"policies/llm-hardcoded-key\",\"policies/require-non-root\"]},{\"key\":\"soc2:cc6.6\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":6,\"evidenced_by\":[\"scanners/checkov\",\"scanners/conftest\",\"scanners/trivy\"],\"satisfied_by\":[\"policies/no-public-bucket\",\"policies/private-gke-control-plane\"]},{\"key\":\"soc2:cc7.1\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":108,\"evidenced_by\":[\"scanners/trivy\"],\"satisfied_by\":[]},{\"key\":\"soc2:cc7.2\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":1,\"evidenced_by\":[\"scanners/checkov\"],\"satisfied_by\":[\"policies/network-flow-logs\"]},{\"key\":\"soc2:cc8.1\",\"status\":\"not-satisfied\",\"reason\":null,\"findings\":61,\"evidenced_by\":[\"scanners/checkov\",\"scanners/conftest\",\"scanners/trivy\"],\"satisfied_by\":[\"policies/deny-latest-tag\",\"policies/pin-image-provenance\"]}]}",
+    "is_error": false
+   },
+   {
+    "name": "gaps",
+    "arguments": {},
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"rules\":5,\"findings\":5,\"gaps\":[{\"rule\":\"checkov:CKV_GCP_21\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/terraform/main.tf\"]},{\"rule\":\"checkov:CKV_GCP_70\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/terraform/main.tf\"]},{\"rule\":\"checkov:CKV_K8S_15\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/kubernetes-manifests/cartservice.yaml\"]},{\"rule\":\"trivy:DS-0029\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/src/cartservice/src/Dockerfile.debug\"]},{\"rule\":\"trivy:GCP-0051\",\"reason\":\"no-rule-match\",\"findings\":1,\"files\":[\"upstream/terraform/main.tf\"]}]}",
+    "is_error": false
+   },
+   {
+    "name": "suppressions",
+    "arguments": {},
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"counts\":{\"applied\":1,\"expiring\":0,\"expired\":0,\"pending\":0,\"unused\":0},\"findings_by_suppression\":{\"suppressions/loadgenerator-default-namespace\":2},\"applied\":[{\"suppression\":\"suppressions/loadgenerator-default-namespace\",\"kind\":\"accepted-risk\",\"owner\":\"human:cdevarenne\",\"expires\":\"2026-12-30\",\"reason\":\"The load generator sends synthetic shopper traffic to exercise the demo. It\\nholds no customer data and no credentials, and no other service calls it, so\\nrunning it in the default namespace does not widen anyone's access to the shop.\\nIt stays on [CC6.1 \u2014 Logical Access](../controls/cc6.1.md) as a known, accepted\\nrisk; every other service's namespace finding still counts.\",\"controls\":[\"soc2:cc6.1\"],\"finding\":{\"tool\":\"checkov\",\"rule_id\":\"CKV_K8S_21\",\"target\":\"upstream/kubernetes-manifests/loadgenerator.yaml\",\"untrusted\":{\"message\":\"The default namespace should not be used (Deployment.default.loadgenerator)\"}}},{\"suppression\":\"suppressions/loadgenerator-default-namespace\",\"kind\":\"accepted-risk\",\"owner\":\"human:cdevarenne\",\"expires\":\"2026-12-30\",\"reason\":\"The load generator sends synthetic shopper traffic to exercise the demo. It\\nholds no customer data and no credentials, and no other service calls it, so\\nrunning it in the default namespace does not widen anyone's access to the shop.\\nIt stays on [CC6.1 \u2014 Logical Access](../controls/cc6.1.md) as a known, accepted\\nrisk; every other service's namespace finding still counts.\",\"controls\":[\"soc2:cc6.1\"],\"finding\":{\"tool\":\"checkov\",\"rule_id\":\"CKV_K8S_21\",\"target\":\"upstream/kubernetes-manifests/loadgenerator.yaml\",\"untrusted\":{\"message\":\"The default namespace should not be used (ServiceAccount.default.loadgenerator)\"}}}],\"expiring\":[],\"expired\":[],\"pending\":[],\"unused\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":422,\"by_rule\":{\"checkov:CKV_K8S_21\":41,\"trivy:KSV-0020\":16,\"trivy:KSV-0021\":16,\"trivy:KSV-0104\":16,\"checkov:CKV_K8S_31\":14,\"checkov:CKV_K8S_38\":14,\"checkov:CKV_K8S_40\":14,\"trivy:KSV-0110\":14,\"checkov:CKV_DOCKER_2\":13,\"checkov:CKV_K8S_43\":13,\"trivy:DS-0026\":13,\"trivy:KSV-0030\":13,\"checkov:CKV_DOCKER_3\":12,\"checkov:CKV_K8S_14\":12,\"conftest:deny_latest_tag\":12,\"trivy:DS-0002\":12,\"trivy:KSV-0013\":12,\"checkov:CKV_DOCKER_7\":4,\"trivy:CVE-2026-25645\":4,\"trivy:CVE-2026-41907\":4,\"trivy:CVE-2026-44431\":4,\"trivy:CVE-2026-44432\":4,\"trivy:CVE-2026-45409\":4,\"trivy:CVE-2026-48712\":4,\"trivy:CVE-2026-54269\":4,\"trivy:CVE-2026-97687\":4,\"trivy:CVE-2026-97688\":4,\"trivy:CVE-2026-97689\":4,\"trivy:DS-0001\":4,\"trivy:GO-2026-5932\":4,\"checkov:CKV_K8S_8\":3,\"checkov:CKV_K8S_9\":3,\"trivy:CVE-2026-56855\":3,\"trivy:CVE-2026-78662\":3,\"trivy:KSV-0011\":3,\"trivy:KSV-0015\":3,\"trivy:KSV-0016\":3,\"trivy:KSV-0018\":3,\"checkov:CKV_K8S_10\":2,\"checkov:CKV_K8S_11\":2,\"checkov:CKV_K8S_12\":2,\"checkov:CKV_K8S_13\":2,\"checkov:CKV_TF_1\":2,\"trivy:CVE-2026-101915\":2,\"trivy:CVE-2026-101916\":2,\"trivy:CVE-2026-12143\":2,\"trivy:CVE-2026-30922\":2,\"trivy:CVE-2026-3449\":2,\"trivy:CVE-2026-41242\":2,\"trivy:CVE-2026-44288\":2,\"trivy:CVE-2026-44289\":2,\"trivy:CVE-2026-44290\":2,\"trivy:CVE-2026-44291\":2,\"trivy:CVE-2026-44292\":2,\"trivy:CVE-2026-44293\":2,\"trivy:CVE-2026-44294\":2,\"trivy:CVE-2026-45740\":2,\"trivy:CVE-2026-54285\":2,\"trivy:CVE-2026-59877\":2,\"trivy:CVE-2026-59884\":2,\"trivy:CVE-2026-59885\":2,\"trivy:CVE-2026-59886\":2,\"checkov:CKV_GCP_12\":1,\"checkov:CKV_GCP_13\":1,\"checkov:CKV_GCP_20\":1,\"checkov:CKV_GCP_21\":1,\"checkov:CKV_GCP_25\":1,\"checkov:CKV_GCP_61\":1,\"checkov:CKV_GCP_64\":1,\"checkov:CKV_GCP_65\":1,\"checkov:CKV_GCP_66\":1,\"checkov:CKV_GCP_69\":1,\"checkov:CKV_GCP_70\":1,\"checkov:CKV_K8S_15\":1,\"checkov:CKV_K8S_22\":1,\"semgrep:llm-unbounded-call\":1,\"trivy:CVE-2025-61765\":1,\"trivy:CVE-2025-71176\":1,\"trivy:CVE-2026-27794\":1,\"trivy:CVE-2026-28277\":1,\"trivy:CVE-2026-34070\":1,\"trivy:CVE-2026-40087\":1,\"trivy:CVE-2026-41182\":1,\"trivy:CVE-2026-44843\":1,\"trivy:CVE-2026-45134\":1,\"trivy:CVE-2026-4539\":1,\"trivy:CVE-2026-48775\":1,\"trivy:CVE-2026-48776\":1,\"trivy:CVE-2026-48802\":1,\"trivy:CVE-2026-48804\":1,\"trivy:CVE-2026-48809\":1,\"trivy:CVE-2026-55443\":1,\"trivy:CVE-2026-63374\":1,\"trivy:CVE-2026-64847\":1,\"trivy:DS-0029\":1,\"trivy:GCP-0050\":1,\"trivy:GCP-0051\":1,\"trivy:GCP-0059\":1,\"trivy:GCP-0061\":1,\"trivy:GHSA-6v7p-g79w-8964\":1,\"trivy:GHSA-f4xh-w4cj-qxq8\":1,\"trivy:KSV-0014\":1,\"trivy:KSV-0125\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "iso42001:a.6",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":1,\"by_rule\":{\"semgrep:llm-unbounded-call\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:a1.1",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":52,\"by_rule\":{\"checkov:CKV_DOCKER_2\":13,\"trivy:DS-0026\":13,\"checkov:CKV_K8S_8\":3,\"checkov:CKV_K8S_9\":3,\"trivy:KSV-0011\":3,\"trivy:KSV-0015\":3,\"trivy:KSV-0016\":3,\"trivy:KSV-0018\":3,\"checkov:CKV_K8S_10\":2,\"checkov:CKV_K8S_11\":2,\"checkov:CKV_K8S_12\":2,\"checkov:CKV_K8S_13\":2},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc6.1",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":188,\"by_rule\":{\"checkov:CKV_K8S_21\":41,\"trivy:KSV-0020\":16,\"trivy:KSV-0021\":16,\"trivy:KSV-0104\":16,\"checkov:CKV_K8S_31\":14,\"checkov:CKV_K8S_38\":14,\"checkov:CKV_K8S_40\":14,\"trivy:KSV-0110\":14,\"trivy:KSV-0030\":13,\"checkov:CKV_DOCKER_3\":12,\"trivy:DS-0002\":12,\"checkov:CKV_GCP_13\":1,\"checkov:CKV_GCP_65\":1,\"checkov:CKV_GCP_69\":1,\"checkov:CKV_K8S_22\":1,\"trivy:GCP-0050\":1,\"trivy:KSV-0014\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc6.6",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":6,\"by_rule\":{\"checkov:CKV_GCP_12\":1,\"checkov:CKV_GCP_20\":1,\"checkov:CKV_GCP_25\":1,\"checkov:CKV_GCP_64\":1,\"trivy:GCP-0059\":1,\"trivy:GCP-0061\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc7.1",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":108,\"by_rule\":{\"trivy:CVE-2026-25645\":4,\"trivy:CVE-2026-41907\":4,\"trivy:CVE-2026-44431\":4,\"trivy:CVE-2026-44432\":4,\"trivy:CVE-2026-45409\":4,\"trivy:CVE-2026-48712\":4,\"trivy:CVE-2026-54269\":4,\"trivy:CVE-2026-97687\":4,\"trivy:CVE-2026-97688\":4,\"trivy:CVE-2026-97689\":4,\"trivy:GO-2026-5932\":4,\"trivy:CVE-2026-56855\":3,\"trivy:CVE-2026-78662\":3,\"trivy:CVE-2026-101915\":2,\"trivy:CVE-2026-101916\":2,\"trivy:CVE-2026-12143\":2,\"trivy:CVE-2026-30922\":2,\"trivy:CVE-2026-3449\":2,\"trivy:CVE-2026-41242\":2,\"trivy:CVE-2026-44288\":2,\"trivy:CVE-2026-44289\":2,\"trivy:CVE-2026-44290\":2,\"trivy:CVE-2026-44291\":2,\"trivy:CVE-2026-44292\":2,\"trivy:CVE-2026-44293\":2,\"trivy:CVE-2026-44294\":2,\"trivy:CVE-2026-45740\":2,\"trivy:CVE-2026-54285\":2,\"trivy:CVE-2026-59877\":2,\"trivy:CVE-2026-59884\":2,\"trivy:CVE-2026-59885\":2,\"trivy:CVE-2026-59886\":2,\"trivy:CVE-2025-61765\":1,\"trivy:CVE-2025-71176\":1,\"trivy:CVE-2026-27794\":1,\"trivy:CVE-2026-28277\":1,\"trivy:CVE-2026-34070\":1,\"trivy:CVE-2026-40087\":1,\"trivy:CVE-2026-41182\":1,\"trivy:CVE-2026-44843\":1,\"trivy:CVE-2026-45134\":1,\"trivy:CVE-2026-4539\":1,\"trivy:CVE-2026-48775\":1,\"trivy:CVE-2026-48776\":1,\"trivy:CVE-2026-48802\":1,\"trivy:CVE-2026-48804\":1,\"trivy:CVE-2026-48809\":1,\"trivy:CVE-2026-55443\":1,\"trivy:CVE-2026-63374\":1,\"trivy:CVE-2026-64847\":1,\"trivy:GHSA-6v7p-g79w-8964\":1,\"trivy:GHSA-f4xh-w4cj-qxq8\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc7.2",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":1,\"by_rule\":{\"checkov:CKV_GCP_61\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   },
+   {
+    "name": "findings",
+    "arguments": {
+     "control": "soc2:cc8.1",
+     "limit": 0
+    },
+    "result": "{\"run_id\":\"f6f80f75-5774-5ada-acb6-6d0f2b00d0c8\",\"total\":61,\"by_rule\":{\"checkov:CKV_K8S_43\":13,\"checkov:CKV_K8S_14\":12,\"conftest:deny_latest_tag\":12,\"trivy:KSV-0013\":12,\"checkov:CKV_DOCKER_7\":4,\"trivy:DS-0001\":4,\"checkov:CKV_TF_1\":2,\"checkov:CKV_GCP_66\":1,\"trivy:KSV-0125\":1},\"offset\":0,\"findings\":[]}",
+    "is_error": false
+   }
+  ],
+  "denials": [],
+  "turns": 3,
+  "usage": {
+   "input_tokens": 26,
+   "output_tokens": 3702,
+   "cache_creation_input_tokens": 11551,
+   "cache_read_input_tokens": 12950
+  },
+  "cost_usd": 0.03755325,
+  "billed": false,
+  "output": {
+   "summary": "Seven controls are not-satisfied with 417 total findings across the scan. The largest violation groups are Kubernetes namespace isolation (checkov:CKV_K8S_21, 41 findings in soc2:cc6.1), vulnerable dependencies identified by Trivy (soc2:cc7.1, 108 findings), and image tag pinning (checkov:CKV_K8S_43, 13 findings in soc2:cc8.1). Five coverage gaps remain unmapped to controls.",
+   "not_satisfied": [
+    {
+     "key": "iso42001:a.6",
+     "status": "not-satisfied",
+     "findings": 1,
+     "largest_groups": "semgrep:llm-unbounded-call (1)"
+    },
+    {
+     "key": "soc2:a1.1",
+     "status": "not-satisfied",
+     "findings": 52,
+     "largest_groups": "checkov:CKV_DOCKER_2 (13), trivy:DS-0026 (13)"
+    },
+    {
+     "key": "soc2:cc6.1",
+     "status": "not-satisfied",
+     "findings": 188,
+     "largest_groups": "checkov:CKV_K8S_21 (41), trivy:KSV-0020 (16), trivy:KSV-0021 (16), trivy:KSV-0104 (16)"
+    },
+    {
+     "key": "soc2:cc6.6",
+     "status": "not-satisfied",
+     "findings": 6,
+     "largest_groups": "checkov:CKV_GCP_12 (1), checkov:CKV_GCP_20 (1), checkov:CKV_GCP_25 (1), checkov:CKV_GCP_64 (1), trivy:GCP-0059 (1), trivy:GCP-0061 (1)"
+    },
+    {
+     "key": "soc2:cc7.1",
+     "status": "not-satisfied",
+     "findings": 108,
+     "largest_groups": "trivy:CVE-2026-25645 (4), trivy:CVE-2026-41907 (4), trivy:CVE-2026-44431 (4), trivy:CVE-2026-44432 (4), trivy:CVE-2026-45409 (4), trivy:CVE-2026-48712 (4), trivy:CVE-2026-54269 (4), trivy:CVE-2026-97687 (4), trivy:CVE-2026-97688 (4), trivy:CVE-2026-97689 (4), trivy:GO-2026-5932 (4)"
+    },
+    {
+     "key": "soc2:cc7.2",
+     "status": "not-satisfied",
+     "findings": 1,
+     "largest_groups": "checkov:CKV_GCP_61 (1)"
+    },
+    {
+     "key": "soc2:cc8.1",
+     "status": "not-satisfied",
+     "findings": 61,
+     "largest_groups": "checkov:CKV_K8S_43 (13), checkov:CKV_K8S_14 (12), conftest:deny_latest_tag (12), trivy:KSV-0013 (12)"
+    }
+   ],
+   "gaps": [
+    {
+     "rule": "checkov:CKV_GCP_21",
+     "findings": 1
+    },
+    {
+     "rule": "checkov:CKV_GCP_70",
+     "findings": 1
+    },
+    {
+     "rule": "checkov:CKV_K8S_15",
+     "findings": 1
+    },
+    {
+     "rule": "trivy:DS-0029",
+     "findings": 1
+    },
+    {
+     "rule": "trivy:GCP-0051",
+     "findings": 1
+    }
+   ],
+   "suppressions": "One suppression applied: suppressions/loadgenerator-default-namespace covering 2 findings (checkov:CKV_K8S_21 instances in upstream/kubernetes-manifests/loadgenerator.yaml), expires 2026-12-30. Owner: human:cdevarenne. Reason: Load generator runs in default namespace without customer data or credentials. No suppressions expiring, expired, pending, or unused.",
+   "next_steps": [
+    "Address soc2:cc7.1 (108 findings): manage vulnerable dependencies across container images identified by Trivy CVE scanning.",
+    "Resolve soc2:cc6.1 (188 findings): enforce Kubernetes namespace isolation and pod security standards, starting with checkov:CKV_K8S_21 (41 findings).",
+    "Fix soc2:cc8.1 (61 findings): implement image tag pinning and provenance verification with checkov:CKV_K8S_43 (13), checkov:CKV_K8S_14 (12), conftest:deny_latest_tag (12), and trivy:KSV-0013 (12).",
+    "Reduce soc2:a1.1 (52 findings): add health checks and resource limits to container deployments with checkov:CKV_DOCKER_2 (13) and trivy:DS-0026 (13).",
+    "Close 5 coverage gaps by mapping rules to controls: checkov:CKV_GCP_21, checkov:CKV_GCP_70, checkov:CKV_K8S_15, trivy:DS-0029, trivy:GCP-0051.",
+    "Resolve iso42001:a.6 and soc2:cc7.2 single findings and verify the loadgenerator suppression renewal plan before 2026-12-30."
+   ]
+  },
+  "stopped": null
+ }
+}

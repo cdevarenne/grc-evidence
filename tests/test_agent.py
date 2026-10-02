@@ -411,3 +411,21 @@ def test_an_api_refusal_is_a_one_line_error(tmp_path: Path) -> None:
     http, _ = _api([FINAL])
     with pytest.raises(AgentError, match="the API refused the request: .*additionalProperties"):
         agent.run_anthropic(open_schema, _api_out(tmp_path), Limits(), http_client=http)
+
+
+def test_a_number_beside_an_identifier_binds_to_it_not_to_a_total() -> None:
+    """#125, the demo run with 1.8.0: "and 7 more CVEs" sat beside a CVE (4) and passed because 7 was also a reported
+    total. A number that close to an identifier is that identifier's count or nothing."""
+    findings = json.dumps({"run_id": "run-1", "total": 8, "by_rule": {"trivy:CVE-1": 4, "trivy:CVE-2": 4}})
+    totals = json.dumps({"run_id": "run-1", "by_status": {"not-satisfied": 7}, "findings_by_status": {"not-satisfied": 417},
+                         "controls": [{"key": "soc2:cc6.1", "status": "not-satisfied", "findings": 188}]})
+    assert _unbound(_check({"summary": "soc2:cc7.1: trivy:CVE-1 (4), and 7 more CVEs at 4 findings each."}, (findings, totals))) == [7]
+    assert _check({"summary": "Seven controls are not-satisfied with 417 total findings: soc2:cc6.1 (188 findings)."}, (findings, totals)) == []
+
+
+def test_a_reported_date_written_in_words_is_a_name() -> None:
+    """The same run: "active through December 30" for an expiry the tools reported as 2026-12-30."""
+    result = json.dumps({"run_id": "run-1", "controls": [{"key": "soc2:cc6.1", "status": "not-satisfied", "findings": 2}],
+                         "counts": {"applied": 1}, "applied": [{"suppression": "suppressions/s1", "expires": "2026-12-30"}]})
+    assert _check({"summary": "One suppression is active through December 30."}, (result,)) == []
+    assert _unbound(_check({"summary": "One suppression is active through December 31."}, (result,))) == [31]
