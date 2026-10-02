@@ -600,6 +600,7 @@ mcp = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "anthropic" },
     { name = "jsonschema" },
     { name = "mcp" },
     { name = "mypy" },
@@ -620,6 +621,7 @@ provides-extras = ["llm", "mcp"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "anthropic", specifier = ">=1.8" },
     { name = "jsonschema", specifier = ">=4.25" },
     { name = "mcp", specifier = ">=2.2,<3" },
     { name = "mypy", specifier = "==2.4.0" },

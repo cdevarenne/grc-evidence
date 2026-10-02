@@ -26,6 +26,7 @@ dev = [
     "mypy==2.4.0",
     "types-jsonschema>=4.26.0.20260518",
     "mcp>=2.2,<3",
+    "anthropic>=1.8",
 ]
 
 [tool.pytest.ini_options]

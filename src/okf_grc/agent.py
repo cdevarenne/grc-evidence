@@ -21,13 +21,15 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 from okf_grc.errors import GrcError
-from okf_grc.llm import DEFAULT_MODEL
+from okf_grc.llm import DEFAULT_MODEL, PRICES, cost_usd
 
 Json = dict[str, Any]
 SERVER = "okf-grc"  # the MCP server's name in a run's config: its tools are mcp__okf-grc__<tool>
 DEFAULT_BUDGET_USD = 0.25
 DEFAULT_MAX_TURNS = 8
 FIXTURES = Path("tests/fixtures/agent")
+MAX_TOKENS = 4096  # per model reply
+USAGE_KEYS = ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")
 STRUCTURED_OUTPUT = "StructuredOutput"  # how Claude Code returns the --json-schema draft: its own, not a workflow tool
 
 
@@ -191,6 +193,71 @@ def run_claude(workflow: Workflow, out: Path, limits: Limits, popen: Callable[..
     return transcript
 
 
+class _RecordingClient:
+    """The in-process MCP client the API's tool runner calls through, recording each call and what it returned."""
+
+    def __init__(self, client: Any, calls: list[ToolCall]) -> None:
+        self.client, self.calls = client, calls
+
+    async def call_tool(self, name: str, arguments: Json | None = None, **kwargs: Any) -> Any:
+        result = await self.client.call_tool(name, arguments)
+        text = "".join(getattr(c, "text", "") for c in result.content) or json.dumps(result.structured_content)
+        self.calls.append({"name": name, "arguments": arguments or {}, "result": text, "is_error": bool(result.is_error)})
+        return result
+
+
+def run_anthropic(workflow: Workflow, out: Path, limits: Limits, http_client: Any = None) -> Transcript:
+    """The `anthropic` provider: the Messages API's tool runner over an in-process `grc mcp` server. Only the
+    workflow's tools are sent, so the model never sees the others; the budget is checked before every next call."""
+    try:
+        import anyio
+        from anthropic import AsyncAnthropic
+        from anthropic.lib.tools.mcp import async_mcp_tool
+        from mcp.client import Client
+
+        from okf_grc.mcp_server import build_server
+    except ImportError as e:
+        raise AgentError("LLM_MODE=anthropic needs the llm and mcp extras: okf-grc[llm,mcp]") from e
+    if limits.model not in PRICES:
+        raise AgentError(f"no price for {limits.model!r}, so its budget cannot be checked; one of {', '.join(PRICES)}")
+    calls: list[ToolCall] = []
+
+    async def go() -> Transcript:
+        usage = dict.fromkeys(USAGE_KEYS, 0)
+        cost, turns, stopped, output, last = 0.0, 0, None, None, None
+        async with Client(build_server(out)) as mcp:
+            recording = _RecordingClient(mcp, calls)
+            tools = [async_mcp_tool(t, recording) for t in (await mcp.list_tools()).tools if t.name in workflow.tools]  # type: ignore[arg-type]
+            api = AsyncAnthropic(http_client=http_client) if http_client else AsyncAnthropic()
+            runner = api.beta.messages.tool_runner(
+                model=limits.model, max_tokens=MAX_TOKENS, system=workflow.prompt, tools=tools,
+                messages=[{"role": "user", "content": workflow.task}], max_iterations=limits.max_turns,
+                output_config={"format": {"type": "json_schema", "schema": workflow.schema}},
+            )
+            async for message in runner:
+                turns, last = turns + 1, message
+                reply = {k: getattr(message.usage, k, 0) or 0 for k in USAGE_KEYS}
+                usage = {k: usage[k] + reply[k] for k in USAGE_KEYS}
+                cost += cost_usd(limits.model, reply)
+                if message.stop_reason == "tool_use" and cost >= limits.budget_usd:
+                    stopped = "budget"  # the runner would call the model again: stop before it does
+                    break
+        if stopped is None and last is not None and last.stop_reason == "tool_use":
+            stopped = "max_turns"
+        elif stopped is None and last is not None:
+            text = "".join(b.text for b in last.content if b.type == "text")
+            try:
+                output = json.loads(text)
+            except json.JSONDecodeError:
+                stopped = "the model's final reply was not JSON"
+        return {
+            "provider": "anthropic", "model": limits.model, "tool_calls": calls, "denials": [], "turns": turns,
+            "usage": usage, "cost_usd": round(cost, 6), "billed": True, "output": output, "stopped": stopped,
+        }
+
+    return anyio.run(go)
+
+
 def run_replay(workflow: Workflow, out: Path, limits: Limits, fixtures: Path = FIXTURES) -> Transcript:
     """The `replay` provider: a recorded transcript, for tests and CI at $0."""
     path = fixtures / f"{workflow.name}.json"
@@ -244,7 +311,7 @@ def run_workflow(workflow: Workflow, provider: Provider, out: Path, limits: Limi
 
 
 WORKFLOWS: dict[str, Workflow] = {}  # filled by okf_grc.agents as workflows are added
-PROVIDERS: dict[str, Provider] = {"claude-cli": run_claude, "replay": run_replay}
+PROVIDERS: dict[str, Provider] = {"claude-cli": run_claude, "anthropic": run_anthropic, "replay": run_replay}
 
 
 def main(argv: list[str] | None = None) -> None:

@@ -170,3 +170,85 @@ def test_the_draft_return_is_not_a_tool_call() -> None:
         {"type": "tool_use", "id": "t2", "name": "Bash", "input": {"command": "ls"}}]}}]
     transcript, _ = agent.read_stream([json.dumps(e) for e in events], "m", max_turns=8)
     assert [c["name"] for c in transcript["tool_calls"]] == ["Bash"]
+
+
+def _api_out(tmp_path: Path) -> Path:
+    """Outputs the in-process MCP server reads: the fixture bundle's mapping."""
+    from okf_grc.data import SCHEMA_VERSION
+    from okf_grc.map_findings import map_findings
+    from okf_grc.okf_lib import load_bundle
+
+    fixtures = Path(__file__).parent / "fixtures"
+    mapping = map_findings(load_bundle(fixtures / "bundle"), json.loads((fixtures / "findings.json").read_text()))
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "mapping.json").write_text(json.dumps({"schema_version": SCHEMA_VERSION, **mapping}))
+    (out / "run.json").write_text(json.dumps({"run_id": "run-1"}))
+    return out
+
+
+def _api(replies: list[dict]) -> tuple[Any, list[dict]]:
+    """A fake Messages API: canned replies in order (the last repeats); every request body is kept."""
+    import httpx2
+
+    requests: list[dict] = []
+
+    def handle(request: Any) -> Any:
+        requests.append(json.loads(request.content))
+        reply = replies[min(len(requests), len(replies)) - 1]
+        return httpx2.Response(200, json={"id": f"msg_{len(requests)}", "type": "message", "role": "assistant",
+                                          "model": "claude-haiku-4-5", "stop_sequence": None, **reply})
+
+    return httpx2.AsyncClient(transport=httpx2.MockTransport(handle)), requests
+
+
+TOOL_USE = {"content": [{"type": "tool_use", "id": "toolu_1", "name": "gaps", "input": {}}], "stop_reason": "tool_use",
+            "usage": {"input_tokens": 1000, "output_tokens": 100}}
+FINAL = {"content": [{"type": "text", "text": '{"summary": "Two gaps."}'}], "stop_reason": "end_turn",
+         "usage": {"input_tokens": 1500, "output_tokens": 50}}
+
+
+@pytest.fixture
+def _api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+
+
+@pytest.mark.usefixtures("_api_key")
+def test_the_api_sees_only_the_workflows_tools_and_they_run_against_the_server(tmp_path: Path) -> None:
+    """#119: the SDK's tool runner and MCP helper, our in-process server; only the API's replies are canned."""
+    http, requests = _api([TOOL_USE, FINAL])
+    transcript = agent.run_anthropic(WORKFLOW, _api_out(tmp_path), Limits(), http_client=http)
+    assert sorted(t["name"] for t in requests[0]["tools"]) == ["control_status", "gaps"]  # not scan, findings, ...
+    assert requests[0]["output_config"]["format"]["type"] == "json_schema" and requests[0]["system"] == WORKFLOW.prompt
+    (call,) = transcript["tool_calls"]
+    assert call["name"] == "gaps" and "checkov:CKV_TEST_99" in call["result"] and not call["is_error"]
+    assert "checkov:CKV_TEST_99" in json.dumps(requests[1]["messages"])  # the real result went back to the model
+    assert transcript["output"] == {"summary": "Two gaps."} and transcript["stopped"] is None
+    assert transcript["billed"] and transcript["turns"] == 2 and transcript["denials"] == []
+    assert transcript["usage"]["input_tokens"] == 2500 and transcript["cost_usd"] == pytest.approx((2500 * 1 + 150 * 5) / 1e6)
+
+
+@pytest.mark.usefixtures("_api_key")
+def test_the_budget_stops_the_loop_before_the_next_call(tmp_path: Path) -> None:
+    http, requests = _api([TOOL_USE, FINAL])
+    transcript = agent.run_anthropic(WORKFLOW, _api_out(tmp_path), Limits(budget_usd=0.0001), http_client=http)
+    assert transcript["stopped"] == "budget" and transcript["output"] is None and len(requests) == 1
+
+
+@pytest.mark.usefixtures("_api_key")
+def test_the_turn_cap_stops_a_model_that_keeps_calling_tools(tmp_path: Path) -> None:
+    http, requests = _api([TOOL_USE])
+    transcript = agent.run_anthropic(WORKFLOW, _api_out(tmp_path), Limits(max_turns=2), http_client=http)
+    assert transcript["stopped"] == "max_turns" and transcript["turns"] == 2 and len(requests) == 2
+
+
+@pytest.mark.usefixtures("_api_key")
+def test_a_final_reply_that_is_not_json_is_stopped(tmp_path: Path) -> None:
+    http, _ = _api([{**FINAL, "content": [{"type": "text", "text": "Two gaps, I think."}]}])
+    transcript = agent.run_anthropic(WORKFLOW, _api_out(tmp_path), Limits(), http_client=http)
+    assert transcript["stopped"] == "the model's final reply was not JSON" and transcript["output"] is None
+
+
+def test_an_unpriced_model_cannot_be_budgeted(tmp_path: Path) -> None:
+    with pytest.raises(AgentError, match="no price for 'claude-mystery'"):
+        agent.run_anthropic(WORKFLOW, tmp_path, Limits(model="claude-mystery"))
