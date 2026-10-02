@@ -10,9 +10,11 @@ from typing import Any
 import pytest
 from mcp.client import Client
 from mcp.client.stdio import StdioServerParameters
+from mcp.types import TextResourceContents
 
 from okf_grc import cli
 from okf_grc.data import SCHEMA_VERSION
+from okf_grc.gate import baseline_doc
 from okf_grc.map_findings import map_findings
 from okf_grc.mcp_server import build_server
 from okf_grc.okf_lib import load_bundle
@@ -41,8 +43,7 @@ def test_control_status_is_a_typed_read_only_tool(tmp_path: Path) -> None:
     async def use(client: Client) -> Any:
         return (await client.list_tools()).tools
 
-    (tool,) = _with_client(build_server(_out(tmp_path)), use)
-    assert tool.name == "control_status"
+    tool = next(t for t in _with_client(build_server(_out(tmp_path)), use) if t.name == "control_status")
     assert tool.annotations and tool.annotations.read_only_hint and not tool.annotations.destructive_hint
     assert tool.output_schema and set(tool.output_schema["properties"]) == {"run_id", "controls"}
 
@@ -114,3 +115,113 @@ def test_grc_mcp_without_the_extra_says_how_to_install_it(monkeypatch: pytest.Mo
     monkeypatch.delattr(okf_grc, "mcp_server")
     with pytest.raises(SystemExit, match=r"grc mcp needs the mcp extra: uv tool install 'okf-grc\[mcp\]"):
         cli.main(["mcp"])
+
+
+def _call(out: Path, tool: str, args: dict | None = None, repo: Path | None = None) -> Any:
+    async def use(client: Client) -> Any:
+        return await client.call_tool(tool, args or {})
+
+    return _with_client(build_server(out, repo or out.parent), use)
+
+
+def test_findings_lists_each_finding_once_with_scanner_text_untrusted(tmp_path: Path) -> None:
+    """#109: mapped findings and gaps; the scanner's message only under `untrusted`."""
+    page = _call(_out(tmp_path), "findings").structured_content
+    assert page["total"] == 5 and page["offset"] == 0
+    gap = next(f for f in page["findings"] if f["rule_id"] == "CKV_TEST_99")
+    assert gap["controls"] == [] and gap["gap"] == "no-rule-match"
+    assert all(set(f) == {"tool", "rule_id", "severity", "target", "controls", "gap", "accepted", "untrusted"} for f in page["findings"])
+    assert all(f["untrusted"]["message"] for f in page["findings"])
+
+
+@pytest.mark.parametrize(
+    ("args", "rules"),
+    [
+        ({"control": "soc2:cc6.1"}, ["CKV_TEST_1", "require_non_root"]),
+        ({"control": "cc7.1"}, ["CVE-2024-0001"]),
+        ({"rule": "conftest:orphan_rule"}, ["orphan_rule"]),
+        ({"rule": "CKV_TEST_1"}, ["CKV_TEST_1"]),
+        ({"file": "app/k8s/deployment.yaml"}, ["CKV_TEST_1", "require_non_root"]),
+        ({"limit": 2, "offset": 3}, ["require_non_root", "CVE-2024-0001"]),
+    ],
+)
+def test_findings_filters_and_pages(tmp_path: Path, args: dict, rules: list[str]) -> None:
+    assert [f["rule_id"] for f in _call(_out(tmp_path), "findings", args).structured_content["findings"]] == rules
+
+
+def test_findings_rejects_an_unbounded_page(tmp_path: Path) -> None:
+    result = _call(_out(tmp_path), "findings", {"limit": 201})
+    assert result.is_error and "limit must be 1 to 200" in result.content[0].text
+
+
+def test_gaps_group_by_rule(tmp_path: Path) -> None:
+    gaps = _call(_out(tmp_path), "gaps").structured_content["gaps"]
+    assert gaps == [
+        {"rule": "checkov:CKV_TEST_99", "reason": "no-rule-match", "findings": 1, "files": ["app/Dockerfile"]},
+        {"rule": "conftest:orphan_rule", "reason": "control-not-in-bundle", "findings": 1, "files": ["app/infra/main.tf"]},
+    ]
+
+
+def test_suppressions_report_every_state_with_the_finding_text_untrusted(tmp_path: Path) -> None:
+    finding = {"tool": "trivy", "rule_id": "CVE-1", "severity": "high", "target": "go.mod", "message": "pkg 1.0: bad", "tags": []}
+    mapping = {"schema_version": SCHEMA_VERSION, **MAPPING, "suppressed": [{
+        "finding": finding, "suppression": "suppressions/s1", "kind": "accepted-risk", "controls": ["soc2:cc7.1"],
+        "owner": "human:a", "expires": "2026-12-30", "reason": "Reviewed."}],
+        "expiring_suppressions": [{"id": "suppressions/s1", "expires": "2026-12-30"}], "expired_suppressions": ["suppressions/s2"],
+        "pending_suppressions": [{"id": "suppressions/s3", "approved": "2026-10-03"}], "unused_suppressions": ["suppressions/s4"]}
+    got = _call(_out(tmp_path, mapping), "suppressions").structured_content
+    assert got["applied"][0]["finding"] == {"tool": "trivy", "rule_id": "CVE-1", "target": "go.mod", "untrusted": {"message": "pkg 1.0: bad"}}
+    assert (got["expiring"], got["expired"], got["pending"], got["unused"]) == (["suppressions/s1"], ["suppressions/s2"], ["suppressions/s3"], ["suppressions/s4"])
+
+
+def test_gate_reports_what_grc_gate_would(tmp_path: Path) -> None:
+    out = _out(tmp_path)
+    assert _call(out, "gate").is_error  # no baseline yet
+    baseline = tmp_path / "expected" / "control-status.json"
+    baseline.parent.mkdir()
+    baseline.write_text(json.dumps(baseline_doc(MAPPING)))
+    assert _call(out, "gate").structured_content | {"run_id": ""} == {
+        "run_id": "", "baseline": "expected/control-status.json", "fail_on": "high", "passed": True, "problems": [], "findings_checked": True}
+    fewer = baseline_doc(MAPPING) | {"findings": {}}
+    baseline.write_text(json.dumps(fewer))
+    result = _call(out, "gate", {"fail_on": "critical"}).structured_content
+    assert not result["passed"] and "new finding: trivy:CVE-2024-0001 app/requirements.txt (0 -> 1)" in result["problems"]
+    assert _call(out, "gate", {"fail_on": "severe"}).is_error
+
+
+def test_resources_serve_the_report_the_manifest_and_oscal(tmp_path: Path) -> None:
+    out = _out(tmp_path)
+    (out / "report.md").write_text("# Report\n")
+    (out / "oscal").mkdir()
+    (out / "oscal" / "assessment-plan.json").write_text('{"assessment-plan": {}}')
+
+    async def use(client: Client) -> Any:
+        contents = [(await client.read_resource(uri)).contents[0] for uri in ("grc://report", "grc://run", "grc://oscal/assessment-plan")]
+        texts = [c.text for c in contents if isinstance(c, TextResourceContents)]
+        errors = []
+        for uri in ("grc://oscal/mapping", "grc://oscal/..%2Fmapping"):
+            try:
+                await client.read_resource(uri)
+            except Exception as e:  # the SDK raises the server's error for a failed read
+                errors.append(str(e))
+        return texts, errors
+
+    texts, errors = _with_client(build_server(out, tmp_path), use)
+    assert texts == ["# Report\n", '{"run_id": "run-1"}', '{"assessment-plan": {}}']
+    assert "no OSCAL document 'mapping'" in errors[0]  # only the three OSCAL documents
+    assert "Unknown resource" in errors[1]  # a path never matches the template
+
+
+def test_no_tool_changes_a_file(tmp_path: Path) -> None:
+    """#109: every read tool leaves the repository as it found it."""
+    out = _out(tmp_path)
+    (tmp_path / "expected").mkdir()
+    (tmp_path / "expected" / "control-status.json").write_text(json.dumps(baseline_doc(MAPPING)))
+    before = {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+
+    async def use(client: Client) -> Any:
+        for tool in ("control_status", "findings", "gaps", "suppressions", "gate"):
+            await client.call_tool(tool, {})
+
+    _with_client(build_server(out, tmp_path), use)
+    assert {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()} == before
