@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from okf_grc.config import Config, ConfigError, load_config
-from okf_grc.run_scan import ScanError, conftest_inputs, scan, scanner_runs
+from okf_grc.run_scan import ScanError, conftest_inputs, scan, scanner_runs, tools_not_run
 
 
 def _repo(tmp_path: Path, config: str | None = None) -> Path:
@@ -175,3 +175,13 @@ def test_skip_paths_apply_to_trivy_and_checkov(tmp_path: Path) -> None:
         assert argv[argv.index("--skip-dirs"):][:4] == ("--skip-dirs", "helm-chart", "--skip-dirs", "release")
     checkov = _argv(runs, "checkov")
     assert [checkov[i + 1] for i, a in enumerate(checkov) if a == "--skip-path"] == ["helm-chart", "release", "docs"]
+
+
+def test_an_explicit_empty_conftest_inputs_skips_conftest(tmp_path: Path) -> None:
+    """#71: `conftest.inputs: []` turns Conftest off; patterns that match nothing are still an error."""
+    config = load_config(_repo(tmp_path, "conftest:\n  inputs: []\n"))
+    assert config.conftest_inputs == () and tools_not_run(config) == ["conftest"]
+    assert conftest_inputs(tmp_path, config) == []
+    assert [r.tool for r in scanner_runs(config, [])] == ["semgrep", "trivy", "trivy", "checkov"]
+    with pytest.raises(ScanError, match="conftest.inputs"):
+        conftest_inputs(tmp_path, Config(conftest_inputs=("k8s/*.yaml",)))

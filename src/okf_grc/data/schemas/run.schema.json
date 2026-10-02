@@ -92,6 +92,18 @@
         "type": "string"
       }
     },
+    "not_run": {
+      "description": "Pinned scanners the layout turned off (an explicit empty conftest.inputs skips Conftest).",
+      "type": "array",
+      "items": {
+        "enum": [
+          "semgrep",
+          "trivy",
+          "checkov",
+          "conftest"
+        ]
+      }
+    },
     "config": {
       "type": "object",
       "required": [

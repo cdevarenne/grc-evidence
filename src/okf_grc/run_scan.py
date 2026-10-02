@@ -149,21 +149,27 @@ class ScannerRun:
     normalize: Callable[[Any, str], list[Finding]]
 
 
+def tools_not_run(config: Config) -> list[str]:
+    """Scanners the layout turns off: an explicit empty `conftest.inputs` skips Conftest (#71)."""
+    return [] if config.conftest_inputs else ["conftest"]
+
+
 def scanner_runs(config: Config, conftest_inputs: Sequence[str]) -> list[ScannerRun]:
-    """The five scanner runs over `config.target`, in execution order."""
+    """The scanner runs over `config.target`, in execution order; Conftest only when it has inputs to check."""
     target_dir = config.target
     semgrep_configs = [arg for c in config.semgrep_configs for arg in ("--config", c)]
     frameworks = ("--framework", *config.checkov_frameworks)
     skip_paths = [arg for p in (*config.skip_paths, *config.checkov_skip_paths) for arg in ("--skip-path", p)]
     skip_dirs = [arg for p in config.skip_paths for arg in ("--skip-dirs", p)]
     rego = [arg for r in config.rego for arg in ("-p", r)]
-    return [
+    runs = [
         ScannerRun("semgrep", "Semgrep code scan", ("semgrep", "scan", *semgrep_configs, "--metrics=off", "--json", "--quiet", target_dir), False, "SEMGREP_VERSION", normalize_semgrep),
         ScannerRun("trivy", "Trivy misconfiguration scan", ("trivy", "config", "--quiet", "--format", "json", *skip_dirs, target_dir), False, "TRIVY_VERSION", normalize_trivy),
         ScannerRun("trivy", "Trivy dependency vulnerability scan", ("trivy", "fs", "--quiet", "--scanners", "vuln", "--format", "json", *skip_dirs, target_dir), False, "TRIVY_VERSION", normalize_trivy),
         ScannerRun("checkov", "Checkov infrastructure-as-code scan", ("checkov", "-d", ".", *frameworks, *skip_paths, "-o", "json", "--quiet", "--compact"), True, "CHECKOV_VERSION", normalize_checkov),
         ScannerRun("conftest", "Conftest policy check", ("conftest", "test", "--all-namespaces", "--no-color", "-o", "json", *rego, *conftest_inputs), False, "CONFTEST_VERSION", normalize_conftest),
     ]
+    return [run for run in runs if run.tool not in tools_not_run(config)]
 
 
 def load_pins(lock: Traversable) -> dict[str, str]:
@@ -175,10 +181,13 @@ def load_pins(lock: Traversable) -> dict[str, str]:
 def conftest_inputs(repo: Path, config: Config) -> list[str]:
     """The files Conftest checks: `conftest.inputs` globs from the target, repo-relative and sorted.
 
-    None is an error: Conftest given no files prints its usage instead of JSON. A match that leaves the repo is an
-    error; so is one that is a symlink out of it, unless `allow_external_symlinks` is set.
+    Patterns that match nothing are an error: Conftest given no files prints its usage instead of JSON. An explicit
+    empty `conftest.inputs` returns none, and Conftest does not run. A match that leaves the repo is an error; so is
+    one that is a symlink out of it, unless `allow_external_symlinks` is set.
     """
     root, patterns = repo.absolute(), config.conftest_inputs
+    if not patterns:
+        return []
     found: set[str] = set()
     for pattern in patterns:
         for match in (root / config.target).glob(pattern):

@@ -13,11 +13,13 @@ import yaml
 from okf_grc.config import load_config
 from okf_grc.data import SCHEMA_VERSION
 from okf_grc.okf_lib import EXPIRY_WARNING_DAYS, GUARDRAIL_TYPES, SCANNER_TYPE, Bundle, Suppression, applies, load_bundle
+from okf_grc.run_scan import tools_not_run
 
 Finding = dict[str, Any]
 CONTEXT_FIELDS = ("risk_tier",)  # inventory fields that `applies_when` may name
 RISK_TIERS = ("minimal", "limited", "high")  # EU AI Act risk classes the inventory may declare
 SDK_GAP = "rules-do-not-cover-sdk"  # not-assessed: the only rules cannot read the AI SDKs the inventory declares
+NOT_RUN = "rules-not-run"  # not-assessed: every rule declared for the control belongs to a scanner that did not run
 
 
 def _controls_for(bundle: Bundle, finding: Finding) -> tuple[list[str], str | None]:
@@ -65,6 +67,12 @@ def _sdk_gap(bundle: Bundle, key: str, context: dict[str, Any]) -> bool:
     if not context.get("ai_sdks") or not declaring or not all(c.frontmatter.get("sdks") for c in declaring):
         return False
     return not set(context["ai_sdks"]) & {sdk for c in declaring for sdk in c.frontmatter["sdks"]}
+
+
+def _rules_not_run(bundle: Bundle, key: str, context: dict[str, Any]) -> bool:
+    """Every rule declared for the control belongs to a tool the layout turned off (`tools_not_run`)."""
+    rules = [r for c in bundle.declaring(key) for r in c.rule_ids]
+    return bool(rules) and all(r.partition(":")[0] in context.get("tools_not_run", ()) for r in rules)
 
 
 def _suppression_entry(finding: Finding, s: Suppression, keys: list[str]) -> dict[str, Any]:
@@ -123,6 +131,8 @@ def map_findings(
             continue
         if entry["findings"]:
             entry["status"] = "not-satisfied"
+        elif _rules_not_run(bundle, key, context or {}):
+            entry |= {"status": "not-assessed", "reason": NOT_RUN}
         elif _sdk_gap(bundle, key, context or {}):
             entry |= {"status": "not-assessed", "reason": SDK_GAP}
         elif entry["evidenced_by"] or entry["satisfied_by"]:
@@ -165,7 +175,8 @@ def main(argv: list[str] | None = None) -> None:
     config = load_config(Path.cwd(), args.config, target=args.target, knowledge=args.knowledge)
     findings = read_findings(args.out / "findings.json")
     inventory = Path(config.target) / config.inventory
-    mapping = map_findings(load_bundle(Path(config.knowledge)), findings, load_context(inventory), args.today)
+    context = load_context(inventory) | ({"tools_not_run": not_run} if (not_run := tools_not_run(config)) else {})
+    mapping = map_findings(load_bundle(Path(config.knowledge)), findings, context, args.today)
     doc = {"schema_version": SCHEMA_VERSION, **mapping}
     (args.out / "mapping.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
 

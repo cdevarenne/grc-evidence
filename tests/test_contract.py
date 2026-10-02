@@ -3,6 +3,7 @@
 import copy
 import hashlib
 import json
+from dataclasses import replace
 from datetime import date
 from importlib.metadata import version
 from pathlib import Path
@@ -88,6 +89,9 @@ def test_manifest_hashes_the_outputs_and_names_the_commit(tmp_path: Path) -> Non
     assert len(manifest["repository"]["commit"]) == 40
     assert manifest["base_version"] == version("okf-grc")
     assert manifest["scanners"]["trivy"] == "0.74.0"
+    assert "not_run" not in manifest
+    skipped = build_manifest(ROOT, out, replace(load_config(ROOT), conftest_inputs=()), "id", NOW)
+    assert skipped["not_run"] == ["conftest"]  # #71
 
 
 def test_manifest_outside_git_has_no_commit(tmp_path: Path) -> None:

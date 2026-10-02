@@ -24,7 +24,7 @@ What the scan intends to assess. Props this repo defines use the namespace
 |---|---|
 | `import-ssp.href` | **placeholder** `#system-security-plan-not-modeled`: no system security plan is modeled |
 | `local-definitions.components[]` | one per `Stack Component` concept, with the same UUID as in the component definition |
-| `local-definitions.activities[]` | one per scanner run in `run_scan.py` (Semgrep; Trivy config; Trivy fs; Checkov; Conftest): a step with the exact command (Conftest's lists the files it checks, not glob patterns), a `tool-version` prop from `tools.lock`, a `method` prop `TEST`, and `related-controls` = the in-scope controls that some concept declares that tool's rules for |
+| `local-definitions.activities[]` | one per scanner run in `run_scan.py` (Semgrep; Trivy config; Trivy fs; Checkov; Conftest unless `conftest.inputs: []` turns it off): a step with the exact command (Conftest's lists the files it checks, not glob patterns), a `tool-version` prop from `tools.lock`, a `method` prop `TEST`, and `related-controls` = the in-scope controls that some concept declares that tool's rules for |
 | `terms-and-conditions.parts[]` | the suppression policy (`rules-of-engagement`) and the grounding rule (`methodology`) |
 | `reviewed-controls` | one `control-selection` per framework: **every control applicable at the declared AI risk tier**, including controls no scanner evidences; `remarks` names the not-applicable ones |
 | `assessment-subjects[]` | the stack components, selected by UUID |

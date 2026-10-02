@@ -12,7 +12,7 @@ from typing import Any
 from okf_grc.okf_lib import COMPONENT_TYPE, FRAMEWORK_TYPES, MAX_SUPPRESSION_DAYS, Bundle, Concept, load_bundle
 from okf_grc import data
 from okf_grc.config import Config, load_config
-from okf_grc.map_findings import SDK_GAP
+from okf_grc.map_findings import NOT_RUN, SDK_GAP
 from okf_grc.run_scan import SEVERITIES, conftest_inputs, load_pins, scanner_runs
 
 OSCAL_VERSION = "1.2.3"
@@ -263,6 +263,7 @@ def _remarks(mapping: Json) -> str:
         ("no-violations-detected", None, "No violations detected by automated checks (not a control attestation)"),
         ("not-assessed", None, "Not assessed (no in-bundle scanner or policy)"),
         ("not-assessed", SDK_GAP, "Not assessed (its only rules do not read the AI SDKs the inventory declares)"),
+        ("not-assessed", NOT_RUN, "Not assessed (the scanner its rules belong to did not run)"),
         ("not-applicable", None, "Not applicable at the declared AI risk tier"),
     ]
     parts = []

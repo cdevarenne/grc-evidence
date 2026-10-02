@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from okf_grc.config import load_config
-from okf_grc.map_findings import SDK_GAP
+from okf_grc.map_findings import NOT_RUN, SDK_GAP
 from okf_grc.narrate import read_narratives
 from okf_grc.okf_lib import FRAMEWORK_TITLES, Bundle, load_bundle
 
@@ -256,11 +256,10 @@ def render_report(
     not_assessed = [key for key, entry in controls if entry["status"] == "not-assessed"]
     reasons = dict(controls)
     for key in not_assessed:
-        why = (
-            "its only rules do not read the AI SDKs the inventory declares"
-            if reasons[key].get("reason") == SDK_GAP
-            else "no in-bundle scanner or policy evidences this control"
-        )
+        why = {
+            SDK_GAP: "its only rules do not read the AI SDKs the inventory declares",
+            NOT_RUN: "the scanner its rules belong to did not run (turned off in grc.yaml)",
+        }.get(reasons[key].get("reason"), "no in-bundle scanner or policy evidences this control")
         lines.append(f"- {_title(bundle, key)}: {why}.")
     if not not_assessed:
         lines.append("None.")

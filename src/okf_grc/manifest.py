@@ -19,7 +19,7 @@ import yaml
 
 from okf_grc import data
 from okf_grc.config import CONFIG_FILE, Config, load_config
-from okf_grc.run_scan import load_pins
+from okf_grc.run_scan import load_pins, tools_not_run
 from okf_grc.to_oscal import NAMESPACE
 
 Json = dict[str, Any]
@@ -85,6 +85,7 @@ def build_manifest(
         "engine": {"package": "okf-grc", "version": version("okf-grc")},
         "base_version": recorded_base_version(repo / config.knowledge),
         "scanners": {tool: pins[f"{tool.upper()}_VERSION"] for tool in SCANNERS},
+        **({"not_run": not_run} if (not_run := tools_not_run(config)) else {}),
         "config": {
             "file": CONFIG_FILE if (repo / CONFIG_FILE).is_file() else None,
             "resolved": asdict(config),

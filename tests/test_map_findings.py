@@ -79,3 +79,15 @@ def test_evidence_comes_from_declarations_not_hand_tags(tmp_path: Path) -> None:
     assert controls["soc2:cc6.1"]["evidenced_by"] == ["scanners/checkov"]
     assert controls["soc2:cc6.1"]["satisfied_by"] == ["policies/p"]
     assert controls["soc2:cc6.1"]["status"] == "no-violations-detected"
+
+
+def test_a_control_whose_rules_did_not_run_is_not_assessed(tmp_path: Path) -> None:
+    """#71: with Conftest off, a control only Conftest rules evidence is not-assessed, not clean."""
+    _write(tmp_path, "controls/a.4.md", "type: ISO/IEC 42001 Control\nframework: iso42001\ntags: [iso42001:a.4]")
+    _write(tmp_path, "controls/cc8.1.md", "type: SOC 2 Control\ntags: [cc8.1]")
+    _write(tmp_path, "policies/inv.md", 'type: Rego Policy\ntags: [iso42001:a.4]\nrule_ids: ["conftest:inv"]')
+    _write(tmp_path, "policies/tag.md", 'type: Rego Policy\ntags: [cc8.1]\nrule_ids: ["conftest:tag", "checkov:CKV_1"]')
+    controls = map_findings(load_bundle(tmp_path), [], {"tools_not_run": ["conftest"]})["controls"]
+    assert (controls["iso42001:a.4"]["status"], controls["iso42001:a.4"]["reason"]) == ("not-assessed", "rules-not-run")
+    assert controls["soc2:cc8.1"]["status"] == "no-violations-detected"  # Checkov still ran
+    assert map_findings(load_bundle(tmp_path), [])["controls"]["iso42001:a.4"]["status"] == "no-violations-detected"

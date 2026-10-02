@@ -24,9 +24,11 @@ What okf-grc does not do, or does only partly. Read this before relying on a rep
   may reach beside the target with `..` (an inventory next to a submodule) but
   never out of the repo, and a symlink out of the repo is refused unless
   `allow_external_symlinks: true`. See
-  `src/okf_grc/config.py`. A target where
-  Conftest finds no inputs stops the scan with an error.
-- **LLM eval is small and single-run.** The triage eval has 65 labeled cases,
+  `src/okf_grc/config.py`. Conftest patterns that match nothing stop the scan
+  with an error; an explicit `conftest.inputs: []` turns Conftest off instead,
+  `run.json` lists it under `not_run`, and a control whose rules are all
+  Conftest's reads `not-assessed` (reason `rules-not-run`), not a clean result.
+- **LLM eval is small and single-run.** The triage eval has 57 labeled cases,
   labeled by the implementing agent and reviewed by the maintainer, not by an
   independent second labeler. Most configurations were run once; the two final
   candidates were re-run three times, which showed a spread of up to three
