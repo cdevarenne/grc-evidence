@@ -12,7 +12,7 @@ takes a file path.
 The server needs the optional `mcp` extra:
 
 ```
-uv tool install 'okf-grc[mcp] @ git+https://github.com/cdevarenne/okf-grc-skill@v1.8.0'
+uv tool install 'okf-grc[mcp] @ git+https://github.com/cdevarenne/okf-grc-skill@v1.8.1'
 ```
 
 It serves on stdio for the repository it starts in (the working directory,
@@ -31,7 +31,7 @@ agents on the version CI uses:
   "mcpServers": {
     "okf-grc": {
       "command": "uvx",
-      "args": ["--from", "okf-grc[mcp] @ git+https://github.com/cdevarenne/okf-grc-skill@v1.8.0", "grc", "mcp"]
+      "args": ["--from", "okf-grc[mcp] @ git+https://github.com/cdevarenne/okf-grc-skill@v1.8.1", "grc", "mcp"]
     }
   }
 }

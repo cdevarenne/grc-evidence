@@ -49,6 +49,9 @@ first workflow, `posture`, summarizes a scan for the repository's owner.
 found a 1.7.0 draft citing a reported number next to the wrong thing, and gives a
 rejected draft one correction round.
 
+`1.8.1` binds a number right beside a control, rule, or suppression to that
+identifier only, so it cannot pass by matching an unrelated total.
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization
