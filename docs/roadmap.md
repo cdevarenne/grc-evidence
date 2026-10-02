@@ -45,6 +45,10 @@ the workflow's MCP tools, through Claude Code or the Messages API, and writes a
 draft only if every number and status checks out against the tool results; its
 first workflow, `posture`, summarizes a scan for the repository's owner.
 
+`1.8.0` binds each number in an agent's draft to what it counts, after a review
+found a 1.7.0 draft citing a reported number next to the wrong thing, and gives a
+rejected draft one correction round.
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization
