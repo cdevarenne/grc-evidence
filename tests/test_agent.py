@@ -71,11 +71,17 @@ def test_the_turn_cap_stops_the_run() -> None:
     assert early and transcript["stopped"] == "max_turns" and transcript["output"] is None
 
 
-def test_a_denied_tool_is_recorded() -> None:
-    result = {"type": "result", "subtype": "success", "is_error": False, "structured_output": {"summary": "x"},
-              "permission_denials": [{"tool_name": "mcp__okf-grc__scan", "tool_input": {}}]}
-    transcript, _ = agent.read_stream([json.dumps(result)], "m", max_turns=8)
-    assert transcript["denials"] == ["scan"] and transcript["output"] == {"summary": "x"}
+def test_a_denied_tool_is_recorded_as_a_denial_not_a_call() -> None:
+    """As the recorded posture run showed: the model asks for gate, Claude Code refuses, the run goes on."""
+    events = [
+        {"type": "assistant", "message": {"id": "m1", "content": [{"type": "tool_use", "id": "t1", "name": "mcp__okf-grc__scan", "input": {}}]}},
+        {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "is_error": True,
+                                                  "content": "Claude requested permissions to use mcp__okf-grc__scan, but you haven't granted it yet."}]}},
+        {"type": "result", "subtype": "success", "is_error": False, "structured_output": {"summary": "x"},
+         "permission_denials": [{"tool_name": "mcp__okf-grc__scan", "tool_input": {}}]},
+    ]
+    transcript, _ = agent.read_stream([json.dumps(e) for e in events], "m", max_turns=8)
+    assert transcript["denials"] == ["scan"] and transcript["tool_calls"] == [] and transcript["output"] == {"summary": "x"}
 
 
 class FakeProcess:

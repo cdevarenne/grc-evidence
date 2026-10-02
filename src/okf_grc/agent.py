@@ -151,11 +151,16 @@ class StreamReader:
         stopped = "max_turns" if stopped_early else ("budget" if subtype == "error_max_budget_usd" else (subtype if result.get("is_error") else None))
         if self.result is None and not stopped_early:
             stopped = "no result from the model CLI"
+        denied = {d.get("tool_name", "").removeprefix(f"mcp__{SERVER}__") for d in result.get("permission_denials", [])}
+        calls: list[ToolCall] = [
+            {"name": c["name"].removeprefix(f"mcp__{SERVER}__"), "arguments": c["arguments"], "result": c["result"], "is_error": c["is_error"]}
+            for c in self.calls.values()
+        ]
         return {
             "provider": "claude-cli",
             "model": self.model,
-            "tool_calls": [{**c, "name": c["name"].removeprefix(f"mcp__{SERVER}__")} for c in self.calls.values()],
-            "denials": sorted({d.get("tool_name", "").removeprefix(f"mcp__{SERVER}__") for d in result.get("permission_denials", [])}),
+            "tool_calls": [c for c in calls if c["name"] not in denied],  # a call to a denied tool never ran
+            "denials": sorted(denied),
             "turns": len(self.replies),
             "usage": {k: int(usage.get(k, 0)) for k in ("input_tokens", "output_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")},
             "cost_usd": float(result.get("total_cost_usd") or 0.0),

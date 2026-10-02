@@ -1,0 +1,120 @@
+{
+ "schema_version": "1.1",
+ "unmapped": [],
+ "controls": {
+  "eu-ai-act:art-10": {
+   "status": "not-applicable",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "eu-ai-act:art-12": {
+   "status": "not-applicable",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "eu-ai-act:art-13": {
+   "status": "not-applicable",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "eu-ai-act:art-14": {
+   "status": "not-applicable",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "eu-ai-act:art-15": {
+   "status": "not-applicable",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "eu-ai-act:art-50": {
+   "status": "not-assessed",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "eu-ai-act:art-9": {
+   "status": "not-applicable",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "iso42001:a.4": {
+   "status": "no-violations-detected",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "iso42001:a.5": {
+   "status": "not-assessed",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "iso42001:a.6": {
+   "status": "not-satisfied",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "iso42001:a.7": {
+   "status": "no-violations-detected",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "iso42001:a.8": {
+   "status": "not-assessed",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "iso42001:a.9": {
+   "status": "not-assessed",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "soc2:a1.1": {
+   "status": "not-satisfied",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "soc2:cc6.1": {
+   "status": "not-satisfied",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "soc2:cc6.6": {
+   "status": "not-satisfied",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "soc2:cc7.1": {
+   "status": "not-satisfied",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "soc2:cc7.2": {
+   "status": "not-satisfied",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  },
+  "soc2:cc8.1": {
+   "status": "not-satisfied",
+   "findings": [],
+   "evidenced_by": [],
+   "satisfied_by": []
+  }
+ }
+}
