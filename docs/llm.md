@@ -31,7 +31,8 @@ An optional Claude API step adds words and proposals on top, never statuses:
 by tests and CI), `record`, `anthropic` (the Claude API, key from the
 environment), or `claude-cli` (Claude Code headless on your plan; dev loop
 only, and not "the Claude API"). Defaults: `LLM_MODEL=claude-haiku-4-5`,
-`LLM_BUDGET_USD=1`.
+`LLM_BUDGET_USD=1`. Agent workflows (`grc agent`) use the same `LLM_MODE` and
+`LLM_MODEL` with their own, tighter limits: see [agents.md](agents.md).
 
 Cost controls: a small model; digests instead of raw scanner output; structured
 JSON output with `max_tokens` bounds (narrate 2K, triage 1K per call of 8

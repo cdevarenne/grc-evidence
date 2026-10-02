@@ -72,6 +72,9 @@ Supported platforms: macOS arm64 and Linux x86_64 (the pinned scanner binaries).
   suppression decision to a person. See [docs/using-the-skill.md](docs/using-the-skill.md).
 - **From any MCP-capable agent:** `grc mcp` serves the repo's results (scan, control status, findings, gaps,
   suppressions, the gate), with scanner text marked untrusted. See [docs/mcp.md](docs/mcp.md).
+- **As an agent workflow:** `grc agent posture` drafts a summary for the repository's owner with only
+  read tools, and writes it only if every number and status checks out against the tool results.
+  See [docs/agents.md](docs/agents.md).
 - **In another repo:** install the engine, `grc init`, then `grc run`. See
   [docs/new-repo.md](docs/new-repo.md) for what it brings in and what you write.
 - **In CI:** how this repo tests and releases itself, and a starting point for
