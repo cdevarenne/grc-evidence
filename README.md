@@ -17,7 +17,8 @@ applies the released engine to Google's
 included unmodified: 422 findings mapped to controls (7 not satisfied), 42 of 47
 coverage-gap rules triaged into controls, a compliance gate on every pull
 request and a nightly scan, and an agent's draft shown with the review that
-corrected it.
+corrected it. The [one-page case study](https://github.com/cdevarenne/okf-grc-demo-boutique/blob/main/docs/case-study.md)
+has the figures and what the review changed in the engine.
 
 > **`app/` is intentionally vulnerable.** It exists only as a scan target, with
 > seeded issues listed in [`app/SEEDED.yaml`](app/SEEDED.yaml). Do not deploy it.
