@@ -34,7 +34,7 @@ STEPS: dict[str, ModuleType] = {
     "scan": run_scan, "map": map_findings, "oscal": to_oscal, "report": render_report, "manifest": manifest,
     "triage": triage, "gate": gate,
 }
-COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "run", "narrate", *STEPS)
+COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "mcp", "run", "narrate", *STEPS)
 
 
 def bootstrap() -> None:
@@ -119,6 +119,17 @@ def _flag(args: argparse.Namespace, name: str) -> list[str]:
     return [f"--{name}", value] if value is not None else []
 
 
+def mcp_main(argv: list[str]) -> None:
+    """`grc mcp`, which needs the optional `mcp` extra."""
+    try:
+        from okf_grc import mcp_server
+    except ImportError as e:
+        raise SystemExit(
+            "grc mcp needs the mcp extra: uv tool install 'okf-grc[mcp] @ git+https://github.com/cdevarenne/okf-grc-skill@vX.Y.Z'"
+        ) from e
+    mcp_server.main(argv)
+
+
 def main(argv: list[str] | None = None) -> None:
     """Entry point of the `grc` command."""
     parser = argparse.ArgumentParser(prog="grc", description=__doc__)
@@ -137,6 +148,8 @@ def main(argv: list[str] | None = None) -> None:
             adopt.sync_base_main(args.args)
         elif args.command == "install-skill":
             adopt.install_skill_main(args.args)
+        elif args.command == "mcp":
+            mcp_main(args.args)
         elif args.command == "narrate":
             narrate_run(args.args)
         elif args.command == "run":
