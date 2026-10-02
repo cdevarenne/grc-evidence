@@ -40,6 +40,11 @@ any repo, `grc sync-base` keeps it current, and it reads the layout from
 its outputs (Spec G, G1), and a stricter `grc gate`: coverage gaps and repeats
 count, and a new code or configuration finding fails at any severity.
 
+`1.7.0` adds `grc agent` (Spec G, G2): a workflow runner that gives a model only
+the workflow's MCP tools, through Claude Code or the Messages API, and writes a
+draft only if every number and status checks out against the tool results; its
+first workflow, `posture`, summarizes a scan for the repository's owner.
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization
