@@ -37,3 +37,15 @@ def test_an_empty_posture_says_none() -> None:
 
 def test_grc_agent_knows_posture() -> None:
     assert agent._workflows() == {"posture": POSTURE}
+
+
+def _open_objects(schema: object, path: str = "") -> list[str]:
+    if isinstance(schema, dict):
+        here = [path or "/"] if schema.get("type") == "object" and schema.get("additionalProperties") is not False else []
+        return here + [p for k, v in schema.items() for p in _open_objects(v, f"{path}/{k}")]
+    return [p for i, v in enumerate(schema) for p in _open_objects(v, f"{path}/{i}")] if isinstance(schema, list) else []
+
+
+def test_every_workflow_schema_is_closed_as_the_api_requires() -> None:
+    """The Messages API refused posture's first schema: every object must set additionalProperties to false."""
+    assert {name: _open_objects(w.schema) for name, w in agent._workflows().items()} == {"posture": []}

@@ -222,7 +222,7 @@ def run_anthropic(workflow: Workflow, out: Path, limits: Limits, http_client: An
     workflow's tools are sent, so the model never sees the others; the budget is checked before every next call."""
     try:
         import anyio
-        from anthropic import AsyncAnthropic
+        from anthropic import APIError, AsyncAnthropic
         from anthropic.lib.tools.mcp import async_mcp_tool
         from mcp.client import Client
 
@@ -266,7 +266,17 @@ def run_anthropic(workflow: Workflow, out: Path, limits: Limits, http_client: An
             "usage": usage, "cost_usd": round(cost, 6), "billed": True, "output": output, "stopped": stopped,
         }
 
-    return anyio.run(go)
+    try:
+        return anyio.run(go)
+    except BaseExceptionGroup as group:  # raised inside the MCP client's task group, so it arrives wrapped
+        if (match := group.subgroup(APIError)) is None:
+            raise
+        refused = match.exceptions[0]
+        while isinstance(refused, BaseExceptionGroup):
+            refused = refused.exceptions[0]
+        raise AgentError(f"the API refused the request: {refused}") from refused
+    except APIError as e:
+        raise AgentError(f"the API refused the request: {e}") from e
 
 
 def run_replay(workflow: Workflow, out: Path, limits: Limits, fixtures: Path = FIXTURES) -> Transcript:

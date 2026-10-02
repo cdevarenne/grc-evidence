@@ -16,7 +16,7 @@ from okf_grc.agent import AgentError, Limits, Transcript, Workflow
 STREAMS = Path(__file__).parent / "fixtures" / "agent" / "streams"
 WORKFLOW = Workflow(
     name="probe", version="1", prompt="Answer from tool results only.", task="List the gaps.",
-    tools=("gaps", "control_status"), schema={"type": "object", "properties": {"summary": {"type": "string"}}},
+    tools=("gaps", "control_status"), schema={"type": "object", "properties": {"summary": {"type": "string"}}, "additionalProperties": False},
     render=lambda draft: f"# Probe\n\n{draft['summary']}\n",
 )
 NOW = datetime(2026, 10, 2, 12, 0, tzinfo=UTC)
@@ -191,8 +191,19 @@ def _api(replies: list[dict]) -> tuple[Any, list[dict]]:
 
     requests: list[dict] = []
 
+    def open_objects(schema: Any) -> bool:
+        """The real API's rule: every object in output_config's schema sets additionalProperties to false."""
+        if isinstance(schema, dict):
+            if schema.get("type") == "object" and schema.get("additionalProperties") is not False:
+                return True
+            return any(open_objects(v) for v in schema.values())
+        return isinstance(schema, list) and any(open_objects(v) for v in schema)
+
     def handle(request: Any) -> Any:
         requests.append(json.loads(request.content))
+        if open_objects(requests[-1].get("output_config", {}).get("format", {}).get("schema")):
+            return httpx2.Response(400, json={"type": "error", "error": {"type": "invalid_request_error", "message":
+                "output_config.format.schema: For 'object' type, 'additionalProperties' must be explicitly set to false"}})
         reply = replies[min(len(requests), len(replies)) - 1]
         return httpx2.Response(200, json={"id": f"msg_{len(requests)}", "type": "message", "role": "assistant",
                                           "model": "claude-haiku-4-5", "stop_sequence": None, **reply})
@@ -319,3 +330,12 @@ def test_numbers_written_as_words_are_checked_too() -> None:
     """The trial posture run wrote "Seven controls": a spelled-out number must be one the tools reported."""
     assert _check({"summary": "Two controls are not-satisfied."}) == []  # 2 appears in a tool result
     assert _check({"summary": "Six controls are not-satisfied."}) == ["numbers not in any tool result of this run: ['6']"]
+
+
+@pytest.mark.usefixtures("_api_key")
+def test_an_api_refusal_is_a_one_line_error(tmp_path: Path) -> None:
+    """The real API refused posture's first schema; a refusal is an AgentError, not a traceback."""
+    open_schema = WORKFLOW.__class__(**{**WORKFLOW.__dict__, "schema": {"type": "object", "properties": {}}})
+    http, _ = _api([FINAL])
+    with pytest.raises(AgentError, match="the API refused the request: .*additionalProperties"):
+        agent.run_anthropic(open_schema, _api_out(tmp_path), Limits(), http_client=http)

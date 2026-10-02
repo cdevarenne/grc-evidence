@@ -38,16 +38,19 @@ SCHEMA: dict[str, Any] = {
                     "largest_groups": {"type": "string", "description": "The rules with the most findings, with their counts."},
                 },
                 "required": ["key", "status", "findings", "largest_groups"],
+                "additionalProperties": False,
             },
         },
         "gaps": {
             "type": "array",
-            "items": {"type": "object", "properties": {"rule": {"type": "string"}, "findings": {"type": "integer"}}, "required": ["rule", "findings"]},
+            "items": {"type": "object", "properties": {"rule": {"type": "string"}, "findings": {"type": "integer"}}, "required": ["rule", "findings"],
+                      "additionalProperties": False},
         },
         "suppressions": {"type": "string"},
         "next_steps": {"type": "array", "items": {"type": "string"}},
     },
     "required": ["summary", "not_satisfied", "gaps", "suppressions", "next_steps"],
+    "additionalProperties": False,  # the Messages API's structured output requires it on every object
 }
 
 
