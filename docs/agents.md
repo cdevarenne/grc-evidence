@@ -93,13 +93,15 @@ same run, read as structured data:
 
 - **every number is bound to what it counts:** a `{key, findings}` or
   `{rule, findings}` pair must match the count the tools reported exactly; a
-  number in text (digits, or words from zero to twenty) must be the reported
-  count of the control or rule it sits next to (before or after it in the same
-  sentence), or of the object it belongs to, or a total the tools reported
-  (controls and findings by status, gap rules and findings, a filter's total,
-  suppressions by state). Run ids, dates the tools reported and their years,
-  strings they returned verbatim, and framework names (SOC 2, ISO/IEC 42001)
-  are names, not counts;
+  number in text (digits, or words from zero to twenty) right after a control,
+  rule, or suppression (within 16 characters) or right before one ("12
+  deny_latest_tag") must be that identifier's count; any other number must be
+  the count of the nearest identifier in its sentence, of the object it belongs
+  to, or a total the tools reported (controls and findings by status, gap rules
+  and findings, a filter's total, suppressions by state and the findings each
+  covers). Run ids, dates the tools reported (as written by the tools or with a
+  month name, and their years), strings they returned verbatim, and framework
+  names (SOC 2, ISO/IEC 42001) are names, not counts;
 - every control it names exists, and a status it gives a control (in a field
   next to the control, or in a sentence that names only that control) is that
   control's own;
@@ -112,15 +114,18 @@ of the budget; the corrected draft is checked the same way. A draft rejected
 twice is not written; the run record keeps every attempt with its reasons, and
 `grc agent` exits non-zero.
 
-Binding came from a review. In okf-grc 1.7.0, validation only required that a
+Binding came from reviews. In okf-grc 1.7.0, validation only required that a
 number appear somewhere in the tool results; the demo repository's `posture`
 draft passed it with "plus 11 additional CVEs at 4 findings each", where 11 is
-a count the tools reported but the right figure was 7. With binding, the same
-run on the same outputs produced a first draft with "11 rules at 4 findings
-each" (this time true, but a count no tool reports), which was rejected; the
-corrected draft left the number out. Binding cannot tell a true derived count
-from a false one, so it rejects both: a number reaches a person only if a tool
-reported it for that thing. Earlier, a model wrote 425 findings where the tool
+a count the tools reported but the right figure was 7. 1.8.0 bound numbers to
+their neighbors, yet its first run on the same outputs passed "and 7 more CVEs"
+next to a CVE (4) because 7 was also a reported total; 1.8.1 binds a number
+that close to an identifier to that identifier only. Its run on the same outputs
+gave three rules a range ("each have 12-13 findings"); that draft was rejected,
+and the correction round put each count next to its rule, which passed.
+Binding cannot tell a true derived count from a false one, so it rejects both:
+a number reaches a person only if a tool reported it for that thing. A number
+farther from any identifier can still match a total by coincidence. Earlier, a model wrote 425 findings where the tool
 results add up to 417, and in a later run the correct 417 before any tool
 reported it; both were rejected too.
 
