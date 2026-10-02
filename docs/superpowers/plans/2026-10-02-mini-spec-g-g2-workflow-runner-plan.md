@@ -66,7 +66,16 @@ provider):
 `AGENT_MAX_TURNS` (default 8) model turns, after which the run stops and records
 why (`max_iterations` for the API; the runner counts turns in Claude Code's
 stream and stops the process). How Claude Code applies `--max-budget-usd` on a
-plan, where it reports notional cost, is to check in R1.
+plan, where it reports notional cost, was checked in R1: it stops the run
+(`error_max_budget_usd`) once the notional cost passes the cap, after the turn
+that passed it.
+
+**Isolation found in R1:** without more flags, a headless run on the plan still
+ran the person's session hooks and loaded their global `CLAUDE.md` (the model
+quoted it). `--setting-sources ""`, `--disable-slash-commands`, and the
+workflow's own `--system-prompt` remove both (the same question then answered
+"NONE"); `--bare` would too but accepts only an API key. The auto-memory path is
+still listed in the session.
 
 **Workflow definition** (one module per workflow, under `src/okf_grc/agents/`):
 a versioned prompt, the allowlisted tools, the draft's JSON Schema, and a
@@ -89,7 +98,9 @@ versions, the model, the engine version, the outputs' `run_id`, every tool call
 with its arguments and result size, permission denials, turns, duration, the
 reported cost (with `billed: false` on the plan), the validation result, and the
 draft. The draft itself is `out/agent/<workflow>-<run_id>.md`. One line goes to
-the existing usage ledger (`llm-usage.jsonl`), task `agent:<workflow>`.
+an agent ledger, `out/agent/usage.jsonl`, task `agent:<workflow>` (found in R1:
+the report's LLM line reads every entry of the latest run in `llm-usage.jsonl`,
+so agent runs there would be counted as narration).
 
 **Untrusted text:** the prompt states the `untrusted` convention; the runner
 never executes anything the model returns; drafts are written, never applied.
