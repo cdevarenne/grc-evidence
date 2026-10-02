@@ -17,6 +17,7 @@ from types import ModuleType
 
 from okf_grc import (
     adopt,
+    agent,
     data,
     gate,
     manifest,
@@ -35,7 +36,7 @@ STEPS: dict[str, ModuleType] = {
     "scan": run_scan, "map": map_findings, "oscal": to_oscal, "report": render_report, "manifest": manifest,
     "triage": triage, "gate": gate,
 }
-COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "mcp", "run", "narrate", *STEPS)
+COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "mcp", "agent", "run", "narrate", *STEPS)
 
 
 def bootstrap() -> None:
@@ -161,6 +162,8 @@ def main(argv: list[str] | None = None) -> None:
             adopt.install_skill_main(args.args)
         elif args.command == "mcp":
             mcp_main(args.args)
+        elif args.command == "agent":
+            agent.main(args.args)
         elif args.command == "narrate":
             narrate_run(args.args)
         elif args.command == "run":

@@ -1,0 +1,172 @@
+"""grc agent (#118): the runner core and the Claude Code provider, from real recorded streams."""
+
+import io
+import json
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from okf_grc import agent, cli
+from okf_grc.agent import AgentError, Limits, Transcript, Workflow
+
+STREAMS = Path(__file__).parent / "fixtures" / "agent" / "streams"
+WORKFLOW = Workflow(
+    name="probe", version="1", prompt="Answer from tool results only.", task="List the gaps.",
+    tools=("gaps", "control_status"), schema={"type": "object", "properties": {"summary": {"type": "string"}}},
+    render=lambda draft: f"# Probe\n\n{draft['summary']}\n",
+)
+NOW = datetime(2026, 10, 2, 12, 0, tzinfo=UTC)
+
+
+def _lines(name: str) -> list[str]:
+    return (STREAMS / name).read_text().splitlines()
+
+
+def _transcript(**changes: Any) -> Transcript:
+    base: Transcript = {
+        "provider": "replay", "model": "claude-haiku-4-5", "tool_calls": [], "denials": [], "turns": 2,
+        "usage": {"input_tokens": 10, "output_tokens": 5, "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0},
+        "cost_usd": 0.01, "billed": False, "output": {"summary": "Two gaps."}, "stopped": None,
+    }
+    return base | changes  # type: ignore[return-value]
+
+
+def _out(tmp_path: Path) -> Path:
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "run.json").write_text(json.dumps({"run_id": "run-1"}))
+    return out
+
+
+def test_claude_runs_isolated_with_only_the_workflows_tools() -> None:
+    """No built-in tools, only our MCP server, no user settings (hooks, plugins, CLAUDE.md), no skills, a budget."""
+    argv = agent.claude_argv(WORKFLOW, Limits(model="m", budget_usd=0.25), Path("/tmp/mcp.json"))
+    pairs = {argv[i]: argv[i + 1] for i in range(len(argv) - 1) if argv[i].startswith("--")}
+    assert argv[:2] == ["claude", "-p"]
+    assert pairs["--tools"] == "" and pairs["--setting-sources"] == "" and pairs["--mcp-config"] == "/tmp/mcp.json"
+    assert pairs["--max-budget-usd"] == "0.25" and pairs["--system-prompt"] == WORKFLOW.prompt and pairs["--model"] == "m"
+    assert {"--strict-mcp-config", "--disable-slash-commands", "--no-session-persistence"} <= set(argv)
+    assert argv[argv.index("--allowedTools") + 1 :] == ["mcp__okf-grc__gaps", "mcp__okf-grc__control_status"]
+
+
+def test_a_recorded_stream_becomes_a_transcript() -> None:
+    """A real run (gaps, on the demo repo, on the plan): the tool call and its full result, not billed."""
+    transcript, early = agent.read_stream(_lines("gaps-success.jsonl"), "claude-haiku-4-5", max_turns=8)
+    assert not early and transcript["stopped"] is None and transcript["provider"] == "claude-cli"
+    (call,) = transcript["tool_calls"]
+    assert call["name"] == "gaps" and call["arguments"] == {} and '"rule":"checkov:CKV_GCP_21"' in call["result"]
+    assert transcript["denials"] == [] and not transcript["billed"] and transcript["turns"] >= 2
+    assert transcript["usage"]["output_tokens"] > 0 and transcript["cost_usd"] > 0
+
+
+def test_the_budget_stop_is_recorded() -> None:
+    """A real run stopped by --max-budget-usd: no draft, the reason kept."""
+    transcript, _ = agent.read_stream(_lines("budget-stopped.jsonl"), "claude-haiku-4-5", max_turns=8)
+    assert transcript["stopped"] == "budget" and transcript["output"] is None
+
+
+def test_the_turn_cap_stops_the_run() -> None:
+    transcript, early = agent.read_stream(_lines("gaps-success.jsonl"), "claude-haiku-4-5", max_turns=1)
+    assert early and transcript["stopped"] == "max_turns" and transcript["output"] is None
+
+
+def test_a_denied_tool_is_recorded() -> None:
+    result = {"type": "result", "subtype": "success", "is_error": False, "structured_output": {"summary": "x"},
+              "permission_denials": [{"tool_name": "mcp__okf-grc__scan", "tool_input": {}}]}
+    transcript, _ = agent.read_stream([json.dumps(result)], "m", max_turns=8)
+    assert transcript["denials"] == ["scan"] and transcript["output"] == {"summary": "x"}
+
+
+class FakeProcess:
+    """Stands in for the `claude` process: replays a stream on stdout."""
+
+    def __init__(self, argv: list[str], lines: list[str], **kwargs: Any) -> None:
+        self.argv, self.stdin, self.stderr = argv, io.StringIO(), io.StringIO("")
+        self.stdout, self.returncode, self.terminated = iter(f"{ln}\n" for ln in lines), 0, False
+        self.mcp = json.loads(Path(argv[argv.index("--mcp-config") + 1]).read_text())
+
+    def terminate(self) -> None:
+        self.terminated = True
+
+    def wait(self) -> int:
+        return self.returncode
+
+
+def test_run_claude_points_the_cli_at_this_engines_server_and_stops_at_the_cap(tmp_path: Path) -> None:
+    started: list[FakeProcess] = []
+
+    def popen(argv: list[str], **kwargs: Any) -> FakeProcess:
+        started.append(FakeProcess(argv, _lines("gaps-success.jsonl")))
+        return started[0]
+
+    transcript = agent.run_claude(WORKFLOW, tmp_path / "out", Limits(max_turns=1), popen)
+    (proc,) = started
+    server = proc.mcp["mcpServers"]["okf-grc"]
+    assert server["command"] == sys.executable and server["args"][:3] == ["-m", "okf_grc.cli", "mcp"]
+    assert server["args"][-1] == str((tmp_path / "out").absolute())
+    assert transcript["stopped"] == "max_turns" and proc.terminated
+
+
+def test_run_claude_without_the_cli_says_so(tmp_path: Path) -> None:
+    def missing(argv: list[str], **kwargs: Any) -> Any:
+        raise FileNotFoundError("claude")
+
+    with pytest.raises(AgentError, match="claude not found on PATH"):
+        agent.run_claude(WORKFLOW, tmp_path, Limits(), missing)
+
+
+def test_a_run_writes_its_record_draft_and_ledger_line_and_nothing_else(tmp_path: Path) -> None:
+    out = _out(tmp_path)
+    record = agent.run_workflow(WORKFLOW, lambda w, o, lim: _transcript(), out, Limits(), NOW)
+    folder = out / "agent"
+    assert sorted(p.name for p in tmp_path.rglob("*") if p.is_file()) == ["probe-20261002T120000Z.json", "probe-20261002T120000Z.md", "run.json", "usage.jsonl"]
+    assert (folder / "probe-20261002T120000Z.md").read_text() == "# Probe\n\nTwo gaps.\n"
+    assert record["validation"] == {"passed": True, "problems": []} and record["outputs_run_id"] == "run-1"
+    assert json.loads((folder / "probe-20261002T120000Z.json").read_text()) == record
+    line = json.loads((folder / "usage.jsonl").read_text())
+    assert (line["task"], line["run_id"], line["billed"]) == ("agent:probe", "run-1", False)
+
+
+def test_a_stopped_run_writes_no_draft(tmp_path: Path) -> None:
+    out = _out(tmp_path)
+    record = agent.run_workflow(WORKFLOW, lambda w, o, lim: _transcript(stopped="budget", output=None), out, Limits(), NOW)
+    assert record["draft"] is None and record["validation"] == {"passed": False, "problems": ["the run stopped: budget"]}
+    assert not (out / "agent" / "probe-20261002T120000Z.md").exists()
+
+
+def test_a_run_needs_the_outputs(tmp_path: Path) -> None:
+    with pytest.raises(AgentError, match="run `grc run` first"):
+        agent.run_workflow(WORKFLOW, lambda w, o, lim: _transcript(), tmp_path, Limits(), NOW)
+
+
+def test_replay_reads_a_recording_and_names_a_missing_one(tmp_path: Path) -> None:
+    (tmp_path / "probe.json").write_text(json.dumps(_transcript()))
+    assert agent.run_replay(WORKFLOW, tmp_path, Limits(), fixtures=tmp_path)["output"] == {"summary": "Two gaps."}
+    with pytest.raises(AgentError, match="no recorded run"):
+        agent.run_replay(WORKFLOW, tmp_path, Limits(), fixtures=tmp_path / "none")
+
+
+def test_cli_runs_a_workflow_and_fails_on_a_rejected_draft(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    out = _out(tmp_path)
+    monkeypatch.setitem(agent.WORKFLOWS, "probe", WORKFLOW)
+    monkeypatch.setitem(agent.PROVIDERS, "replay", lambda w, o, lim: _transcript())
+    cli.main(["agent", "probe", "--out", str(out)])
+    assert "agent: wrote" in capsys.readouterr().out
+    monkeypatch.setitem(agent.PROVIDERS, "replay", lambda w, o, lim: _transcript(stopped="max_turns", output=None))
+    with pytest.raises(SystemExit, match="grc agent: draft rejected: the run stopped: max_turns"):
+        cli.main(["agent", "probe", "--out", str(out)])
+    monkeypatch.setenv("LLM_MODE", "batch")
+    with pytest.raises(SystemExit, match="LLM_MODE='batch' cannot run agents"):
+        cli.main(["agent", "probe", "--out", str(out)])
+
+
+def test_the_draft_return_is_not_a_tool_call() -> None:
+    """Claude Code returns the --json-schema draft through its own StructuredOutput tool; any other tool is kept."""
+    events = [{"type": "assistant", "message": {"id": "m1", "content": [
+        {"type": "tool_use", "id": "t1", "name": "StructuredOutput", "input": {"summary": "x"}},
+        {"type": "tool_use", "id": "t2", "name": "Bash", "input": {"command": "ls"}}]}}]
+    transcript, _ = agent.read_stream([json.dumps(e) for e in events], "m", max_turns=8)
+    assert [c["name"] for c in transcript["tool_calls"]] == ["Bash"]
