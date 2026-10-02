@@ -1,6 +1,7 @@
 """The posture workflow (#121): what it may call, what it asks for, and how a draft reads."""
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -87,3 +88,17 @@ def test_both_providers_record_the_same_shape() -> None:
     cli, api = (json.loads((RECORDED / name).read_text()) for name in ("posture.json", "posture.anthropic.json"))
     assert (cli["provider"], api["provider"]) == ("claude-cli", "anthropic") and set(cli) == set(api)
     assert (cli["billed"], api["billed"]) == (False, True)
+
+
+def test_the_demo_runs_misattributed_number_is_now_rejected_and_corrected(tmp_path: Path) -> None:
+    """#124, recorded on the demo repo's outputs with binding: the first draft put 11 next to soc2:cc7.1 ("11 rules
+    at 4 findings each", a count no tool reports) and was rejected; the corrected draft, written by the correction
+    round, passed."""
+    recorded = json.loads((RECORDED / "posture.corrected.json").read_text())
+    out = tmp_path / "out"
+    shutil.copytree(RECORDED / "demo-out", out)
+    runs = iter([recorded["rejected"], recorded["corrected"]])
+    record = agent.run_workflow(POSTURE, lambda w, o, lim: next(runs), out, agent.Limits())
+    (attempt,) = record["rejected_attempts"]
+    assert "11 in 'Address soc2:cc7.1" in attempt["problems"][0]
+    assert record["validation"] == {"passed": True, "problems": []} and record["draft"]
