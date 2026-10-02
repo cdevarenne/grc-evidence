@@ -14,6 +14,7 @@ from oscal_schema import validate as validate_oscal
 
 from okf_grc import data
 from okf_grc.config import load_config
+from okf_grc.contract import ContractError, read_mapping
 from okf_grc.manifest import OUTPUTS, build_manifest, run_id
 from okf_grc.manifest import main as manifest_main
 from okf_grc.map_findings import map_findings, read_findings
@@ -125,7 +126,7 @@ def test_read_findings_requires_the_versioned_document(tmp_path: Path) -> None:
     assert read_findings(path) == FINDINGS
     for stale in (FINDINGS, {"schema_version": "2.0", "findings": []}):
         path.write_text(json.dumps(stale))
-        with pytest.raises(ValueError, match="rerun `grc scan`"):
+        with pytest.raises(ContractError, match="rerun `grc scan`"):
             read_findings(path)
 
 
@@ -137,3 +138,15 @@ def test_a_rewritten_manifest_keeps_the_repository_state_the_scan_recorded(tmp_p
     monkeypatch.chdir(tmp_path)
     manifest_main(["--out", str(out), "--now", NOW, "--run-id", "r", "--keep-repository"])
     assert json.loads((out / "run.json").read_text())["repository"] == scanned
+
+
+def test_read_mapping_requires_the_versioned_document(tmp_path: Path) -> None:
+    """#94: every reader of mapping.json checks the schema major version, as read_findings does."""
+    path = tmp_path / "mapping.json"
+    path.write_text(json.dumps({"schema_version": "1.1", "controls": {}, "unmapped": []}))
+    assert read_mapping(path)["controls"] == {}
+    stale_docs: list[dict] = [{"controls": {}, "unmapped": []}, {"schema_version": "2.0", "controls": {}}]
+    for stale in stale_docs:
+        path.write_text(json.dumps(stale))
+        with pytest.raises(ContractError, match="rerun `grc map`"):
+            read_mapping(path)

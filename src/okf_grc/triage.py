@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from okf_grc.contract import read_mapping
 from okf_grc.digest import bundle_digest, dumps, scan_digest
 from okf_grc.llm import LLM, LLMError, Request
 from okf_grc.okf_lib import load_bundle
@@ -173,7 +174,7 @@ def main(argv: list[str] | None = None) -> None:
         "--batch", action="store_true", help="send as one Message Batch: half price, results in minutes, not seconds"
     )
     args = parser.parse_args(argv)
-    mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
+    mapping = read_mapping(args.out / "mapping.json")
     scoped = args.variant == "scoped"
     gaps = scan_digest(mapping, targets=scoped)["gaps"]
     bundle_doc = bundle_digest(load_bundle(args.knowledge), scoped=scoped)

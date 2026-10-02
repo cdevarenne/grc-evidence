@@ -10,7 +10,8 @@ from typing import Any
 
 import yaml
 
-from okf_grc.config import load_config
+from okf_grc.config import ConfigError, load_config
+from okf_grc.contract import read_findings
 from okf_grc.data import SCHEMA_VERSION
 from okf_grc.okf_lib import (
     EXPIRY_WARNING_DAYS,
@@ -58,11 +59,11 @@ def load_context(inventory: Path) -> dict[str, Any]:
         return {}
     doc = yaml.safe_load(inventory.read_text(encoding="utf-8")) or {}
     if "risk_tier" in doc and doc["risk_tier"] not in RISK_TIERS:
-        raise ValueError(f"{inventory}: risk_tier {doc['risk_tier']!r} is not one of {RISK_TIERS}")
+        raise ConfigError(f"{inventory}: risk_tier {doc['risk_tier']!r} is not one of {RISK_TIERS}")
     context = {field: doc[field] for field in CONTEXT_FIELDS if field in doc}
     systems = doc.get("systems") or []
     if not isinstance(systems, list) or not all(isinstance(s, dict) for s in systems):
-        raise ValueError(f"{inventory}: systems must be a list of mappings")
+        raise ConfigError(f"{inventory}: systems must be a list of mappings")
     sdks = [s.get("sdk") for s in systems]
     if sdks and all(isinstance(sdk, str) and sdk for sdk in sdks):
         context["ai_sdks"] = sorted(set(sdks))
@@ -161,15 +162,6 @@ def map_findings(
             ],
         }
     return mapping
-
-
-def read_findings(path: Path) -> list[Finding]:
-    """The findings list of a `findings.json` written under schema 1.x; anything else is an error."""
-    doc = json.loads(path.read_text(encoding="utf-8"))
-    major = SCHEMA_VERSION.split(".")[0]
-    if not isinstance(doc, dict) or str(doc.get("schema_version", "")).split(".")[0] != major:
-        raise ValueError(f"{path}: not a schema {major}.x findings file; rerun `grc scan`")
-    return doc["findings"]
 
 
 def main(argv: list[str] | None = None) -> None:

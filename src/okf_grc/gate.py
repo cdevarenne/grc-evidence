@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from okf_grc.contract import read_mapping
+
 Json = dict[str, Any]
 BASELINE = Path("expected/control-status.json")
 FAILING = "not-satisfied"
@@ -82,7 +84,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--fail-on", choices=RANKED, default="high", help="fail on a new finding at or above this severity")
     parser.add_argument("--summary", type=Path, default=None, help="append the status table to this file (CI job summary)")
     args = parser.parse_args(argv)
-    mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
+    mapping = read_mapping(args.out / "mapping.json")
     if args.write_baseline:
         args.baseline.parent.mkdir(parents=True, exist_ok=True)
         args.baseline.write_text(json.dumps(baseline_doc(mapping), indent=2) + "\n", encoding="utf-8")

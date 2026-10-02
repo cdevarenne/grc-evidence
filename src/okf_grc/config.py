@@ -13,6 +13,8 @@ from typing import Any
 
 import yaml
 
+from okf_grc.errors import GrcError
+
 CONFIG_FILE = "grc.yaml"
 # Accepted keys: a type for a leaf, a nested dict for a section.
 _SHAPE: dict[str, Any] = {
@@ -29,7 +31,7 @@ _SHAPE: dict[str, Any] = {
 }
 
 
-class ConfigError(ValueError):
+class ConfigError(GrcError, ValueError):
     """`grc.yaml` or a command-line override is malformed or points outside the repo."""
 
 

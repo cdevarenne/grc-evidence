@@ -13,6 +13,8 @@ from typing import Any
 
 import yaml
 
+from okf_grc.errors import GrcError
+
 RESERVED = frozenset({"index.md", "log.md"})
 SUPPRESSION_TYPE = "Suppression"
 SUPPRESSION_KINDS = ("false-positive", "accepted-risk")
@@ -35,7 +37,7 @@ _H1 = re.compile(r"^# (.+?)\s*$", re.MULTILINE)
 _RULE_PATTERN = re.compile(r"[^*?\[\]]+\*?")
 
 
-class BundleError(ValueError):
+class BundleError(GrcError, ValueError):
     """A bundle file violates OKF v0.2 conformance (§11)."""
 
 

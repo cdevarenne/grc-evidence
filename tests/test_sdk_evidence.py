@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from okf_grc.config import ConfigError
 from okf_grc.map_findings import SDK_GAP, load_context, map_findings
 from okf_grc.okf_lib import BundleError, load_bundle
 from okf_grc.render_report import render_report
@@ -34,7 +35,7 @@ def test_load_context_reads_sdks_only_when_every_system_names_one(tmp_path: Path
 
 
 def test_load_context_rejects_malformed_systems(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="systems must be a list of mappings"):
+    with pytest.raises(ConfigError, match="systems must be a list of mappings"):
         load_context(_inventory(tmp_path, "systems: [langchain]\n"))
 
 

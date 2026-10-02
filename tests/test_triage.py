@@ -5,6 +5,7 @@ from pathlib import Path
 
 from llm_stub import StubLLM
 
+from okf_grc.data import SCHEMA_VERSION
 from okf_grc.digest import bundle_digest, scan_digest
 from okf_grc.map_findings import map_findings
 from okf_grc.okf_lib import FRAMEWORK_SCOPES, load_bundle
@@ -113,7 +114,7 @@ def test_main_batch_flag_sends_one_message_batch(tmp_path, monkeypatch) -> None:
     import sys
 
     from okf_grc import triage as triage_module
-    (tmp_path / "mapping.json").write_text(json.dumps(MAPPING))
+    (tmp_path / "mapping.json").write_text(json.dumps({"schema_version": SCHEMA_VERSION, **MAPPING}))
     ok = {"proposal": "none", "rationale": "r", "confidence": "high"}
     calls: list[str] = []
 

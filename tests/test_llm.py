@@ -238,3 +238,15 @@ def test_a_malformed_claude_cli_response_is_an_llm_error(tmp_path: Path, stdout:
 
     with pytest.raises(LLMError, match="no JSON result"):
         _llm(tmp_path, mode="claude-cli", runner=runner).complete(REQ)
+
+
+def test_a_stalled_batch_stops_after_the_deadline(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """#94: polling has a limit and names the batch, instead of looping forever."""
+    client = FakeClient()
+    client.messages.batches = FakeBatches(client.message)
+    monkeypatch.setattr(client.messages.batches, "retrieve", lambda batch_id: SimpleNamespace(id=batch_id, processing_status="in_progress", request_counts={}))
+    clock = iter(range(0, 10_000, 1800))
+    monkeypatch.setattr("okf_grc.llm.time.monotonic", lambda: next(clock))
+    monkeypatch.setattr("okf_grc.llm.time.sleep", lambda s: None)
+    with pytest.raises(LLMError, match="batch batch_1: not ended after 3600 s"):
+        _llm(tmp_path, mode="anthropic", client=client).complete_batch({"a": REQ})

@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from llm_stub import StubLLM
 
+from okf_grc.data import SCHEMA_VERSION
 from okf_grc.digest import bundle_digest, scan_digest
 from okf_grc.llm import LLMError
 from okf_grc.map_findings import map_findings
@@ -90,7 +91,7 @@ def test_llm_failure_falls_back_to_no_narratives() -> None:
 def _out_with_mapping(tmp_path: Path, mapping: dict) -> Path:
     out = tmp_path / "out"
     out.mkdir()
-    (out / "mapping.json").write_text(json.dumps(mapping), encoding="utf-8")
+    (out / "mapping.json").write_text(json.dumps({"schema_version": SCHEMA_VERSION, **mapping}), encoding="utf-8")
     return out
 
 
@@ -109,7 +110,7 @@ def test_narratives_are_used_only_for_the_mapping_they_were_written_for(
     assert "Written for the first scan." in (out / "report.md").read_text()
     gap = {"tool": "checkov", "rule_id": "CKV_NEW", "severity": "low", "target": "app/x.tf", "message": "m", "tags": []}
     rescan = map_findings(load_bundle(root / "knowledge"), [gap])  # a rescan found something new
-    (out / "mapping.json").write_text(json.dumps(rescan), encoding="utf-8")
+    (out / "mapping.json").write_text(json.dumps({"schema_version": SCHEMA_VERSION, **rescan}), encoding="utf-8")
     render_main(["--out", str(out), "--now", "2026-10-01T12:00:00+00:00"])
     assert "Written for the first scan." not in (out / "report.md").read_text()
     assert "written for another mapping.json; ignored" in capsys.readouterr().out

@@ -9,7 +9,12 @@ from pathlib import Path
 import pytest
 
 from okf_grc import cli, data, manifest
-from okf_grc.config import Config
+from okf_grc.config import Config, ConfigError
+from okf_grc.contract import ContractError
+from okf_grc.errors import GrcError
+from okf_grc.llm import LLMError
+from okf_grc.okf_lib import BundleError
+from okf_grc.run_scan import ScanError
 
 ROOT = Path(__file__).parent.parent
 
@@ -220,3 +225,17 @@ def test_untracked_bundle_config_and_inventory_make_a_run_dirty(tmp_path: Path) 
     state = manifest.repo_state(tmp_path, inputs)
     assert state["dirty"] is True
     assert state["untracked"] == ["ai-inventory.yaml", "grc.yaml", "knowledge/new.md"]
+
+
+def test_engine_errors_print_one_line_without_a_traceback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """#94: a problem the person can fix exits with `grc <command>: <message>`."""
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(SystemExit, match="^grc scan: target '../x' leaves the repo root$"):
+        cli.main(["scan", "--target", "../x"])
+    with pytest.raises(SystemExit, match="^grc report: .*mapping.json"):
+        cli.main(["report", "--out", str(tmp_path / "none")])
+
+
+@pytest.mark.parametrize(("error", "base"), [(ConfigError, ValueError), (BundleError, ValueError), (ContractError, ValueError), (ScanError, RuntimeError), (LLMError, RuntimeError)])
+def test_engine_errors_share_a_base_and_keep_theirs(error: type[Exception], base: type[Exception]) -> None:
+    assert issubclass(error, GrcError) and issubclass(error, base)

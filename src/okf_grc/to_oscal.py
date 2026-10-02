@@ -11,6 +11,7 @@ from typing import Any
 
 from okf_grc import data
 from okf_grc.config import Config, load_config
+from okf_grc.contract import read_mapping
 from okf_grc.map_findings import NOT_RUN, SDK_GAP
 from okf_grc.okf_lib import (
     COMPONENT_TYPE,
@@ -402,7 +403,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     config = load_config(Path.cwd(), args.config, target=args.target, knowledge=args.knowledge)
     bundle = load_bundle(Path(config.knowledge))
-    mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
+    mapping = read_mapping(args.out / "mapping.json")
     oscal_dir = args.out / "oscal"
     oscal_dir.mkdir(parents=True, exist_ok=True)
     for name, doc in (

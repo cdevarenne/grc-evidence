@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from okf_grc import map_findings as map_findings_module
+from okf_grc.config import ConfigError
 from okf_grc.map_findings import load_context, map_findings
 from okf_grc.okf_lib import applies, load_bundle
 
@@ -70,7 +71,7 @@ def test_load_context(tmp_path: Path) -> None:
 def test_load_context_rejects_an_unknown_risk_tier(tmp_path: Path, tier: str) -> None:
     inventory = tmp_path / "ai-inventory.yaml"
     inventory.write_text(f"risk_tier: {tier}\n", encoding="utf-8")
-    with pytest.raises(ValueError, match="risk_tier"):
+    with pytest.raises(ConfigError, match="risk_tier"):
         load_context(inventory)
 
 

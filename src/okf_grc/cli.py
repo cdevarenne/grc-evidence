@@ -27,6 +27,7 @@ from okf_grc import (
     triage,
 )
 from okf_grc.config import load_config
+from okf_grc.errors import GrcError
 
 # Each step's own options pass through unchanged: `grc scan --target app` is `run_scan.py --target app`.
 STEPS: dict[str, ModuleType] = {
@@ -125,20 +126,23 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("command", choices=COMMANDS, help="step to run")
     parser.add_argument("args", nargs=argparse.REMAINDER, help="options for that step (see `grc <command> -h`)")
     args = parser.parse_args(argv)
-    if args.command == "bootstrap":
-        bootstrap()
-    elif args.command == "init":
-        adopt.init_main(args.args)
-    elif args.command == "check":
-        adopt.check_main(args.args)
-    elif args.command == "sync-base":
-        adopt.sync_base_main(args.args)
-    elif args.command == "narrate":
-        narrate_run(args.args)
-    elif args.command == "run":
-        run(args.args)
-    else:
-        STEPS[args.command].main(args.args)
+    try:
+        if args.command == "bootstrap":
+            bootstrap()
+        elif args.command == "init":
+            adopt.init_main(args.args)
+        elif args.command == "check":
+            adopt.check_main(args.args)
+        elif args.command == "sync-base":
+            adopt.sync_base_main(args.args)
+        elif args.command == "narrate":
+            narrate_run(args.args)
+        elif args.command == "run":
+            run(args.args)
+        else:
+            STEPS[args.command].main(args.args)
+    except (GrcError, FileNotFoundError) as e:  # the person can fix these: one line, no traceback
+        raise SystemExit(f"grc {args.command}: {e}") from e
 
 
 if __name__ == "__main__":

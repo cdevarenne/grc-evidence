@@ -15,13 +15,14 @@ from typing import Any
 
 from okf_grc.config import Config, load_config
 from okf_grc.data import SCHEMA_VERSION
+from okf_grc.errors import GrcError
 
 Finding = dict[str, Any]
 SEVERITIES = ("critical", "high", "medium", "low", "info", "unknown")
 _SEMGREP_SEVERITY = {"ERROR": "high", "WARNING": "medium", "INFO": "low"}
 
 
-class ScanError(RuntimeError):
+class ScanError(GrcError, RuntimeError):
     """A scanner is missing, crashed, or produced unreadable output."""
 
 

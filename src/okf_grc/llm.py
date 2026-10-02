@@ -16,6 +16,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from okf_grc.errors import GrcError
+
 Json = dict[str, Any]
 MODES = ("replay", "record", "anthropic", "claude-cli")
 DEFAULT_MODEL = "claude-haiku-4-5"
@@ -26,11 +28,12 @@ PRICES = {"claude-haiku-4-5": (1.00, 5.00), "claude-sonnet-5": (2.00, 10.00)}
 MODEL_PARAMS: dict[str, Json] = {"claude-sonnet-5": {"thinking": {"type": "disabled"}}}
 CACHE_WRITE, CACHE_READ, BATCH = 1.25, 0.10, 0.50  # multipliers on the input price / on the whole call
 CHARS_PER_TOKEN = 3  # conservative: overestimates input tokens for the budget guard
+BATCH_POLL_S, BATCH_TIMEOUT_S = 30, 3600  # a stalled batch stops the run after an hour, naming its id
 CUSTOM_ID = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")  # Message Batches API rule for custom_id
 REQUEST_TIMEOUT_S = 60.0  # per synchronous call; the SDK default is 10 minutes
 
 
-class LLMError(RuntimeError):
+class LLMError(GrcError, RuntimeError):
     """A call failed, was refused, was truncated, or has no recorded response."""
 
 
@@ -222,10 +225,13 @@ class LLM:
                 for cid, r in requests.items()
             ]
         )
-        print(f"llm: batch {batch.id} submitted ({len(requests)} requests); polling every 30 s", file=sys.stderr)
+        print(f"llm: batch {batch.id} submitted ({len(requests)} requests); polling every {BATCH_POLL_S} s", file=sys.stderr)
+        deadline = time.monotonic() + BATCH_TIMEOUT_S
         while (batch := client.messages.batches.retrieve(batch.id)).processing_status != "ended":
+            if time.monotonic() > deadline:
+                raise LLMError(f"batch {batch.id}: not ended after {BATCH_TIMEOUT_S} s ({batch.processing_status}); its results stay retrievable")
             print(f"llm: batch {batch.id} {batch.processing_status}: {batch.request_counts}", file=sys.stderr)
-            time.sleep(30)
+            time.sleep(BATCH_POLL_S)
         print(f"llm: batch {batch.id} ended", file=sys.stderr)
         outputs: dict[str, Json] = {}
         for result in client.messages.batches.results(batch.id):  # any order: key by custom_id

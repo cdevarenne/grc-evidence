@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from okf_grc.config import load_config
+from okf_grc.contract import read_mapping
 from okf_grc.map_findings import NOT_RUN, SDK_GAP
 from okf_grc.narrate import read_narratives
 from okf_grc.okf_lib import FRAMEWORK_TITLES, Bundle, load_bundle
@@ -287,7 +288,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--out", type=Path, default=Path("out"))
     parser.add_argument("--now", default=datetime.now(UTC).isoformat(timespec="seconds"))
     args = parser.parse_args(argv)
-    mapping = json.loads((args.out / "mapping.json").read_text(encoding="utf-8"))
+    mapping = read_mapping(args.out / "mapping.json")
     ledger = args.out / "llm-usage.jsonl"
     narratives, stale = read_narratives(args.out)
     if stale:
