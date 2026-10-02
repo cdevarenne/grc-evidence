@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable
 from datetime import UTC, datetime
 from importlib.metadata import version
 from importlib.resources import as_file
@@ -43,8 +44,12 @@ def bootstrap() -> None:
         subprocess.run(["bash", str(script)], cwd=Path.cwd(), check=True)
 
 
-def run(argv: list[str]) -> None:
-    """All steps over one target, as `make scan` runs them, ending with the run manifest."""
+RUN_STEPS = ("scan", "map", "oscal", "report", "manifest")
+
+
+def run(argv: list[str], on_step: Callable[[str], None] | None = None) -> None:
+    """All steps over one target, as `make scan` runs them, ending with the run manifest. `on_step` hears each
+    step's name before it starts (the MCP server reports it as progress)."""
     parser = argparse.ArgumentParser(prog="grc run", description=run.__doc__)
     parser.add_argument("--config", help="scan layout (default: grc.yaml if present)")
     parser.add_argument("--target", help="scan target, relative to the repo root (overrides the config)")
@@ -68,11 +73,17 @@ def run(argv: list[str]) -> None:
                 shutil.copy2(out / keep, staging / keep)
         common = [*_flag(args, "config"), "--out", str(staging)]
         layout = [*_flag(args, "knowledge"), *_flag(args, "target"), *common]
-        STEPS["scan"].main([*_flag(args, "target"), *common])
-        STEPS["map"].main(layout)
-        STEPS["oscal"].main([*layout, *stamp])
-        STEPS["report"].main([*_flag(args, "knowledge"), *common, "--now", now])
-        STEPS["manifest"].main([*layout, *stamp, "--exclude", str(out)])
+        step_args = {
+            "scan": [*_flag(args, "target"), *common],
+            "map": layout,
+            "oscal": [*layout, *stamp],
+            "report": [*_flag(args, "knowledge"), *common, "--now", now],
+            "manifest": [*layout, *stamp, "--exclude", str(out)],
+        }
+        for step in RUN_STEPS:
+            if on_step:
+                on_step(step)
+            STEPS[step].main(step_args[step])
         for rel in (*manifest.OUTPUTS, "run.json"):
             (out / rel).parent.mkdir(parents=True, exist_ok=True)
             os.replace(staging / rel, out / rel)

@@ -3,10 +3,13 @@
 import asyncio
 import json
 import sys
+import threading
+from collections import Counter
 from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import Any
 
+import anyio
 import pytest
 from mcp.client import Client
 from mcp.client.stdio import StdioServerParameters
@@ -18,6 +21,7 @@ from okf_grc.gate import baseline_doc
 from okf_grc.map_findings import map_findings
 from okf_grc.mcp_server import build_server
 from okf_grc.okf_lib import load_bundle
+from okf_grc.run_scan import ScanError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 MAPPING = map_findings(load_bundle(FIXTURES / "bundle"), json.loads((FIXTURES / "findings.json").read_text()))
@@ -225,3 +229,86 @@ def test_no_tool_changes_a_file(tmp_path: Path) -> None:
 
     _with_client(build_server(out, tmp_path), use)
     assert {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()} == before
+
+
+def _fake_run(tmp_path: Path, started: threading.Event | None = None, release: threading.Event | None = None, fail: bool = False) -> Callable[..., None]:
+    """Stands in for cli.run: hears each step, then writes a new run's outputs (or fails before writing any)."""
+
+    def fake(argv: list[str], on_step: Callable[[str], None] | None = None) -> None:
+        out = Path(argv[argv.index("--out") + 1])
+        for step in cli.RUN_STEPS:
+            if on_step:
+                on_step(step)
+            if started:
+                started.set()
+            if release:
+                release.wait(5)
+            if fail and step == "map":
+                raise ScanError("checkov: exit 2: boom")
+        (out / "mapping.json").write_text(json.dumps({"schema_version": SCHEMA_VERSION, **MAPPING}))
+        (out / "run.json").write_text(json.dumps({"run_id": "run-2", "generated": "2026-10-02T00:00:00+00:00",
+                                                  "repository": {"commit": "abc", "dirty": False}, "engine": {"version": "1.6.0"}}))
+
+    return fake
+
+
+def test_scan_runs_the_pipeline_and_summarizes_the_new_run(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """#110: progress per step, then the new run's summary."""
+    monkeypatch.setattr(cli, "run", _fake_run(tmp_path))
+    messages: list[str | None] = []
+
+    async def on_progress(progress: float, total: float | None, message: str | None) -> None:
+        messages.append(message)
+
+    async def use(client: Client) -> Any:
+        tools = {t.name: t for t in (await client.list_tools()).tools}
+        return tools["scan"], await client.call_tool("scan", {}, progress_callback=on_progress)
+
+    tool, result = _with_client(build_server(_out(tmp_path), tmp_path), use)
+    assert tool.annotations and not tool.annotations.read_only_hint and not tool.annotations.destructive_hint
+    assert result.structured_content == {"run_id": "run-2", "generated": "2026-10-02T00:00:00+00:00", "commit": "abc", "dirty": False,
+                                         "engine": "1.6.0", "statuses": dict(sorted(Counter(e["status"] for e in MAPPING["controls"].values()).items())),
+                                         "findings": 5, "gaps": 2}
+    assert messages == ["scan (1/5)", "map (2/5)", "oscal (3/5)", "report (4/5)", "manifest (5/5)", "done"]
+
+
+def test_a_failed_scan_is_an_error_and_keeps_the_previous_run(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(cli, "run", _fake_run(tmp_path, fail=True))
+    out = _out(tmp_path)
+    before = {p: p.read_bytes() for p in out.iterdir()}
+    result = _call(out, "scan")
+    assert result.is_error and "scan failed: checkov: exit 2: boom" in result.content[0].text
+    assert {p: p.read_bytes() for p in out.iterdir()} == before
+
+
+def test_one_scan_at_a_time(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    started, release = threading.Event(), threading.Event()
+    monkeypatch.setattr(cli, "run", _fake_run(tmp_path, started, release))
+
+    async def use(client: Client) -> Any:
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(client.call_tool, "scan", {})
+            await anyio.to_thread.run_sync(started.wait, 5)
+            second = await client.call_tool("scan", {})
+            release.set()
+        return second
+
+    second = _with_client(build_server(_out(tmp_path), tmp_path), use)
+    assert second.is_error and "a scan is already running" in second.content[0].text
+
+
+@pytest.mark.integration
+def test_scan_over_stdio_runs_the_real_pipeline(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+    """The scanners, through `grc mcp` as an agent starts it, on this repository's sample app. Stale narratives make
+    the report step print; on stdio that must not reach the protocol stream."""
+    root = Path(__file__).parent.parent
+    (tmp_path / "out").mkdir()
+    (tmp_path / "out" / "narratives.json").write_text('{"mapping_sha256": "stale", "controls": {}}')
+    params = StdioServerParameters(command=sys.executable, args=["-m", "okf_grc.cli", "mcp", "--out", str(tmp_path / "out")], cwd=root)
+
+    async def use(client: Client) -> Any:
+        return await client.call_tool("scan", {})
+
+    summary = _with_client(params, use).structured_content
+    assert summary["findings"] > 0 and summary["statuses"]["not-satisfied"] > 0 and summary["commit"]
+    assert "Failed to parse JSONRPC message" not in caplog.text  # a print reached the protocol stream

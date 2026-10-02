@@ -7,20 +7,27 @@ are typed, so each tool advertises an output schema and returns structured conte
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
+import sys
+import threading
+from collections import Counter
 from pathlib import Path
 from typing import TypedDict
 
+import anyio
 from mcp.server import MCPServer
+from mcp.server.mcpserver import Context
 from mcp.server.mcpserver.exceptions import ResourceError, ToolError
 from mcp.types import ToolAnnotations
 
-from okf_grc import gate
+from okf_grc import cli, gate
 from okf_grc.contract import read_mapping
 from okf_grc.errors import GrcError
 
 PAGE_MAX = 200
 OSCAL = ("component-definition", "assessment-plan", "assessment-results")
+RUNS_PIPELINE = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=False)
 READ_ONLY = ToolAnnotations(read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False)
 
 
@@ -103,6 +110,17 @@ class Suppressions(TypedDict):
     unused: list[str]
 
 
+class ScanSummary(TypedDict):
+    run_id: str
+    generated: str
+    commit: str | None
+    dirty: bool | None
+    engine: str
+    statuses: dict[str, int]
+    findings: int
+    gaps: int
+
+
 class GateResult(TypedDict):
     run_id: str
     baseline: str
@@ -157,6 +175,7 @@ def build_server(out: Path, repo: Path | None = None) -> MCPServer:
     """The server over one repository's outputs in `out`; `repo` (default: the working directory) holds the
     committed gate baseline."""
     baseline = (repo or Path.cwd()) / gate.BASELINE
+    scanning = threading.Lock()
     server = MCPServer("okf-grc", instructions=(
         "Reads okf-grc compliance results. Statuses and counts come from the engine and are never 'satisfied'; "
         "a finding maps to a control only through a reviewed rule_ids declaration."
@@ -254,6 +273,39 @@ def build_server(out: Path, repo: Path | None = None) -> MCPServer:
         found = gate.problems(mapping, recorded, fail_on)
         return {"run_id": _run_id(out), "baseline": gate.BASELINE.as_posix(), "fail_on": fail_on, "passed": not found,
                 "problems": found, "findings_checked": "findings" in recorded}
+
+    @server.tool(annotations=RUNS_PIPELINE)
+    async def scan(ctx: Context) -> ScanSummary:
+        """Run the full pipeline (`grc run`) over this repository, with its own grc.yaml, and summarize the new run.
+        It writes only the run outputs (out/), all at once when every step succeeded; a failed step is an error and
+        leaves the previous run whole. Takes seconds with warm scanners, longer when Trivy refreshes its database.
+        One scan at a time."""
+        if not scanning.acquire(blocking=False):
+            raise ToolError("a scan is already running; read its results when it ends")
+        try:
+            def on_step(step: str) -> None:
+                done = cli.RUN_STEPS.index(step)
+                anyio.from_thread.run(ctx.report_progress, done, len(cli.RUN_STEPS), f"{step} ({done + 1}/{len(cli.RUN_STEPS)})")
+
+            def pipeline() -> None:
+                # Over stdio the protocol owns stdout: a step's print would land in the message stream.
+                with contextlib.redirect_stdout(sys.stderr):
+                    cli.run(["--out", str(out)], on_step=on_step)
+
+            await anyio.to_thread.run_sync(pipeline)
+        except (GrcError, FileNotFoundError) as e:
+            raise ToolError(f"scan failed: {e}") from e
+        finally:
+            scanning.release()
+        await ctx.report_progress(len(cli.RUN_STEPS), len(cli.RUN_STEPS), "done")
+        run = json.loads(_read(out / "run.json"))
+        mapping = _mapping(out)
+        return {
+            "run_id": run["run_id"], "generated": run["generated"], "commit": run["repository"]["commit"],
+            "dirty": run["repository"]["dirty"], "engine": run["engine"]["version"],
+            "statuses": dict(sorted(Counter(e["status"] for e in mapping["controls"].values()).items())),
+            "findings": len(_findings(mapping)), "gaps": len(mapping["unmapped"]),
+        }
 
     @server.resource("grc://report", mime_type="text/markdown")
     def report() -> str:
