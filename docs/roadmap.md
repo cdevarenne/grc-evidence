@@ -52,6 +52,18 @@ rejected draft one correction round.
 `1.8.1` binds a number right beside a control, rule, or suppression to that
 identifier only, so it cannot pass by matching an unrelated total.
 
+Built beyond the engine:
+
+- **Adopter repo** (Spec F Part B):
+  [okf-grc-demo-boutique](https://github.com/cdevarenne/okf-grc-demo-boutique)
+  applies the released engine to Google's `microservices-demo`, with its own CI
+  (a compliance gate on every pull request and a nightly scan). The prototyping
+  for it produced 1.2.0 and 1.2.1. See its
+  [case study](https://github.com/cdevarenne/okf-grc-demo-boutique/blob/main/docs/case-study.md)
+  and [Spec F](superpowers/specs/2026-09-29-mini-spec-f-engine-and-adopter-repo.md).
+- **Agentic workflows, first part** (Spec G, G1 and G2): `grc mcp`
+  ([docs/mcp.md](mcp.md)) and `grc agent posture` ([docs/agents.md](agents.md)).
+
 Deliberately left out, or not started:
 
 - **System security plan (SSP)** An SSP states how an organization
@@ -65,11 +77,9 @@ Deliberately left out, or not started:
   the bundle and of scan history (search, graph queries, control health over
   time) is specified but not started:
   [Spec E](superpowers/specs/2026-09-29-mini-spec-e-compliance-data-layer.md).
-- **Adopter repo** A separate repo that applies the engine to a sample app
-  like Google's `microservices-demo`, with its own CI, is Spec F Part B:
-  specified but not started (Part A, the engine, is built):
-  [Spec F](superpowers/specs/2026-09-29-mini-spec-f-engine-and-adopter-repo.md).
-- **Agentic workflows** An MCP server over the engine and workflows in which an
-  agent proposes (change review, gap-to-mapping patches, suppression drafts) and
-  a person approves: specified, not started:
+- **Agentic workflows, remaining stories** The MCP server (G1, 1.6.0) and the
+  workflow runner with its first workflow, `posture` (G2, 1.7.0 to 1.8.1), are
+  built. Still specified but not started: gap-to-mapping proposals (G4), their
+  evaluation (G6), change review on pull requests (G3), then G5 and G7, in that
+  order. Each drafts; a person approves:
   [Spec G](superpowers/specs/2026-10-01-mini-spec-g-agentic-workflows.md).
