@@ -42,9 +42,12 @@ touch the scanner locks: change a scanner version in `tools.lock` and run
 ## Your own pipeline
 
 A starting point for a repository set up with `grc init` (see
-[new-repo.md](new-repo.md)). It has not been run yet: Spec F Part B builds and
-proves it on `microservices-demo`, including a gate on control status and a
-nightly scan.
+[new-repo.md](new-repo.md)). The adopter repo
+[okf-grc-demo-boutique](https://github.com/cdevarenne/okf-grc-demo-boutique)
+runs the same steps on `microservices-demo` (Spec F Part B). It calls them
+through its Makefile, which pins the engine version, and adds a daily cache for
+Trivy's database. Pull requests gate at `critical`. A nightly run with a fresh
+database gates at `high`.
 
 ```yaml
 name: compliance

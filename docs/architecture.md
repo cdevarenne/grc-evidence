@@ -77,7 +77,6 @@ flowchart TB
 
 | Proposal | Recorded in | One line |
 |---|---|---|
-| Adopter repo for `microservices-demo`, with CI | Spec F Part B | Prove the engine on code it was not built around |
 | Data layer | [Spec E](superpowers/specs/2026-09-29-mini-spec-e-compliance-data-layer.md) | Postgres + pgvector projection of the bundle and of scan history |
 | GRC platform connectors | Spec F §7 | Push results to a platform such as Vanta |
 | Agentic pipeline | Spec F §7 | An agent runs this and other tools, triages, and calls the connectors, with approval gates |
@@ -87,7 +86,8 @@ flowchart TB
 ## Recommended order
 
 1. Fix #56 (stale narratives) before anything publishes the report.
-2. Spec F Part B: the adopter repo and its CI.
+2. Spec F Part B, the adopter repo and its CI: built as
+   [okf-grc-demo-boutique](https://github.com/cdevarenne/okf-grc-demo-boutique).
 3. MCP server, read-mostly: built in 1.6.0 ([docs/mcp.md](mcp.md)).
 4. The agentic workflow, narrowed to proposing:
    [Spec G](superpowers/specs/2026-10-01-mini-spec-g-agentic-workflows.md). Its
