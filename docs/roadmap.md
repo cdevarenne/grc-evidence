@@ -55,7 +55,7 @@ identifier only, so it cannot pass by matching an unrelated total.
 Built beyond the engine:
 
 - **Adopter repo** (Spec F Part B):
-  [okf-grc-demo-boutique](https://github.com/cdevarenne/grc-evidence-boutique)
+  [grc-evidence-boutique](https://github.com/cdevarenne/grc-evidence-boutique)
   applies the released engine to Google's `microservices-demo`, with its own CI
   (a compliance gate on every pull request and a nightly scan). The prototyping
   for it produced 1.2.0 and 1.2.1. See its

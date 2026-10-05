@@ -43,7 +43,7 @@ touch the scanner locks: change a scanner version in `tools.lock` and run
 
 A starting point for a repository set up with `grc init` (see
 [new-repo.md](new-repo.md)). The adopter repo
-[okf-grc-demo-boutique](https://github.com/cdevarenne/okf-grc-demo-boutique)
+[grc-evidence-boutique](https://github.com/cdevarenne/grc-evidence-boutique)
 runs the same steps on `microservices-demo` (Spec F Part B). It calls them
 through its Makefile, which pins the engine version, and adds a daily cache for
 Trivy's database. Pull requests gate at `critical`. A nightly run with a fresh
@@ -66,7 +66,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7  # v10.2.0
-      - run: uv tool install git+https://github.com/cdevarenne/okf-grc-skill@v1.8.1
+      - run: uv tool install git+https://github.com/cdevarenne/grc-evidence@v1.8.1
       - run: grc bootstrap
       - run: grc check
       - run: grc run --require-clean
