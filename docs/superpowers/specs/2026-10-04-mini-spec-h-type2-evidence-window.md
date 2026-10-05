@@ -1,7 +1,7 @@
 # Mini Spec H — Type 2 evidence over a window, for N repos
 
 - **Date:** 2026-10-04
-- **Status:** approved by the owner for planning. Part A has a plan: [plan](../plans/2026-10-04-mini-spec-h-part-a-plan.md). Part B gets its own plan after Part A ships.
+- **Status:** approved by the owner for planning. Part A has a plan: [plan](../plans/2026-10-04-mini-spec-h-part-a-plan.md). Part B gets its own plan after Part A ships. Revised 2026-10-05 after the Gemini 3.8 Flash plan review (§3.2, §5.2, §5.4, §6, §10, §11).
 - **Depends on:** v1.8.1.
 - **Release:** Part A ships as `v2.0.0`, together with the package rename (§7).
 - **LLM cost:** none. A population memo drafted by an LLM, with numbers bound to the population summary, belongs to the Spec G `package` workflow, not to this spec.
@@ -22,7 +22,7 @@ Teams collect this by hand from the SCM API, again for each audit request. This 
 An adopter runs **one grc instance** (one config repo, one ledger) for **all the repos in scope**. That can be one repo or several hundred.
 
 - The target list is in `grc.yaml` (`github.repos`) or in a separate file (`github.repos_file`), with a tier per repo.
-- The collectors (§4, §5) read only the GitHub API. They need no clone, so they scale to hundreds of repos. The cost is API rate limit, and the ledger records it per run.
+- The collectors (§4, §5) read only the GitHub API. They need no clone, so they scale to hundreds of repos. The cost is API rate limit, and the ledger records it per run. A rate limit stops the run at once, with the retry time in the error. There is no retry loop; the next scheduled run tries again.
 - Every evidence record carries its `repo`.
 - **Part B** (§9) adds scanning N repos with the code scanners (clone, scan, aggregate, shard in CI). Part A does not clone target repos.
 
@@ -62,7 +62,7 @@ Canonical JSON: keys sorted, separators `,` and `:`, UTF-8, no trailing newline.
 
 `grc ledger verify` checks every `entry_id` and the `prev_id` chain. It reports the first bad line number and exits non-zero. A ledger that has been edited fails.
 
-A later step (Spec E §3.2) imports this file into SQLite or Postgres with no change of fields.
+A later step (Spec E §3.2) imports this file into SQLite or Postgres with no loss of fields. `window` becomes the two columns `window_start` and `window_end`.
 
 ### 3.3 Snapshot is not history
 
@@ -117,10 +117,11 @@ For each PR:
 
 ### 5.2 Rules (code decides)
 
-- **Approvers:** the latest review state per reviewer, among reviews submitted before `mergedAt`, where the reviewer is not the author. A reviewer counts as an approver when that state is `APPROVED`.
+- **Approvers:** the latest review state per reviewer, among reviews submitted before `mergedAt`, where the reviewer is not the author. Only the states `APPROVED`, `CHANGES_REQUESTED` and `DISMISSED` count. A `COMMENTED` review does not withdraw an approval on GitHub, so it is ignored. A reviewer counts as an approver when that state is `APPROVED`.
 - `change-no-approval`: no approver.
-- `change-self-merge-without-review`: the author merged it and there is no approver.
-- `merged_before_rule` (a flag, not a finding): the PR merged before the first ledger date on which the repo had required reviews of 1 or more.
+- `change-self-merge-without-review`: the author merged it and there is no approver. Both logins must be present: a deleted author and an unknown merger are not a self-merge.
+- `merged_before_rule` (a flag, not a finding): the last `scm` ledger entry for the repo on or before `mergedAt` shows fewer than 1 required review.
+- `rule_not_evidenced` (a flag, not a finding): no readable `scm` ledger entry for the repo exists on or before `mergedAt`. The rule may have been on or off; the ledger has no evidence. It is never read as "rule on".
 - `near_boundary` (a flag, not a finding): `mergedAt` is within 8 hours of either window bound.
 
 Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<number>"`, so suppressions and risk acceptances can name one change.
@@ -133,15 +134,16 @@ Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<n
 
 ### 5.4 People
 
-`people: real | pseudonymous` (default `real`). With `pseudonymous`, every login in every output becomes `p-` plus the first 10 hex characters of HMAC-SHA256(salt, login). The salt comes from the environment variable that `people_salt_env` names (default `GRC_PEOPLE_SALT`). It is never written to an output. If the salt is not set, the run stops with an error. An adopter's audit needs real names. A public demo that republishes other people's activity does not.
+`people: real | pseudonymous` (default `real`). With `pseudonymous`, every login in every output becomes `p-` plus the first 10 hex characters of HMAC-SHA256(salt, login). The salt comes from the environment variable that `people_salt_env` names (default `GRC_PEOPLE_SALT`). It is never written to an output. The collector applies the names when it reads the data, so no real login reaches a finding message, `mapping.json`, the report, OSCAL or the ledger. If the salt is not set, the run stops with an error. An adopter's audit needs real names. A public demo that republishes other people's activity does not.
 
 ## 6. Sample and window report
 
 - **`grc sample --list sample.csv`.** `sample.csv` has the columns `repo,number`. The command reads `out/collect/changes.json` and writes `out/collect/sample-evidence.csv` with these columns: `repo,number,merged_at,approvers,ci_conclusion,scanner_checks,missing`. A sampled change that is not in the population, or that has no checks, is listed in `missing`. It is never reported as passing.
+- **`grc collect`** writes the collector outputs and appends its `scm` and `changes` entries to the ledger. It writes no `run` entry. Control status comes only from `grc run`, which runs the collectors as one of its steps. A scheduled evidence job therefore runs `grc run`, not `grc collect`.
 - **`grc window`.** It reads the `run` entries of the ledger inside the window and writes `out/window.json` and `out/window.md`. For each control it gives:
   - `first_satisfied`: the first entry date with `no-violations-detected`
   - `last_evidence`: the last entry date
-  - `gaps`: periods inside the window where the status was anything else, and periods longer than `window_max_gap_days` (default 7) with no entry
+  - `gaps`: periods inside the window where the status was anything else, and periods longer than `window_max_gap_days` (default 7) with no entry. Such a period is a gap for its whole length.
 
 ## 7. Package rename (v2.0.0)
 
@@ -172,6 +174,7 @@ Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<n
 - The demo repo collects:
   - the change population of the public upstream `GoogleCloudPlatform/microservices-demo`, for a fixed past window of three full months, with `people: pseudonymous`
   - the posture of the owner's own repos (`collect: [scm]`)
+- The upstream repo has no `scm` entries in the demo ledger, so each of its changes has the flag `rule_not_evidenced`.
 - The owner's repos are maintained by one person and have no required reviews. The tool reports this as `scm-no-required-review`. Spec I turns it into a signed risk acceptance.
 - The recorded API responses for the demo window are test fixtures. The committed outputs can be reproduced offline.
 
@@ -182,8 +185,11 @@ Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<n
    - a merge at `end 23:59:59Z` (in), and one at `end+1 00:00:00Z` (out)
    - a self-merge with no review
    - a review that was approved, then dismissed
+   - a review that was approved, then commented on (still an approval)
    - a review submitted after the merge
    - a rule that became active inside the window
+   - no `scm` entry before a merge (`rule_not_evidenced`)
+   - a rate limit (the run stops, writes nothing and names the retry time)
    - an empty population (the denominator is still reported)
    - an unreadable rules endpoint
    - pagination across the window start

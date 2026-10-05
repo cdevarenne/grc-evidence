@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-04-mini-spec-h-type2-evidence-window.md`
 
+**Review:** revised on 2026-10-05 after the Gemini 3.8 Flash plan review. The package rename moved from the last task to Task 1, so new modules go straight into `grc_evidence`. Each task names the spec sections it implements. Each task names its issue; the issue titles are `Spec H A1` to `Spec H A12` in task order.
+
 ## Global Constraints
 
 - `requires-python = ">=3.14"`. Runtime dependencies stay `pyyaml` only.
@@ -25,10 +27,10 @@
 
 ## Review Focus
 
-1. **A control evidenced only by `github:*` rules, with no `github` config.** It must be `not-assessed` (`rules-not-run`), not `no-violations-detected`. Test: Task 8, `test_github_rules_not_run_without_config`.
-2. **GraphQL fails in the middle of pagination** (HTTP 502, or a secondary rate limit as HTTP 403 with `retry-after`). Nothing is written and no ledger entry is appended. The run exits with the repo name. Test: Task 8, `test_collect_failure_writes_nothing`.
-3. **A pagination cursor that does not advance**, or `hasNextPage` stays true with the same cursor. Stop with an error; never loop. Test: Task 7, `test_pagination_same_cursor_raises`.
-4. **The same collector runs twice on one day.** The window report uses the last entry of each day, with no double counting. Test: Task 10, `test_same_day_entries_last_wins`.
+1. **A control evidenced only by `github:*` rules, with no `github` config.** It must be `not-assessed` (`rules-not-run`), not `no-violations-detected`. Test: Task 9, `test_github_rules_not_run_without_config`.
+2. **GraphQL fails in the middle of pagination** (HTTP 502, or a secondary rate limit as HTTP 403 with `retry-after`). Nothing is written and no ledger entry is appended. The run exits with the repo name. Test: Task 9, `test_collect_failure_writes_nothing`.
+3. **A pagination cursor that does not advance**, or `hasNextPage` stays true with the same cursor. Stop with an error; never loop. Test: Task 8, `test_pagination_same_cursor_raises`.
+4. **The same collector runs twice on one day.** The window report uses the last entry of each day, with no double counting. Test: Task 11, `test_same_day_entries_last_wins`.
 5. **A recorded fixture that still holds a real login.** A repo test scans every JSON file under `tests/fixtures/github/` and fails on any `login` value that does not start with `p-` (except `ghost`). Test: Task 12, `test_fixtures_pseudonymized`.
 
 ---
@@ -37,28 +39,92 @@
 
 | File | Responsibility |
 |---|---|
-| `src/okf_grc/window.py` (new) | UTC bounds, `in_window`, `near_boundary`, timestamp parsing |
-| `src/okf_grc/config.py` (modify) | `window`, `ledger`, `people`, `people_salt_env`, `window_max_gap_days`, `github.*`; `RepoSpec` |
-| `src/okf_grc/ledger.py` (new) | Canonical JSON, append with hash chain, read, verify |
-| `src/okf_grc/github_api.py` (new) | `Transport` protocol, `HttpTransport`, `RecordedTransport`, `GitHubError` |
-| `src/okf_grc/github_queries.py` (new) | GraphQL query strings (constants only) |
-| `src/okf_grc/people.py` (new) | `Namer`: real or pseudonymous logins |
-| `src/okf_grc/collect_scm.py` (new) | Posture reading, workflow parsing, `scm-*` findings |
-| `src/okf_grc/collect_changes.py` (new) | Population fetch, approver rules, `change-*` findings, CSV/JSON writers |
-| `src/okf_grc/collect.py` (new) | `grc collect` command; the `collect` step of `grc run`; ledger entries |
-| `src/okf_grc/sample.py` (new) | `grc sample` |
-| `src/okf_grc/window_report.py` (new) | `grc window` |
-| `src/okf_grc/cli.py`, `map_findings.py`, `manifest.py`, `run_scan.py`, `data/__init__.py`, `data/schemas/findings.schema.json` (modify) | Wiring, contract 1.2 |
-| `src/okf_grc/data/base/scanners/github.md` (new) | `rule_ids: ["github:scm-*", "github:change-*"]`, tag `cc8.1` |
+| `src/grc_evidence/window.py` (new) | UTC bounds, `in_window`, `near_boundary`, timestamp parsing |
+| `src/grc_evidence/config.py` (modify) | `window`, `ledger`, `people`, `people_salt_env`, `window_max_gap_days`, `github.*`; `RepoSpec` |
+| `src/grc_evidence/ledger.py` (new) | Canonical JSON, append with hash chain, read, verify |
+| `src/grc_evidence/github_api.py` (new) | `Transport` protocol, `HttpTransport`, `RecordedTransport`, `GitHubError` |
+| `src/grc_evidence/github_queries.py` (new) | GraphQL query strings (constants only) |
+| `src/grc_evidence/people.py` (new) | `Namer`: real or pseudonymous logins |
+| `src/grc_evidence/collect_scm.py` (new) | Posture reading, workflow parsing, `scm-*` findings |
+| `src/grc_evidence/collect_changes.py` (new) | Population fetch, approver rules, `change-*` findings, CSV/JSON writers |
+| `src/grc_evidence/collect.py` (new) | `grc collect` command; the `collect` step of `grc run`; ledger entries |
+| `src/grc_evidence/sample.py` (new) | `grc sample` |
+| `src/grc_evidence/window_report.py` (new) | `grc window` |
+| `src/grc_evidence/cli.py`, `map_findings.py`, `manifest.py`, `run_scan.py`, `data/__init__.py`, `data/schemas/findings.schema.json` (modify) | Wiring, contract 1.2 |
+| `src/grc_evidence/data/base/scanners/github.md` (new) | `rule_ids: ["github:scm-*", "github:change-*"]`, tag `cc8.1` |
 | `tests/fixtures/github/` (new) | Recorded and synthetic API responses |
 
 ---
 
-### Task 1: Window bounds and config
+### Task 1: Package rename to grc-evidence
+
+**Spec:** §7. **Issue:** #137.
 
 **Files:**
-- Create: `src/okf_grc/window.py`, `tests/test_window.py`
-- Modify: `src/okf_grc/config.py` (`_SHAPE`, `Config`, `_fields`), `tests/test_config.py`
+- Move: `src/okf_grc/` → `src/grc_evidence/` (`git mv`)
+- Create: `src/okf_grc/__init__.py` (shim), `tests/test_shim.py`
+- Modify:
+  - `pyproject.toml`: `name = "grc-evidence"`, `version = "2.0.0"`, `grc = "grc_evidence.cli:main"`, ruff/mypy paths
+  - `Makefile`: `include` path, `LOCKS`, `$(PY_LLM) grc_evidence.eval_triage`
+  - `.github/workflows/ci.yml` and `release.yml`: `hashFiles` paths
+  - every `from okf_grc` and `import okf_grc` in `src/` and `tests/`
+  - `cli.py`: `version("grc-evidence")` and the install hint
+  - `to_oscal.py`: `PROP_NS = "https://github.com/cdevarenne/grc-evidence/ns/oscal"` and the three `_metadata` titles (`"grc-evidence …"`)
+  - `src/grc_evidence/data/skill/*`: the install command text
+  - `README.md` and `docs/*.md` (not `docs/superpowers/`, which is dated history): paths `src/okf_grc/` → `src/grc_evidence/`, the package name `okf-grc` → `grc-evidence`, and the install commands. Keep `@v1.8.1` in install commands until the release in Task 12. `docs/oscal-subset.md` names the new `PROP_NS`.
+
+**Interfaces:**
+- Produces:
+  - Importing `okf_grc` emits a `DeprecationWarning`.
+  - `import okf_grc.config` returns the same module object as `grc_evidence.config` (shim: a `sys.meta_path` finder that aliases `okf_grc.*` to `grc_evidence.*`).
+
+- [ ] **Step 1: Write the failing tests**
+
+```python
+def test_old_import_warns_and_aliases():
+    with pytest.warns(DeprecationWarning):
+        import okf_grc.config as old
+    import grc_evidence.config as new
+    assert old is new
+def test_version_reads_new_name(): assert version("grc-evidence") == "2.0.0"
+def test_prop_ns(): assert "grc-evidence" in to_oscal.PROP_NS
+```
+
+- [ ] **Step 2: Run and see them fail**
+
+Run: `uv run pytest tests/test_shim.py -q`
+Expected: FAIL.
+
+- [ ] **Step 3: Move and edit.** Ship both top-level modules with `[tool.uv.build-backend] module-name = ["grc_evidence", "okf_grc"]`. This was tested on 2026-10-05 with `uv_build` 0.12: the wheel holds `grc_evidence/__init__.py` and `okf_grc/__init__.py`.
+- [ ] **Step 4: Regenerate the examples** with `make examples`. `PROP_NS` and the `_metadata` titles are in `examples/oscal/*.json`, so the examples change in this commit.
+- [ ] **Step 5: Verify**
+
+```bash
+uv sync && uv run pytest -q && uv run ruff check && uv run mypy
+uv build && unzip -l dist/grc_evidence-2.0.0-*.whl | grep -E "grc_evidence/__init__|okf_grc/__init__"
+grep -rIn "okf_grc\|okf-grc" src tests pyproject.toml Makefile .github README.md docs --exclude-dir=superpowers | grep -v "src/okf_grc/__init__.py\|test_shim.py"
+```
+
+Expected: tests pass, and both `__init__` files are in the wheel. The last grep prints only the lines that name the deprecated alias on purpose.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add -A && git commit -m "Rename the package to grc-evidence and the module to grc_evidence
+
+okf_grc stays as a deprecated alias for one minor release.
+The OSCAL property namespace changes to the grc-evidence URI."
+```
+
+After this task, all new modules go into `src/grc_evidence/`. `src/okf_grc/` holds only the shim. `main` reports version 2.0.0 until the release in Task 12. Nothing installs from `main`, and the demo pins `v1.8.1` until Task 12.
+
+### Task 2: Window bounds and config
+
+**Spec:** §2, §3.1. **Issue:** #127.
+
+**Files:**
+- Create: `src/grc_evidence/window.py`, `tests/test_window.py`
+- Modify: `src/grc_evidence/config.py` (`_SHAPE`, `Config`, `_fields`), `tests/test_config.py`
 
 **Interfaces:**
 - Produces:
@@ -118,7 +184,7 @@ Add rejection tests, each asserting `ConfigError` with the key in the message:
 - [ ] **Step 2: Run them and see them fail**
 
 Run: `uv run pytest tests/test_window.py tests/test_config.py -q`
-Expected: FAIL (`ModuleNotFoundError: okf_grc.window`, unknown key `window`).
+Expected: FAIL (`ModuleNotFoundError: grc_evidence.window`, unknown key `window`).
 
 - [ ] **Step 3: Implement**
 
@@ -135,15 +201,17 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/okf_grc/window.py src/okf_grc/config.py tests/test_window.py tests/test_config.py
+git add src/grc_evidence/window.py src/grc_evidence/config.py tests/test_window.py tests/test_config.py
 git commit -m "Add the audit window and the GitHub repo list to grc.yaml"
 ```
 
-### Task 2: Ledger with hash chain
+### Task 3: Ledger with hash chain
+
+**Spec:** §3.2. **Issue:** #128.
 
 **Files:**
-- Create: `src/okf_grc/ledger.py`, `tests/test_ledger.py`
-- Modify: `src/okf_grc/cli.py` (command `ledger`)
+- Create: `src/grc_evidence/ledger.py`, `tests/test_ledger.py`
+- Modify: `src/grc_evidence/cli.py` (command `ledger`)
 
 **Interfaces:**
 - Produces:
@@ -195,17 +263,19 @@ Expected: PASS.
 git commit -am "Add the evidence ledger: append-only JSON Lines with a hash chain"
 ```
 
-### Task 3: GitHub transport
+### Task 4: GitHub transport
+
+**Spec:** §4.1, §5.1, §8 (read-only). **Issue:** #129.
 
 **Files:**
-- Create: `src/okf_grc/github_api.py`, `src/okf_grc/github_queries.py`, `tests/test_github_api.py`, `tests/fixtures/github/transport/`
+- Create: `src/grc_evidence/github_api.py`, `src/grc_evidence/github_queries.py`, `tests/test_github_api.py`, `tests/fixtures/github/transport/`
 
 **Interfaces:**
 - Produces:
   - `class GitHubError(GrcError, RuntimeError)`
   - `class Transport(Protocol)`:
     - `graphql(self, query: str, variables: dict) -> dict` returns `data`. It raises `GitHubError` on HTTP errors and on a non-empty `errors` list.
-    - `rest(self, path: str) -> dict | list | None` returns `None` on 403 or 404 (not readable). It raises `GitHubError` on other errors.
+    - `rest(self, path: str) -> dict | list | None` returns `None` on 404, and on a 403 with no rate-limit signal (not readable). A rate limit raises `GitHubError`: HTTP 429, or a 403 with `retry-after` or `x-ratelimit-remaining: 0`. Other errors raise `GitHubError` too.
   - `HttpTransport(token: str, api: str = "https://api.github.com")`
   - `token_from_env() -> str` raises `GitHubError("set GITHUB_TOKEN or GH_TOKEN")`
   - `RecordedTransport(root: Path)`:
@@ -226,6 +296,10 @@ git commit -am "Add the evidence ledger: append-only JSON Lines with a hash chai
 def test_recorded_graphql_roundtrip(tmp_path): ...  # write fixture under computed key; graphql() returns its data
 def test_missing_fixture_names_key(tmp_path): ...   # GitHubError message contains the key
 def test_rest_404_is_none(tmp_path): ...
+def test_rest_403_permission_is_none(monkeypatch): ...  # 403, no rate-limit headers -> None
+def test_rest_403_rate_limited_raises(monkeypatch): ...  # 403 + x-ratelimit-remaining: 0 -> GitHubError
+def test_secondary_rate_limit_names_retry_after(monkeypatch): ...  # 403 + retry-after: 60 -> "retry after 60 s"; no retry
+def test_429_raises(monkeypatch): ...
 def test_graphql_errors_raise(tmp_path): ...        # fixture {"errors":[{"message":"x"}]} -> GitHubError
 def test_token_never_in_error(monkeypatch):
     t = HttpTransport("ghp_SECRET123")
@@ -245,7 +319,8 @@ Expected: FAIL.
 
 - `HttpTransport` sets `Authorization: Bearer <token>`, `User-Agent: grc-evidence` and a 30-second timeout.
 - On an HTTP error it raises `GitHubError(f"GitHub API {status} on {path or 'graphql'}")`.
-- A 403 with `retry-after` gets the message `"secondary rate limit; retry after N s"`.
+- A 403 with `retry-after` gets the message `"secondary rate limit; retry after N s"`. A 403 with `x-ratelimit-remaining: 0`, or a 429, gets `"rate limit; resets at <x-ratelimit-reset as UTC>"`.
+- No retry and no wait: a rate limit stops the run at once. The nightly run tries again the next day. This applies to GraphQL and REST.
 
 - [ ] **Step 4: Run tests**
 
@@ -258,13 +333,15 @@ Expected: PASS.
 git commit -am "Add a read-only GitHub transport with recorded responses for tests"
 ```
 
-### Task 4: Spike — which branch-rule endpoint a read-only token can read (owner runs it)
+### Task 5: Spike — which branch-rule endpoint a read-only token can read (owner runs it)
+
+**Spec:** §4.1. **Issue:** #130.
 
 **Files:**
 - Modify: `docs/limits.md` (new section "Repository settings")
 - Create: `tests/fixtures/github/spike/README.md` (the commands and the result, no tokens)
 
-This task decides how Task 6 reads rules. It has no code.
+This task decides how Task 7 reads rules. It has no code.
 
 - [ ] **Step 1: Make a fine-grained token** with read-only access to the owner's public repos ("Contents: read", "Metadata: read", "Administration: read" if the owner's repos are included).
 - [ ] **Step 2: Run the commands** against one owned repo and against `GoogleCloudPlatform/microservices-demo`:
@@ -277,7 +354,7 @@ gh api graphql -f query='query{repository(owner:"OWNER",name:"REPO"){branchProte
 
 Record the HTTP status and whether the response has the review count, the checks and the bypass list. Also run the same three with the Actions `GITHUB_TOKEN` in a throwaway workflow on the demo repo.
 
-- [ ] **Step 3: Write the decision** in `docs/limits.md`: the endpoint order Task 6 uses. Expected outcome to confirm:
+- [ ] **Step 3: Write the decision** in `docs/limits.md`: the endpoint order Task 7 uses. Expected outcome to confirm:
   - `rules/branches/{branch}` (rulesets) is readable with read access.
   - Classic protection needs admin rights.
   - On a non-owned repo, classic protection is therefore unreadable, which gives `scm-rules-unreadable`.
@@ -287,10 +364,12 @@ Record the HTTP status and whether the response has the review count, the checks
 git commit -am "Record which branch-rule endpoints a read-only token can read"
 ```
 
-### Task 5: People namer
+### Task 6: People namer
+
+**Spec:** §5.4. **Issue:** #131.
 
 **Files:**
-- Create: `src/okf_grc/people.py`, `tests/test_people.py`
+- Create: `src/grc_evidence/people.py`, `tests/test_people.py`
 
 **Interfaces:**
 - Produces:
@@ -329,11 +408,13 @@ Expected: PASS.
 git commit -am "Add real or pseudonymous names for people in outputs"
 ```
 
-### Task 6: SCM posture collector
+### Task 7: SCM posture collector
+
+**Spec:** §4. **Issue:** #132.
 
 **Files:**
-- Create: `src/okf_grc/collect_scm.py`, `tests/test_collect_scm.py`, `tests/fixtures/github/scm/` (synthetic repos `acme/api`, `acme/lib`, `acme/locked`)
-- Create: `src/okf_grc/data/base/scanners/github.md` (type `Scanner`, `rule_ids: ["github:scm-*", "github:change-*"]`, tags `[cc8.1]`, a `generated` block, no `verified`; the owner verifies it before release)
+- Create: `src/grc_evidence/collect_scm.py`, `tests/test_collect_scm.py`, `tests/fixtures/github/scm/` (synthetic repos `acme/api`, `acme/lib`, `acme/locked`)
+- Create: `src/grc_evidence/data/base/scanners/github.md` (type `Scanner`, `rule_ids: ["github:scm-*", "github:change-*"]`, tags `[cc8.1]`, a `generated` block, no `verified`; the owner verifies it before release)
 
 **Interfaces:**
 - Consumes: `Transport`, `RepoSpec`, `Config.github_scanner_jobs`
@@ -371,7 +452,7 @@ Expected: FAIL.
 
 - [ ] **Step 3: Implement**
 
-- Read the rules in the order that Task 4 recorded.
+- Read the rules in the order that Task 5 recorded.
 - Map ruleset rule types: `pull_request.parameters.required_approving_review_count`, `required_status_checks.parameters.required_status_checks[].context`.
 - Bypass: any `bypass_actors` entry with `bypass_mode: always`.
 - Run `make sync-base` so `knowledge/` gets `scanners/github.md`.
@@ -387,30 +468,37 @@ Expected: PASS (including `test_base_bundle.py` and `test_bundle_conformance.py`
 git commit -am "Add the SCM posture collector and its rules in the base bundle"
 ```
 
-### Task 7: Change population collector
+### Task 8: Change population collector
+
+**Spec:** §5. **Issue:** #133.
 
 **Files:**
-- Create: `src/okf_grc/collect_changes.py`, `tests/test_collect_changes.py`, `tests/fixtures/github/changes/` (synthetic `acme/api`, 3 pages)
+- Create: `src/grc_evidence/collect_changes.py`, `tests/test_collect_changes.py`, `tests/fixtures/github/changes/` (synthetic `acme/api`, 3 pages)
 
 **Interfaces:**
 - Consumes: `Transport`, `MERGED_PRS`, `window.*`, `Namer`, `ledger.read`
 - Produces:
   - `@dataclass(frozen=True) class Change`:
     - `repo: str`, `number: int`, `title: str`
-    - `author: str | None`, `merged_by: str | None`, `merged_at: datetime`, `merge_sha: str`, `base: str`
+    - `author: str`, `merged_by: str`, `merged_at: datetime`, `merge_sha: str`, `base: str` (logins already passed through the `Namer`: `ghost` for a missing login)
     - `approvers: tuple[str, ...]`, `flags: tuple[str, ...]`
     - `checks: tuple[tuple[str, str], ...]` (name, conclusion)
   - `fetch_merged(t: Transport, repo: str, bounds: tuple[datetime, datetime]) -> Iterator[dict]`:
     - pages by `updatedAt` descending and stops after a page whose last `updatedAt` < `bounds[0]`
     - raises `GitHubError("pagination did not advance")` when the cursor repeats
   - `approvers(reviews: list[dict], author: str | None, merged_at: datetime) -> tuple[str, ...]`
-  - `rule_since(entries: list[dict], repo: str) -> datetime | None`: the `recorded_at` of the first `scm` entry for `repo` whose summary has `required_reviews >= 1`
-  - `to_change(pr: dict, repo: str, bounds, since: datetime | None) -> Change` (flags: `no_approval`, `self_merge_without_review`, `merged_before_rule`, `near_boundary`)
-  - `collect_changes(t, repo: RepoSpec, bounds, branches: tuple[str, ...], default_branch: str, entries: list[dict]) -> tuple[list[Change], dict]`: the second value is the summary (`in_population`, `merged_all_branches`, `flags`)
+  - `rule_state(entries: list[dict], repo: str, at: datetime) -> str`: from the last `scm` entry for `repo` recorded on or before `at`: `"on"` when its summary has `required_reviews >= 1`, `"off"` when it has `required_reviews < 1`, `"unknown"` when no such entry exists or the entry has `readable: false`
+  - `to_change(pr: dict, repo: str, bounds, entries: list[dict], namer: Namer) -> Change`. Flags:
+    - `no_approval`
+    - `self_merge_without_review`: both raw logins are present and equal, and there is no approver. A missing author and a missing merger are never a self-merge.
+    - `merged_before_rule`: `rule_state` is `"off"` at `mergedAt`
+    - `rule_not_evidenced`: `rule_state` is `"unknown"` at `mergedAt`
+    - `near_boundary`
+  - `collect_changes(t, repo: RepoSpec, bounds, branches: tuple[str, ...], default_branch: str, entries: list[dict], namer: Namer) -> tuple[list[Change], dict]`: the second value is the summary (`in_population`, `merged_all_branches`, `flags`). The namer is applied here, so no raw login leaves this function: not in a `Change`, a finding message, `mapping.json`, the report or OSCAL.
   - `change_findings(changes: list[Change]) -> list[Finding]`:
     - `change-no-approval` and `change-self-merge-without-review`, severity `high`
     - target `github:<repo>#<n>`
-  - `write_population(out: Path, changes: list[Change], summary: dict, namer: Namer) -> dict[str, str]`:
+  - `write_population(out: Path, changes: list[Change], summary: dict) -> dict[str, str]`:
     - writes `collect/population.csv` and `collect/changes.json`
     - returns path → sha256
     - the CSV header must equal spec §5.3 exactly
@@ -422,13 +510,19 @@ B = utc_bounds(date(2026, 6, 1), date(2026, 8, 31))
 def test_last_second_in_first_second_out(): ...
 def test_self_merge_without_review(): ...   # author == merged_by, no approvers -> both flags + 2 findings
 def test_dismissed_after_approval_not_approver(): ...  # APPROVED then DISMISSED by same reviewer -> ()
+def test_comment_after_approval_keeps_approver(): ...  # APPROVED then COMMENTED by same reviewer -> (reviewer,)
+def test_changes_requested_after_approval_not_approver(): ...
 def test_review_after_merge_ignored(): ...
 def test_author_review_ignored(): ...
-def test_rule_became_active_mid_window(): ...  # entries: scm required_reviews 0 on 06-10, 1 on 07-01 -> PR merged 06-20 flagged
+def test_rule_became_active_mid_window(): ...  # entries: scm required_reviews 0 on 06-10, 1 on 07-01 -> PR merged 06-20 merged_before_rule; PR merged 07-05 no rule flag
+def test_no_scm_entry_is_rule_not_evidenced(): ...  # empty ledger -> rule_not_evidenced, never merged_before_rule
+def test_unreadable_scm_entry_is_rule_not_evidenced(): ...
 def test_empty_population_keeps_denominator(): ...  # no PR on base, 4 on other branches -> in_population 0, merged_all_branches 4
 def test_pagination_stops_before_window(): ...  # 3 pages, page 3 never requested (RecordedTransport has no page-3 fixture)
 def test_pagination_same_cursor_raises(): ...   # Review Focus 3
 def test_ghost_author(): ...                    # author null -> "ghost" in CSV
+def test_ghost_author_and_merger_not_self_merge(): ...  # author null, mergedBy null -> no self_merge flag
+def test_pseudonymous_no_raw_login_anywhere(): ...  # people: pseudonymous -> no raw login in Change, findings or CSV
 def test_csv_header_and_utc_z(): ...
 ```
 
@@ -437,7 +531,7 @@ def test_csv_header_and_utc_z(): ...
 Run: `uv run pytest tests/test_collect_changes.py -q`
 Expected: FAIL.
 
-- [ ] **Step 3: Implement.** Approvers: group reviews by author, drop the PR author and reviews with `submittedAt >= mergedAt`, take the latest state per reviewer, and keep `APPROVED`. Sort the result.
+- [ ] **Step 3: Implement.** Approvers: group reviews by author, drop the PR author and reviews with `submittedAt >= mergedAt`, and drop reviews with state `COMMENTED` or `PENDING`. A comment does not withdraw an approval on GitHub. Take the latest remaining state per reviewer (`APPROVED`, `CHANGES_REQUESTED` or `DISMISSED`), and keep `APPROVED`. Sort the result. Compare raw logins for the self-merge rule, then apply the namer.
 - [ ] **Step 4: Run tests**
 
 Run: `uv run pytest -q`
@@ -449,20 +543,22 @@ Expected: PASS.
 git commit -am "Add the change population collector with approval rules and a denominator"
 ```
 
-### Task 8: `grc collect`, the run step, mapping and the contract
+### Task 9: `grc collect`, the run step, mapping and the contract
+
+**Spec:** §3.2, §4.2, §5.2, §6 (`grc collect`), §7 (contract 1.2). **Issue:** #134.
 
 **Files:**
-- Create: `src/okf_grc/collect.py`, `tests/test_collect.py`
+- Create: `src/grc_evidence/collect.py`, `tests/test_collect.py`
 - Modify:
-  - `src/okf_grc/cli.py`: add `collect` to `COMMANDS`; add `"collect"` to `RUN_STEPS` after `"scan"` (Task 2 adds `ledger`, Task 9 `sample`, Task 10 `window`)
-  - `src/okf_grc/map_findings.py` (`main`): also read `out/collect/github-findings.json` when it exists
-  - `src/okf_grc/run_scan.py` (`tools_not_run`): add `"github"` when no repo lists a collector
-  - `src/okf_grc/manifest.py`: `OPTIONAL_OUTPUTS = ("collect/github-findings.json", "collect/scm-posture.json", "collect/population.csv", "collect/changes.json")`, hashed when present
-  - `src/okf_grc/data/__init__.py`: `SCHEMA_VERSION = "1.2"`
-  - `src/okf_grc/data/schemas/findings.schema.json`: add `"github"` to the `tool` enum; the target description allows `github:<owner>/<name>[#n]`
+  - `src/grc_evidence/cli.py`: add `collect` to `COMMANDS`; add `"collect"` to `RUN_STEPS` after `"scan"` (Task 3 adds `ledger`, Task 10 `sample`, Task 11 `window`)
+  - `src/grc_evidence/map_findings.py` (`main`): also read `out/collect/github-findings.json` when it exists
+  - `src/grc_evidence/run_scan.py` (`tools_not_run`): add `"github"` when no repo lists a collector
+  - `src/grc_evidence/manifest.py`: `OPTIONAL_OUTPUTS = ("collect/github-findings.json", "collect/scm-posture.json", "collect/population.csv", "collect/changes.json")`, hashed when present
+  - `src/grc_evidence/data/__init__.py`: `SCHEMA_VERSION = "1.2"`
+  - `src/grc_evidence/data/schemas/findings.schema.json`: add `"github"` to the `tool` enum; the target description allows `github:<owner>/<name>[#n]`
 
 **Interfaces:**
-- Consumes: Tasks 1–7
+- Consumes: Tasks 2–8
 - Produces:
   - `collect_main(argv: list[str], transport: Transport | None = None) -> None` (`grc collect {scm,changes,all} [--config] [--out] [--record DIR]`)
   - `run_collect(config: Config, out: Path, transport: Transport, now: str) -> list[dict]`:
@@ -470,6 +566,7 @@ git commit -am "Add the change population collector with approval rules and a de
     - returns ledger entries for the caller to append only after every repo succeeded
     - each entry's `inputs` = `{"query_sha256": sha256 of the GraphQL query text, "branch": default branch}`; `rate_limit` from `github_api.rate_limit`
   - `grc run` appends its `collect` entries plus one `run` entry. The `run` entry's summary is `{control_key: status}` from `mapping.json`. It is appended after `os.replace` of the outputs.
+  - `grc collect` alone writes the collector outputs and appends its `scm` and `changes` entries, but no `run` entry. Control status, and so the window report, comes only from `grc run`. `grc collect` is for a quick posture check and for recording fixtures (`--record`).
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -504,14 +601,16 @@ Expected: PASS. Existing golden tests (`report.golden.md`, OSCAL) still pass wit
 git commit -am "Add grc collect and run the collectors inside grc run; contract 1.2"
 ```
 
-### Task 9: `grc sample`
+### Task 10: `grc sample`
+
+**Spec:** §6. **Issue:** #135.
 
 **Files:**
-- Create: `src/okf_grc/sample.py`, `tests/test_sample.py`
-- Modify: `src/okf_grc/cli.py`
+- Create: `src/grc_evidence/sample.py`, `tests/test_sample.py`
+- Modify: `src/grc_evidence/cli.py`
 
 **Interfaces:**
-- Consumes: `out/collect/changes.json` (Task 7), `Config.github_scanner_jobs`
+- Consumes: `out/collect/changes.json` (Task 8), `Config.github_scanner_jobs`
 - Produces:
   - `sample_evidence(changes_doc: dict, rows: list[tuple[str, int]], scanner_jobs: tuple[str, ...]) -> list[dict]`. Each output row has the columns of spec §6:
     - `ci_conclusion` is `success` only when every check concluded `SUCCESS`, `NEUTRAL` or `SKIPPED`. Otherwise it is `failure`, or `none` when there are no checks.
@@ -545,11 +644,13 @@ Expected: PASS.
 git commit -am "Add grc sample: per-change evidence for an auditor's sample"
 ```
 
-### Task 10: `grc window`
+### Task 11: `grc window`
+
+**Spec:** §3.3, §6. **Issue:** #136.
 
 **Files:**
-- Create: `src/okf_grc/window_report.py`, `tests/test_window_report.py`
-- Modify: `src/okf_grc/cli.py`
+- Create: `src/grc_evidence/window_report.py`, `tests/test_window_report.py`
+- Modify: `src/grc_evidence/cli.py`
 
 **Interfaces:**
 - Consumes: `ledger.read`, `Config.bounds()`, `Config.window_max_gap_days`
@@ -578,7 +679,7 @@ Expected: FAIL.
 
 - [ ] **Step 3: Implement.** A gap is a maximal run of days in the window that is either:
   - a day whose last entry has a status other than `no-violations-detected`, or
-  - a day further than `max_gap_days` from the last entry before it, with no entry of its own.
+  - a day inside a silence (consecutive days with no entry) that is longer than `max_gap_days`. The whole silence is the gap, not only the days after `max_gap_days`. A silence that starts at the window start counts too.
 
   Days after the last entry, up to the end of the window, are not a gap if that end is in the future (`today < end`).
 - [ ] **Step 4: Run tests**
@@ -592,63 +693,9 @@ Expected: PASS.
 git commit -am "Add grc window: control history over the audit window from the ledger"
 ```
 
-### Task 11: Package rename to grc-evidence
-
-**Files:**
-- Move: `src/okf_grc/` → `src/grc_evidence/` (`git mv`)
-- Create: `src/okf_grc/__init__.py` (shim), `tests/test_shim.py`
-- Modify:
-  - `pyproject.toml`: `name = "grc-evidence"`, `version = "2.0.0"`, `grc = "grc_evidence.cli:main"`, ruff/mypy paths
-  - `Makefile`: `include` path, `LOCKS`, `$(PY_LLM) grc_evidence.eval_triage`
-  - `.github/workflows/ci.yml` and `release.yml`: `hashFiles` paths
-  - every `from okf_grc` and `import okf_grc` in `src/` and `tests/`
-  - `cli.py`: `version("grc-evidence")` and the install hint
-  - `to_oscal.py`: `PROP_NS = "https://github.com/cdevarenne/grc-evidence/ns/oscal"` and the three `_metadata` titles (`"grc-evidence …"`)
-  - `src/grc_evidence/data/skill/*`: the install command text
-
-**Interfaces:**
-- Produces:
-  - Importing `okf_grc` emits a `DeprecationWarning`.
-  - `import okf_grc.config` returns the same module object as `grc_evidence.config` (shim: a `sys.meta_path` finder that aliases `okf_grc.*` to `grc_evidence.*`).
-
-- [ ] **Step 1: Write the failing tests**
-
-```python
-def test_old_import_warns_and_aliases():
-    with pytest.warns(DeprecationWarning):
-        import okf_grc.config as old
-    import grc_evidence.config as new
-    assert old is new
-def test_version_reads_new_name(): assert version("grc-evidence") == "2.0.0"
-def test_prop_ns(): assert "grc-evidence" in to_oscal.PROP_NS
-```
-
-- [ ] **Step 2: Run and see them fail**
-
-Run: `uv run pytest tests/test_shim.py -q`
-Expected: FAIL.
-
-- [ ] **Step 3: Move and edit.** Check how `uv_build` ships two top-level modules: `[tool.uv.build-backend] module-name = ["grc_evidence", "okf_grc"]`. If the pinned `uv_build` does not accept a list, ship the shim as a second package under `src/` with the backend's documented namespace option. Record the choice in the commit message.
-- [ ] **Step 4: Verify**
-
-```bash
-uv sync && uv run pytest -q && uv run ruff check && uv run mypy
-uv build && unzip -l dist/grc_evidence-2.0.0-*.whl | grep -E "grc_evidence/__init__|okf_grc/__init__"
-grep -rIn "okf_grc\|okf-grc" src tests pyproject.toml Makefile .github | grep -v "src/okf_grc/__init__.py\|test_shim.py"
-```
-
-Expected: tests pass, and both `__init__` files are in the wheel. The last grep prints nothing.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git commit -am "Rename the package to grc-evidence and the module to grc_evidence
-
-okf_grc stays as a deprecated alias for one minor release.
-The OSCAL property namespace changes to the grc-evidence URI."
-```
-
 ### Task 12: Demo data, examples, docs and the v2.0.0 release
+
+**Spec:** §10, §11. **Issue:** #138.
 
 **Files:**
 - Create:
@@ -659,7 +706,7 @@ The OSCAL property namespace changes to the grc-evidence URI."
   - `Makefile` (target `examples-h`)
   - `docs/limits.md`, `docs/roadmap.md`, `docs/outputs.md`, `docs/using-the-skill.md`
   - `README.md` (new commands; the section "Type 2 evidence over a window")
-  - the demo repo (`grc-evidence-boutique`): `grc.yaml`, `Makefile`, `.github/workflows/evidence.yml`
+  - the demo repo (`grc-evidence-boutique`): `grc.yaml`, `Makefile`, `.github/workflows/compliance.yml`, `.github/workflows/nightly.yml`
 
 **Interfaces:**
 - Consumes: everything above
@@ -694,17 +741,19 @@ github:
 - [ ] **Step 4: Regenerate the examples offline** with `make examples-h` (`GRC_GITHUB_FIXTURES=tests/fixtures/github/demo`). Run it twice. The second run must produce identical files (`git diff --exit-code examples/`).
 - [ ] **Step 5: Update the demo repo** (separate commit, in `grc-evidence-boutique`):
   - `grc.yaml`: the upstream repo with `collect: [changes]`; the owner's repos with `collect: [scm]`; `people: pseudonymous`
-  - `evidence.yml`: nightly. One job has `permissions: contents: write`, checks out the `ledger` branch into `evidence/`, runs `grc collect all`, `grc ledger verify` and `grc window`, and pushes only `evidence/ledger.jsonl`. `GRC_PEOPLE_SALT` is a repo secret.
+  - No new workflow. The nightly run already scans, so the evidence steps go into that same job: one bootstrap, one scan, one schedule. `compliance.yml` gets an input `evidence` (default `false`), and `nightly.yml` sets it to `true` and gives that job `permissions: contents: write`. With `evidence: true`, the job checks out the `ledger` branch into `evidence/` before `make scan`. `grc run` collects and appends the `collect` and `run` entries. Then the job runs `grc ledger verify` and `grc window`, and pushes only `evidence/ledger.jsonl`. It must run `grc run`, not `grc collect`: `grc window` reads only `run` entries. `GRC_PEOPLE_SALT` is a repo secret.
+  - **Decide before this step:** once the demo `grc.yaml` lists collectors, the pull request and push runs of `compliance.yml` also collect, because they run `grc run` too. Recommended: let them collect, so their control statuses match `expected/`. They do not push the ledger. The cost: the PR gate then depends on the GitHub API. The other option, a `grc run` flag that skips collection, makes PR statuses differ from the baseline.
   - Run `uv run zizmor .github` with no high findings.
   - Pin `OKF_GRC_VERSION` (rename it to `GRC_VERSION`) to `v2.0.0` and the package to `grc-evidence[...]`, then `make baseline` in the same commit.
 - [ ] **Step 6: Docs.**
-  - `docs/limits.md`: GitHub only; read-only; unreadable rules; no back-fill; the pseudonymization scope; the fixtures variable.
+  - `docs/limits.md`: GitHub only; read-only; unreadable rules; no back-fill; the pseudonymization scope; the fixtures variable; a rate limit stops the run with no retry; the cost of `grc collect changes` grows with the number of PRs updated since the window start (the ledger records the cost per run; GitHub search is not used, because it stops at 1,000 results).
   - `docs/roadmap.md`: Spec H Part A built; Part B and Spec I next.
 - [ ] **Step 7: Verify everything**
 
 ```bash
 uv run pytest -q && uv run ruff check && uv run mypy && make audit
 grep -rIniF -f ~/.config/grc/clean-room-denylist.txt . --exclude-dir=.git --exclude-dir=.venv   # owner-kept list of names that must not appear; must print nothing
+grep -rIn "okf_grc\|okf-grc" src tests pyproject.toml Makefile .github | grep -v "src/okf_grc/__init__.py\|test_shim.py"   # no new code uses the old name; must print nothing
 ```
 
 - [ ] **Step 8: Release.** Bump the version in the release notes, tag `v2.0.0`, push, and watch `release.yml`. In the demo, check that `make scan check gate` passes on `v2.0.0`.
