@@ -137,7 +137,7 @@ def mcp_main(argv: list[str]) -> None:
         from okf_grc import mcp_server
     except ImportError as e:
         raise SystemExit(
-            "grc mcp needs the mcp extra: uv tool install 'okf-grc[mcp] @ git+https://github.com/cdevarenne/okf-grc-skill@vX.Y.Z'"
+            "grc mcp needs the mcp extra: uv tool install 'okf-grc[mcp] @ git+https://github.com/cdevarenne/grc-evidence@vX.Y.Z'"
         ) from e
     mcp_server.main(argv)
 

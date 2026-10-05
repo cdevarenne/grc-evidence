@@ -20,7 +20,7 @@ Built with an AI coding agent under a written process; the record is in the repo
 - **Measure, don't assume.** The triage prompt was changed only in response to
   a measured failure, on a split that did not inform the fix, with the decision
   rule posted to the issue before the deciding run
-  ([#32](https://github.com/cdevarenne/okf-grc-skill/issues/32)). A fix that
+  ([#32](https://github.com/cdevarenne/grc-evidence/issues/32)). A fix that
   improved the diagnosis set but not the held-out set was recorded as such.
 - **The tool is held to its own rules.** The AI-governance Semgrep rules flagged
   this repo's own LLM client (no request timeout); the client was fixed, not

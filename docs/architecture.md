@@ -87,7 +87,7 @@ flowchart TB
 
 1. Fix #56 (stale narratives) before anything publishes the report.
 2. Spec F Part B, the adopter repo and its CI: built as
-   [okf-grc-demo-boutique](https://github.com/cdevarenne/okf-grc-demo-boutique).
+   [grc-evidence-boutique](https://github.com/cdevarenne/grc-evidence-boutique).
 3. MCP server, read-mostly: built in 1.6.0 ([docs/mcp.md](mcp.md)).
 4. The agentic workflow, narrowed to proposing:
    [Spec G](superpowers/specs/2026-10-01-mini-spec-g-agentic-workflows.md). Its

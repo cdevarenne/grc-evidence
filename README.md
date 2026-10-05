@@ -1,4 +1,4 @@
-# okf-grc-skill
+# grc-evidence
 
 > **This is a work in progress.**
 
@@ -11,13 +11,13 @@ report.
 
 *Organize knowledge → derive intelligence → take action.*
 
-**See it on a real app:** [okf-grc-demo-boutique](https://github.com/cdevarenne/okf-grc-demo-boutique)
+**See it on a real app:** [grc-evidence-boutique](https://github.com/cdevarenne/grc-evidence-boutique)
 applies the released engine to Google's
 [microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo),
 included unmodified: 422 findings mapped to controls (7 not satisfied), 42 of 47
 coverage-gap rules triaged into controls, a compliance gate on every pull
 request and a nightly scan, and an agent's draft shown with the review that
-corrected it. The [one-page case study](https://github.com/cdevarenne/okf-grc-demo-boutique/blob/main/docs/case-study.md)
+corrected it. The [one-page case study](https://github.com/cdevarenne/grc-evidence-boutique/blob/main/docs/case-study.md)
 has the figures and what the review changed in the engine.
 
 > **`app/` is intentionally vulnerable.** It exists only as a scan target, with
@@ -110,7 +110,7 @@ directly and does not use the graph.*
 | [Suppressions](docs/suppressions.md) | Reviewed, expiring decisions about single findings |
 | [AI governance](docs/ai-governance.md) | ISO/IEC 42001 and EU AI Act coverage, risk tiers, AI SDKs |
 | [LLM step and cost](docs/llm.md) | Narration and triage: validation, cost, and the triage evaluation |
-| [Limits](docs/limits.md) | What okf-grc does not do, or does only partly |
+| [Limits](docs/limits.md) | What grc-evidence does not do, or does only partly |
 | [How this was built](docs/how-this-was-built.md) | Specs, plans, human gates, measurements |
 | [Status and roadmap](docs/roadmap.md) | Where the project stands and what is next |
 | [Specs and plans](docs/superpowers/) | The written record behind each change |

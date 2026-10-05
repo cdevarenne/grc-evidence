@@ -52,7 +52,7 @@ that no control fits. Eight of those nine misses put ordinary infrastructure
 rules (health checks, probes, backups, CPU limits) on ISO/IEC 42001 or EU AI Act
 controls.
 
-**Scoped variant** ([issue #32](https://github.com/cdevarenne/okf-grc-skill/issues/32);
+**Scoped variant** ([issue #32](https://github.com/cdevarenne/grc-evidence/issues/32);
 [`examples/triage-eval-scoped.json`](../examples/triage-eval-scoped.json), $0.022):
 giving triage each control's framework scope and each gap's target files
 removed every infrastructure-to-AI-control miss, but the held-out result did not

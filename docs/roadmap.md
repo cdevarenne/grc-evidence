@@ -6,7 +6,7 @@ Where the project stands and what is specified next. See [architecture.md](archi
 cost-bounded LLM step with a measured eval, and linked OSCAL component
 definition, assessment plan, and assessment results.
 
-[`v1.1.0`](https://github.com/cdevarenne/okf-grc-skill/releases/tag/v1.1.0) (released 2026-10-01) makes it an installable
+[`v1.1.0`](https://github.com/cdevarenne/grc-evidence/releases/tag/v1.1.0) (released 2026-10-01) makes it an installable
 engine, Spec F Part A: the `okf-grc` package and its `grc` CLI, a configurable
 scan layout (`grc.yaml`), the base bundle shipped with the engine, a versioned
 output contract with a run manifest, `grc init` and `grc check`, AI rules that
@@ -55,11 +55,11 @@ identifier only, so it cannot pass by matching an unrelated total.
 Built beyond the engine:
 
 - **Adopter repo** (Spec F Part B):
-  [okf-grc-demo-boutique](https://github.com/cdevarenne/okf-grc-demo-boutique)
+  [okf-grc-demo-boutique](https://github.com/cdevarenne/grc-evidence-boutique)
   applies the released engine to Google's `microservices-demo`, with its own CI
   (a compliance gate on every pull request and a nightly scan). The prototyping
   for it produced 1.2.0 and 1.2.1. See its
-  [case study](https://github.com/cdevarenne/okf-grc-demo-boutique/blob/main/docs/case-study.md)
+  [case study](https://github.com/cdevarenne/grc-evidence-boutique/blob/main/docs/case-study.md)
   and [Spec F](superpowers/specs/2026-09-29-mini-spec-f-engine-and-adopter-repo.md).
 - **Agentic workflows, first part** (Spec G, G1 and G2): `grc mcp`
   ([docs/mcp.md](mcp.md)) and `grc agent posture` ([docs/agents.md](agents.md)).

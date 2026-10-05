@@ -1,13 +1,13 @@
 # Setting up a new repo
 
-How to bring okf-grc into another repository: what `grc init` brings in, and what a person writes. This is also where document ingestion will be described once it exists ([#53](https://github.com/cdevarenne/okf-grc-skill/issues/53)).
+How to bring grc-evidence into another repository: what `grc init` brings in, and what a person writes. This is also where document ingestion will be described once it exists ([#53](https://github.com/cdevarenne/grc-evidence/issues/53)).
 
 The engine is the `okf-grc` package; its `grc` CLI runs the same pipeline
 without this repo's Makefile or an agent. From the root of the repo to scan
 (the latest release; `grc gate` needs `v1.2.0` or later, and `v1.3.0` to gate on new findings):
 
 ```
-uv tool install git+https://github.com/cdevarenne/okf-grc-skill@v1.8.1
+uv tool install git+https://github.com/cdevarenne/grc-evidence@v1.8.1
 grc init        # knowledge/ and policies/ copied from the base bundle; starter grc.yaml,
                 # ai-inventory.yaml, and one stack stub per src/*/ directory (never overwrites)
 grc bootstrap   # the pinned scanners, into ./.tools
