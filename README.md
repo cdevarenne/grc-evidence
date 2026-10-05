@@ -1,5 +1,7 @@
 # grc-evidence
 
+Turns security scans into compliance evidence for SOC 2, ISO/IEC 42001 and the EU AI Act. Code decides status. An LLM drafts prose. A person reviews.
+
 > **This is a work in progress.**
 
 An [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format)
