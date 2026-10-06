@@ -24,8 +24,8 @@ class LedgerError(GrcError, ValueError):
 
 
 def canonical(obj: Entry) -> bytes:
-    """Keys sorted, no spaces, UTF-8: the bytes that are hashed and written."""
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    """Keys sorted, no spaces, UTF-8, no NaN or Infinity: the bytes that are hashed and written."""
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode()
 
 
 def _entry_id(entry: Entry) -> str:
@@ -71,12 +71,23 @@ def first_problem(path: Path) -> tuple[int, str] | None:
             entry = json.loads(line)
         except json.JSONDecodeError:
             return number, "not JSON"
-        if not isinstance(entry, dict) or entry.get("entry_id") != _entry_id(entry):
+        # A line must be exactly what was hashed, so every JSON reader sees the same entry: this rejects
+        # duplicate keys, other spacing or key order, and NaN or Infinity.
+        if not isinstance(entry, dict) or not _is_canonical(line, entry):
+            return number, "not canonical"
+        if entry.get("entry_id") != _entry_id(entry):
             return number, "hash mismatch"
         if entry.get("prev_id") != prev:
             return number, "broken chain"
         prev = entry["entry_id"]
     return None
+
+
+def _is_canonical(line: str, entry: Entry) -> bool:
+    try:
+        return canonical(entry) == line.encode()
+    except ValueError:  # NaN or Infinity
+        return False
 
 
 def verify(path: Path) -> int | None:

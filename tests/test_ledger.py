@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,7 @@ from grc_evidence.ledger import (
     LEDGER_SCHEMA,
     append,
     canonical,
+    first_problem,
     make_entry,
     read,
     verify,
@@ -60,6 +62,25 @@ def test_deleted_line_breaks_chain(tmp_path: Path) -> None:
         append(p, _entry(collector))
     p.write_text("".join(p.read_text().splitlines(keepends=True)[1:]))
     assert verify(p) == 1  # the new first line still names a prev_id
+
+
+@pytest.mark.parametrize("rewrite", [
+    lambda line: line.replace('"collector":"scm"', '"collector":"scm","collector":"run"', 1),  # duplicate key
+    lambda line: line.replace('","', '", "', 1),  # not canonical spacing
+    lambda line: line[:-1] + ',"extra":NaN}',  # NaN is not JSON
+])
+def test_a_line_must_be_its_canonical_form(tmp_path: Path, rewrite: Callable[[str], str]) -> None:
+    """Another JSON reader must see exactly what was hashed: duplicate keys, spacing and NaN fail."""
+    p = tmp_path / "l.jsonl"
+    append(p, _entry("scm"))
+    line = p.read_text().rstrip("\n")
+    p.write_text(rewrite(line) + "\n")
+    assert first_problem(p) == (1, "not canonical")
+
+
+def test_nan_is_never_written(tmp_path: Path) -> None:
+    with pytest.raises(ValueError):
+        append(tmp_path / "l.jsonl", {**_entry("scm"), "summary": {"x": float("nan")}})
 
 
 def test_entry_id_excludes_itself(tmp_path: Path) -> None:
