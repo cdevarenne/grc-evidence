@@ -4,7 +4,7 @@ from pathlib import Path
 
 from llm_stub import StubLLM
 
-from okf_grc.eval_triage import (
+from grc_evidence.eval_triage import (
     CUTOFFS,
     apply_cutoff,
     evaluate,
@@ -13,7 +13,7 @@ from okf_grc.eval_triage import (
     select_cutoff,
     spread,
 )
-from okf_grc.okf_lib import load_bundle
+from grc_evidence.okf_lib import load_bundle
 
 
 def test_score_measures_accuracy_and_abstention() -> None:

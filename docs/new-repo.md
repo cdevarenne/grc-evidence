@@ -2,7 +2,7 @@
 
 How to bring grc-evidence into another repository: what `grc init` brings in, and what a person writes. This is also where document ingestion will be described once it exists ([#53](https://github.com/cdevarenne/grc-evidence/issues/53)).
 
-The engine is the `okf-grc` package; its `grc` CLI runs the same pipeline
+The engine is the `grc-evidence` package; its `grc` CLI runs the same pipeline
 without this repo's Makefile or an agent. From the root of the repo to scan
 (the latest release; `grc gate` needs `v1.2.0` or later, and `v1.3.0` to gate on new findings):
 

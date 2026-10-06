@@ -6,26 +6,26 @@ vulnerabilities:
   # own MCP server's token verifier (mcp/utilities/token_verifier.py), which `semgrep scan` never starts.
   # Re-review when Semgrep releases a version that allows pyjwt>=2.14.0.
   - id: CVE-2026-102268
-    paths: [src/okf_grc/data/locks/semgrep/requirements.txt]
-    statement: Unreachable in okf-grc's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
+    paths: [src/grc_evidence/data/locks/semgrep/requirements.txt]
+    statement: Unreachable in grc-evidence's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
     expired_at: 2026-12-30
   - id: CVE-2026-102266
-    paths: [src/okf_grc/data/locks/semgrep/requirements.txt]
-    statement: Unreachable in okf-grc's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
+    paths: [src/grc_evidence/data/locks/semgrep/requirements.txt]
+    statement: Unreachable in grc-evidence's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
     expired_at: 2026-12-30
   - id: CVE-2026-102267
-    paths: [src/okf_grc/data/locks/semgrep/requirements.txt]
-    statement: Unreachable in okf-grc's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
+    paths: [src/grc_evidence/data/locks/semgrep/requirements.txt]
+    statement: Unreachable in grc-evidence's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
     expired_at: 2026-12-30
   - id: CVE-2026-102271
-    paths: [src/okf_grc/data/locks/semgrep/requirements.txt]
-    statement: Unreachable in okf-grc's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
+    paths: [src/grc_evidence/data/locks/semgrep/requirements.txt]
+    statement: Unreachable in grc-evidence's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
     expired_at: 2026-12-30
   - id: CVE-2026-102272
-    paths: [src/okf_grc/data/locks/semgrep/requirements.txt]
-    statement: Unreachable in okf-grc's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
+    paths: [src/grc_evidence/data/locks/semgrep/requirements.txt]
+    statement: Unreachable in grc-evidence's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
     expired_at: 2026-12-30
   - id: CVE-2026-102273
-    paths: [src/okf_grc/data/locks/semgrep/requirements.txt]
-    statement: Unreachable in okf-grc's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
+    paths: [src/grc_evidence/data/locks/semgrep/requirements.txt]
+    statement: Unreachable in grc-evidence's use (semgrep scan, local rules); Semgrep 1.178.0 pins pyjwt<2.14.
     expired_at: 2026-12-30

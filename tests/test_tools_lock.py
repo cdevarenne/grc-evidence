@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-LOCK = Path(__file__).parent.parent / "src" / "okf_grc" / "data" / "tools.lock"
+LOCK = Path(__file__).parent.parent / "src" / "grc_evidence" / "data" / "tools.lock"
 REQUIRED = {
     "SEMGREP_VERSION", "SEMGREP_PYTHON", "CHECKOV_VERSION", "CHECKOV_PYTHON", "TRIVY_VERSION",
     "CONFTEST_VERSION", "OKF_COMMIT", "OSCAL_VERSION",

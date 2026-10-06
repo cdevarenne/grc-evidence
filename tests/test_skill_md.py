@@ -3,8 +3,8 @@ from pathlib import Path
 
 import yaml
 
-from okf_grc import data
-from okf_grc.cli import COMMANDS
+from grc_evidence import data
+from grc_evidence.cli import COMMANDS
 
 SKILL = Path(str(data.path("skill"))) / "SKILL.md"  # the packaged skill; a repo installs a copy (#106)
 

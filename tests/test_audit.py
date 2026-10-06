@@ -27,6 +27,6 @@ def test_audit_fails_on_fixable_high_and_critical_and_skips_the_sample_app() -> 
 def test_each_exception_is_exact_explained_and_expiring() -> None:
     for entry in IGNORES:
         assert re.fullmatch(r"CVE-\d{4}-\d+", entry["id"])
-        assert entry["paths"] and all(p.startswith("src/okf_grc/data/locks/") for p in entry["paths"])
+        assert entry["paths"] and all(p.startswith("src/grc_evidence/data/locks/") for p in entry["paths"])
         assert entry["statement"].strip()
         assert isinstance(entry["expired_at"], date)

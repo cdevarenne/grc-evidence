@@ -6,7 +6,7 @@ Turns security scans into compliance evidence for SOC 2, ISO/IEC 42001 and the E
 
 An [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format)
 (OKF) knowledge bundle, plain Markdown that any OKF tool can read, grounds a
-compliance engine (the `okf-grc` package and its `grc` CLI) and an agent skill.
+compliance engine (the `grc-evidence` package and its `grc` CLI) and an agent skill.
 Together they scan an app, map each finding to a SOC 2 / NIST SP 800-53,
 ISO/IEC 42001, or EU AI Act control, emit OSCAL, and write an auditor-facing
 report.
@@ -124,18 +124,18 @@ directly and does not use the graph.*
 | `app/` | clean-room Django/DRF sample app, Dockerfile, Kubernetes, Terraform |
 | `knowledge/` | the OKF bundle: controls, stack, guardrail policies, scanners |
 | `policies/` | Rego guardrails (+ tests) and a vendored Semgrep rule |
-| `.claude/skills/grc-continuous-compliance/` | the skill (`SKILL.md`), a copy of `src/okf_grc/data/skill/` |
-| `src/okf_grc/` | the engine: the `okf-grc` package and its `grc` CLI; `data/` holds `tools.lock`, the scanner bootstrap, and the base bundle and policies that `knowledge/` and `policies/` copy |
+| `.claude/skills/grc-continuous-compliance/` | the skill (`SKILL.md`), a copy of `src/grc_evidence/data/skill/` |
+| `src/grc_evidence/` | the engine: the `grc-evidence` package and its `grc` CLI; `data/` holds `tools.lock`, the scanner bootstrap, and the base bundle and policies that `knowledge/` and `policies/` copy |
 | `docs/` | design spec, implementation plan, OSCAL subset |
 | `examples/` | a sample report and OSCAL documents produced by `make examples`; triage eval results |
 
 ## Pins
 
-All external versions are pinned in [`tools.lock`](src/okf_grc/data/tools.lock): Semgrep, Checkov,
+All external versions are pinned in [`tools.lock`](src/grc_evidence/data/tools.lock): Semgrep, Checkov,
 Trivy, Conftest, the OKF spec (v0.2, by commit), and OSCAL 1.2.3. Trivy and
 Conftest are checked against SHA-256 pins; Semgrep and Checkov, with every
 dependency, install only from hash-pinned requirements in
-[`src/okf_grc/data/locks/`](src/okf_grc/data/locks/) (`make lock-scanners`
+[`src/grc_evidence/data/locks/`](src/grc_evidence/data/locks/) (`make lock-scanners`
 regenerates them after a version change). The OSCAL output is a documented
 subset: see [`docs/oscal-subset.md`](docs/oscal-subset.md).
 

@@ -29,8 +29,8 @@ jobs:
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: .tools/trivy-cache
-          key: trivy-db-${{ hashFiles('src/okf_grc/data/tools.lock') }}-${{ steps.day.outputs.day }}
-          restore-keys: trivy-db-${{ hashFiles('src/okf_grc/data/tools.lock') }}-
+          key: trivy-db-${{ hashFiles('src/grc_evidence/data/tools.lock') }}-${{ steps.day.outputs.day }}
+          restore-keys: trivy-db-${{ hashFiles('src/grc_evidence/data/tools.lock') }}-
       - run: make bootstrap
       - run: make audit
       - run: make test

@@ -15,13 +15,13 @@ from mcp.client import Client
 from mcp.client.stdio import StdioServerParameters
 from mcp.types import TextContent, TextResourceContents
 
-from okf_grc import cli
-from okf_grc.data import SCHEMA_VERSION
-from okf_grc.gate import baseline_doc
-from okf_grc.map_findings import map_findings
-from okf_grc.mcp_server import build_server
-from okf_grc.okf_lib import load_bundle
-from okf_grc.run_scan import ScanError
+from grc_evidence import cli
+from grc_evidence.data import SCHEMA_VERSION
+from grc_evidence.gate import baseline_doc
+from grc_evidence.map_findings import map_findings
+from grc_evidence.mcp_server import build_server
+from grc_evidence.okf_lib import load_bundle
+from grc_evidence.run_scan import ScanError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 MAPPING = map_findings(load_bundle(FIXTURES / "bundle"), json.loads((FIXTURES / "findings.json").read_text()))
@@ -107,7 +107,7 @@ def test_reading_changes_no_file(tmp_path: Path) -> None:
 def test_grc_mcp_serves_over_stdio(tmp_path: Path) -> None:
     """The real transport an agent uses: `grc mcp` as a subprocess."""
     out = _out(tmp_path)
-    params = StdioServerParameters(command=sys.executable, args=["-m", "okf_grc.cli", "mcp", "--out", str(out)], cwd=tmp_path)
+    params = StdioServerParameters(command=sys.executable, args=["-m", "grc_evidence.cli", "mcp", "--out", str(out)], cwd=tmp_path)
 
     async def use(client: Client) -> Any:
         return await client.call_tool("control_status", {"control": "cc6.1"})
@@ -116,13 +116,13 @@ def test_grc_mcp_serves_over_stdio(tmp_path: Path) -> None:
 
 
 def test_grc_mcp_without_the_extra_says_how_to_install_it(monkeypatch: pytest.MonkeyPatch) -> None:
-    import okf_grc
+    import grc_evidence
 
     for name in [m for m in sys.modules if m == "mcp" or m.startswith("mcp.")]:
         monkeypatch.setitem(sys.modules, name, None)  # as if the extra were not installed: importing mcp fails
-    monkeypatch.delitem(sys.modules, "okf_grc.mcp_server")
-    monkeypatch.delattr(okf_grc, "mcp_server")
-    with pytest.raises(SystemExit, match=r"grc mcp needs the mcp extra: uv tool install 'okf-grc\[mcp\]"):
+    monkeypatch.delitem(sys.modules, "grc_evidence.mcp_server")
+    monkeypatch.delattr(grc_evidence, "mcp_server")
+    with pytest.raises(SystemExit, match=r"grc mcp needs the mcp extra: uv tool install 'grc-evidence\[mcp\]"):
         cli.main(["mcp"])
 
 
@@ -319,7 +319,7 @@ def test_scan_over_stdio_runs_the_real_pipeline(tmp_path: Path, caplog: pytest.L
     root = Path(__file__).parent.parent
     (tmp_path / "out").mkdir()
     (tmp_path / "out" / "narratives.json").write_text('{"mapping_sha256": "stale", "controls": {}}')
-    params = StdioServerParameters(command=sys.executable, args=["-m", "okf_grc.cli", "mcp", "--out", str(tmp_path / "out")], cwd=root)
+    params = StdioServerParameters(command=sys.executable, args=["-m", "grc_evidence.cli", "mcp", "--out", str(tmp_path / "out")], cwd=root)
 
     async def use(client: Client) -> Any:
         return await client.call_tool("scan", {})

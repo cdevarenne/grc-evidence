@@ -10,10 +10,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-from okf_grc import adopt, cli, data
-from okf_grc.config import Config, load_config
-from okf_grc.map_findings import load_context
-from okf_grc.okf_lib import load_bundle
+from grc_evidence import adopt, cli, data
+from grc_evidence.config import Config, load_config
+from grc_evidence.map_findings import load_context
+from grc_evidence.okf_lib import load_bundle
 
 ROOT = Path(__file__).parent.parent
 BASE = Path(str(data.path("base")))
@@ -32,7 +32,7 @@ def test_init_copies_the_base_and_writes_starters(tmp_path: Path) -> None:
     assert (repo / "knowledge/controls/cc6.1.md").read_bytes() == (BASE / "controls/cc6.1.md").read_bytes()
     assert (repo / "policies/rego/require_non_root.rego").is_file()
     index = yaml.safe_load((repo / "knowledge/index.md").read_text().split("---\n")[1])
-    assert index == {"okf_version": "0.2", "base_version": version("okf-grc")}
+    assert index == {"okf_version": "0.2", "base_version": version("grc-evidence")}
     stubs = {c.id: c for c in load_bundle(repo / "knowledge").concepts.values() if c.id.startswith("stack/")}
     assert sorted(stubs) == ["stack/cart", "stack/web"]
     assert stubs["stack/cart"].frontmatter["resource"] == "../../src/cart/"
@@ -74,11 +74,11 @@ def test_check_reports_drift(tmp_path: Path) -> None:
     concept.write_text(concept.read_text() + "A local edit.\n")
     (tmp_path / "policies/rego/deny_latest_tag.rego").unlink()
     index = tmp_path / "knowledge/index.md"
-    index.write_text(index.read_text().replace(f'base_version: "{version("okf-grc")}"', 'base_version: "1.0.0"'))
+    index.write_text(index.read_text().replace(f'base_version: "{version("grc-evidence")}"', 'base_version: "1.0.0"'))
     assert adopt.check(tmp_path, load_config(tmp_path)) == [
-        f"knowledge/index.md: base_version '1.0.0', installed engine '{version('okf-grc')}'",
-        f"knowledge/controls/cc6.1.md: differs from base {version('okf-grc')}",
-        f"policies/rego/deny_latest_tag.rego: missing (base {version('okf-grc')})",
+        f"knowledge/index.md: base_version '1.0.0', installed engine '{version('grc-evidence')}'",
+        f"knowledge/controls/cc6.1.md: differs from base {version('grc-evidence')}",
+        f"policies/rego/deny_latest_tag.rego: missing (base {version('grc-evidence')})",
     ]
 
 
@@ -93,20 +93,20 @@ def test_sync_base_restores_the_base_and_reports_each_change(tmp_path: Path) -> 
     controls_index = tmp_path / "knowledge/controls/index.md"
     controls_index.write_text(controls_index.read_text().split("\n* ")[0] + "\n")  # an older base: fewer entries
     index = tmp_path / "knowledge/index.md"
-    index.write_text(index.read_text().replace(f'base_version: "{version("okf-grc")}"', 'base_version: "1.0.0"  # a note'))
+    index.write_text(index.read_text().replace(f'base_version: "{version("grc-evidence")}"', 'base_version: "1.0.0"  # a note'))
     config = load_config(tmp_path)
     assert adopt.sync_base(tmp_path, config) == [
         "updated knowledge/controls/cc6.1.md",
         "updated knowledge/controls/index.md",
-        f"kept knowledge/policies/index.md: differs from base {version('okf-grc')}; merge its new entries by hand",
+        f"kept knowledge/policies/index.md: differs from base {version('grc-evidence')}; merge its new entries by hand",
         "added policies/rego/deny_latest_tag.rego",
-        f"updated knowledge/index.md: base_version {version('okf-grc')}",
+        f"updated knowledge/index.md: base_version {version('grc-evidence')}",
     ]
     assert policies_index.read_text().endswith("* [Local](local.md)\n")
-    assert f'base_version: "{version("okf-grc")}"  # a note\n' in index.read_text()
+    assert f'base_version: "{version("grc-evidence")}"  # a note\n' in index.read_text()
     assert adopt.check(tmp_path, config) == []
     assert adopt.sync_base(tmp_path, config) == [
-        f"kept knowledge/policies/index.md: differs from base {version('okf-grc')}; merge its new entries by hand"
+        f"kept knowledge/policies/index.md: differs from base {version('grc-evidence')}; merge its new entries by hand"
     ]
 
 
@@ -149,7 +149,7 @@ def test_a_new_repo_goes_from_init_to_a_scan(tmp_path: Path) -> None:
     subprocess.run([*grc, "run"], cwd=tmp_path, env=env, check=True, capture_output=True)
     mapping = json.loads((tmp_path / "out/mapping.json").read_text())
     assert mapping["controls"]["soc2:cc6.1"]["status"] == "not-satisfied"  # the manifest runs as root
-    assert json.loads((tmp_path / "out/run.json").read_text())["base_version"] == version("okf-grc")
+    assert json.loads((tmp_path / "out/run.json").read_text())["base_version"] == version("grc-evidence")
 
 
 def test_init_never_writes_into_a_submodule(tmp_path: Path) -> None:
@@ -181,7 +181,7 @@ def test_the_skill_installs_and_then_syncs_like_the_base(tmp_path: Path) -> None
     skill = tmp_path / adopt.SKILL
     assert skill.read_bytes() == (Path(str(data.path("skill"))) / "SKILL.md").read_bytes()
     skill.write_text(skill.read_text() + "A local edit.\n")
-    assert adopt.check(tmp_path, config) == [f".claude/skills/grc-continuous-compliance/SKILL.md: differs from base {version('okf-grc')}"]
+    assert adopt.check(tmp_path, config) == [f".claude/skills/grc-continuous-compliance/SKILL.md: differs from base {version('grc-evidence')}"]
     assert adopt.sync_base(tmp_path, config) == ["updated .claude/skills/grc-continuous-compliance/SKILL.md"]
     assert adopt.check(tmp_path, config) == []
 

@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from okf_grc import agent
-from okf_grc.agents.posture import POSTURE, PROMPT, SCHEMA, render
-from okf_grc.contract import read_mapping
+from grc_evidence import agent
+from grc_evidence.agents.posture import POSTURE, PROMPT, SCHEMA, render
+from grc_evidence.contract import read_mapping
 
 DRAFT = {
     "summary": "The repository has 7 not-satisfied controls.",

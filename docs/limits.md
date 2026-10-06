@@ -1,6 +1,6 @@
 # Limits
 
-What okf-grc does not do, or does only partly. Read this before relying on a report.
+What grc-evidence does not do, or does only partly. Read this before relying on a report.
 
 - **Evidence, not attestation** A control with no violations is reported as
   `no-violations-detected`, never `satisfied`. Automated scans evidence a SOC 2
@@ -24,7 +24,7 @@ What okf-grc does not do, or does only partly. Read this before relying on a rep
   may reach beside the target with `..` (an inventory next to a submodule) but
   never out of the repo, and a symlink out of the repo is refused unless
   `allow_external_symlinks: true`. See
-  `src/okf_grc/config.py`. Conftest patterns that match nothing stop the scan
+  `src/grc_evidence/config.py`. Conftest patterns that match nothing stop the scan
   with an error; an explicit `conftest.inputs: []` turns Conftest off instead,
   `run.json` lists it under `not_run`, and a control whose rules are all
   Conftest's reads `not-assessed` (reason `rules-not-run`), not a clean result.

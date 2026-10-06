@@ -14,4 +14,4 @@ def test_updates_actions_and_uv_at_the_root_only() -> None:
 def test_python_updates_never_touch_the_sample_app_or_the_scanner_locks() -> None:
     """The uv ecosystem also finds app/requirements.txt; its old versions are seeded issues (PR #74 bumped them)."""
     (uv,) = [u for u in CONFIG["updates"] if u["package-ecosystem"] == "uv"]
-    assert set(uv["exclude-paths"]) >= {"app/**", "src/okf_grc/data/locks/**"}
+    assert set(uv["exclude-paths"]) >= {"app/**", "src/grc_evidence/data/locks/**"}

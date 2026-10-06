@@ -6,8 +6,8 @@ from typing import Any
 
 import pytest
 
-from okf_grc.config import Config
-from okf_grc.run_scan import (
+from grc_evidence.config import Config
+from grc_evidence.run_scan import (
     ScanError,
     conftest_inputs,
     dedupe,
@@ -183,7 +183,7 @@ def test_scan_rejects_targets_outside_the_repo(tmp_path: Path, target: str) -> N
 def test_scanner_runs_cover_every_tool_with_a_pin() -> None:
     runs = scanner_runs(Config(), ["app/k8s/deployment.yaml"])
     assert [r.tool for r in runs] == ["semgrep", "trivy", "trivy", "checkov", "conftest"]
-    pins = load_pins(Path(__file__).parent.parent / "src" / "okf_grc" / "data" / "tools.lock")
+    pins = load_pins(Path(__file__).parent.parent / "src" / "grc_evidence" / "data" / "tools.lock")
     assert all(r.pin in pins for r in runs)
     assert runs[-1].argv[-1] == "app/k8s/deployment.yaml"
     assert [r.in_target for r in runs] == [False, False, False, True, False]

@@ -3,9 +3,9 @@ import re
 from datetime import date
 from pathlib import Path
 
-from okf_grc.map_findings import map_findings
-from okf_grc.okf_lib import load_bundle
-from okf_grc.render_report import render_report
+from grc_evidence.map_findings import map_findings
+from grc_evidence.okf_lib import load_bundle
+from grc_evidence.render_report import render_report
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

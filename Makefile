@@ -1,4 +1,4 @@
-include src/okf_grc/data/tools.lock
+include src/grc_evidence/data/tools.lock
 
 GRC := uv run grc
 GRC_LLM := uv run --extra llm grc
@@ -15,7 +15,7 @@ bootstrap:
 	$(GRC) bootstrap
 
 # Regenerate the Python scanners' hash-pinned requirements after changing their versions in tools.lock.
-LOCKS := src/okf_grc/data/locks
+LOCKS := src/grc_evidence/data/locks
 lock-scanners:
 	mkdir -p $(LOCKS)/semgrep $(LOCKS)/checkov
 	echo "semgrep==$(SEMGREP_VERSION)" | uv pip compile --quiet --universal --generate-hashes --python-version $(SEMGREP_PYTHON) - -o $(LOCKS)/semgrep/requirements.txt
@@ -28,7 +28,7 @@ audit:
 	  --ignorefile audit-ignore.yaml --skip-dirs app --skip-dirs .tools --skip-dirs out --skip-dirs .venv .
 	uv run zizmor --no-progress .github
 
-# knowledge/ and policies/ hold copies of the base bundle; edit src/okf_grc/data/ and sync (#64).
+# knowledge/ and policies/ hold copies of the base bundle; edit src/grc_evidence/data/ and sync (#64).
 sync-base:
 	$(GRC) sync-base
 
@@ -42,7 +42,7 @@ triage:
 	$(GRC_LLM) triage --knowledge knowledge --out out $(TRIAGE_ARGS)
 
 eval-triage:
-	$(PY_LLM) okf_grc.eval_triage --knowledge knowledge --out out $(EVAL_ARGS)
+	$(PY_LLM) grc_evidence.eval_triage --knowledge knowledge --out out $(EVAL_ARGS)
 
 render:
 	mkdir -p out

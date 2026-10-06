@@ -7,7 +7,7 @@ cost-bounded LLM step with a measured eval, and linked OSCAL component
 definition, assessment plan, and assessment results.
 
 [`v1.1.0`](https://github.com/cdevarenne/grc-evidence/releases/tag/v1.1.0) (released 2026-10-01) makes it an installable
-engine, Spec F Part A: the `okf-grc` package and its `grc` CLI, a configurable
+engine, Spec F Part A: the `grc-evidence` package and its `grc` CLI, a configurable
 scan layout (`grc.yaml`), the base bundle shipped with the engine, a versioned
 output contract with a run manifest, `grc init` and `grc check`, AI rules that
 also read LangChain, CI on every push, and a release on every version tag.

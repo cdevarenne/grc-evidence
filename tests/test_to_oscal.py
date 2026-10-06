@@ -4,11 +4,11 @@ from pathlib import Path
 import pytest
 from oscal_schema import validate
 
-from okf_grc.config import Config
-from okf_grc.map_findings import map_findings
-from okf_grc.okf_lib import Bundle, load_bundle
-from okf_grc.run_scan import conftest_inputs, load_pins, scanner_runs
-from okf_grc.to_oscal import (
+from grc_evidence.config import Config
+from grc_evidence.map_findings import map_findings
+from grc_evidence.okf_lib import Bundle, load_bundle
+from grc_evidence.run_scan import conftest_inputs, load_pins, scanner_runs
+from grc_evidence.to_oscal import (
     AP_HREF,
     NO_SSP_HREF,
     PROP_NS,
@@ -20,7 +20,7 @@ from okf_grc.to_oscal import (
 FIXTURES = Path(__file__).parent / "fixtures"
 ROOT = Path(__file__).parent.parent
 NOW = "2026-09-25T12:00:00+00:00"
-PINS = load_pins(Path(__file__).parent.parent / "src" / "okf_grc" / "data" / "tools.lock")
+PINS = load_pins(Path(__file__).parent.parent / "src" / "grc_evidence" / "data" / "tools.lock")
 
 
 @pytest.fixture

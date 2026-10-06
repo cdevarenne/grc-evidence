@@ -1,6 +1,6 @@
 # CI
 
-How this repository tests and releases itself, and how to run okf-grc in your
+How this repository tests and releases itself, and how to run grc-evidence in your
 own pipeline.
 
 ## This repository
@@ -24,7 +24,7 @@ and pass no `${{ }}` expression into a shell command.
 
 `make audit` scans the engine's own dependencies, not the deliberately
 vulnerable `app/`: `uv.lock` and the Python scanners' hash-pinned requirements
-in `src/okf_grc/data/locks/`, with the pinned Trivy; and the workflows, with
+in `src/grc_evidence/data/locks/`, with the pinned Trivy; and the workflows, with
 zizmor (a dev dependency, so `uv.lock` pins it by hash). It fails on a high or
 critical vulnerability that has a fixed version, unless
 [`audit-ignore.yaml`](../audit-ignore.yaml) records a reviewed exception: one

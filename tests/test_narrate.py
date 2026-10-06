@@ -6,19 +6,19 @@ from pathlib import Path
 import pytest
 from llm_stub import StubLLM
 
-from okf_grc.data import SCHEMA_VERSION
-from okf_grc.digest import bundle_digest, scan_digest
-from okf_grc.llm import LLMError
-from okf_grc.map_findings import map_findings
-from okf_grc.narrate import (
+from grc_evidence.data import SCHEMA_VERSION
+from grc_evidence.digest import bundle_digest, scan_digest
+from grc_evidence.llm import LLMError
+from grc_evidence.map_findings import map_findings
+from grc_evidence.narrate import (
     allowed_numbers,
     mapping_sha256,
     narrate,
     read_narratives,
     validate,
 )
-from okf_grc.okf_lib import load_bundle
-from okf_grc.render_report import main as render_main
+from grc_evidence.okf_lib import load_bundle
+from grc_evidence.render_report import main as render_main
 
 FIXTURES = Path(__file__).parent / "fixtures"
 BUNDLE = load_bundle(FIXTURES / "bundle")

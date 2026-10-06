@@ -38,7 +38,7 @@ def test_runs_bootstrap_then_unit_then_integration_tests() -> None:
 def test_trivy_database_cache_is_keyed_on_the_pins_and_the_day() -> None:
     (cache,) = [s for s in _workflow()["jobs"]["test"]["steps"] if "actions/cache" in s.get("uses", "")]
     assert cache["with"]["path"] == ".tools/trivy-cache"
-    assert "hashFiles('src/okf_grc/data/tools.lock')" in cache["with"]["key"] and "steps.day.outputs.day" in cache["with"]["key"]
+    assert "hashFiles('src/grc_evidence/data/tools.lock')" in cache["with"]["key"] and "steps.day.outputs.day" in cache["with"]["key"]
 
 
 def test_checkout_does_not_persist_credentials() -> None:

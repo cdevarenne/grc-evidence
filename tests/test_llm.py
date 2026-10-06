@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from okf_grc.llm import (
+from grc_evidence.llm import (
     LLM,
     REQUEST_TIMEOUT_S,
     BudgetExceeded,
@@ -246,7 +246,7 @@ def test_a_stalled_batch_stops_after_the_deadline(tmp_path: Path, monkeypatch: p
     client.messages.batches = FakeBatches(client.message)
     monkeypatch.setattr(client.messages.batches, "retrieve", lambda batch_id: SimpleNamespace(id=batch_id, processing_status="in_progress", request_counts={}))
     clock = iter(range(0, 10_000, 1800))
-    monkeypatch.setattr("okf_grc.llm.time.monotonic", lambda: next(clock))
-    monkeypatch.setattr("okf_grc.llm.time.sleep", lambda s: None)
+    monkeypatch.setattr("grc_evidence.llm.time.monotonic", lambda: next(clock))
+    monkeypatch.setattr("grc_evidence.llm.time.sleep", lambda s: None)
     with pytest.raises(LLMError, match="batch batch_1: not ended after 3600 s"):
         _llm(tmp_path, mode="anthropic", client=client).complete_batch({"a": REQ})

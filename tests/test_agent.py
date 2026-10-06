@@ -10,8 +10,8 @@ from typing import Any
 
 import pytest
 
-from okf_grc import agent, cli
-from okf_grc.agent import AgentError, Limits, Provider, Transcript, Workflow
+from grc_evidence import agent, cli
+from grc_evidence.agent import AgentError, Limits, Provider, Transcript, Workflow
 
 STREAMS = Path(__file__).parent / "fixtures" / "agent" / "streams"
 WORKFLOW = Workflow(
@@ -47,7 +47,7 @@ def test_claude_runs_isolated_with_only_the_workflows_tools() -> None:
     assert pairs["--tools"] == "" and pairs["--setting-sources"] == "" and pairs["--mcp-config"] == "/tmp/mcp.json"
     assert pairs["--max-budget-usd"] == "0.25" and pairs["--system-prompt"] == WORKFLOW.prompt and pairs["--model"] == "m"
     assert {"--strict-mcp-config", "--disable-slash-commands", "--no-session-persistence"} <= set(argv)
-    assert argv[argv.index("--allowedTools") + 1 :] == ["mcp__okf-grc__gaps", "mcp__okf-grc__control_status"]
+    assert argv[argv.index("--allowedTools") + 1 :] == ["mcp__grc-evidence__gaps", "mcp__grc-evidence__control_status"]
 
 
 def test_a_recorded_stream_becomes_a_transcript() -> None:
@@ -74,11 +74,11 @@ def test_the_turn_cap_stops_the_run() -> None:
 def test_a_denied_tool_is_recorded_as_a_denial_not_a_call() -> None:
     """As the recorded posture run showed: the model asks for gate, Claude Code refuses, the run goes on."""
     events = [
-        {"type": "assistant", "message": {"id": "m1", "content": [{"type": "tool_use", "id": "t1", "name": "mcp__okf-grc__scan", "input": {}}]}},
+        {"type": "assistant", "message": {"id": "m1", "content": [{"type": "tool_use", "id": "t1", "name": "mcp__grc-evidence__scan", "input": {}}]}},
         {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": "t1", "is_error": True,
-                                                  "content": "Claude requested permissions to use mcp__okf-grc__scan, but you haven't granted it yet."}]}},
+                                                  "content": "Claude requested permissions to use mcp__grc-evidence__scan, but you haven't granted it yet."}]}},
         {"type": "result", "subtype": "success", "is_error": False, "structured_output": {"summary": "x"},
-         "permission_denials": [{"tool_name": "mcp__okf-grc__scan", "tool_input": {}}]},
+         "permission_denials": [{"tool_name": "mcp__grc-evidence__scan", "tool_input": {}}]},
     ]
     transcript, _ = agent.read_stream([json.dumps(e) for e in events], "m", max_turns=8)
     assert transcript["denials"] == ["scan"] and transcript["tool_calls"] == [] and transcript["output"] == {"summary": "x"}
@@ -108,8 +108,8 @@ def test_run_claude_points_the_cli_at_this_engines_server_and_stops_at_the_cap(t
 
     transcript = agent.run_claude(WORKFLOW, tmp_path / "out", Limits(max_turns=1), popen)
     (proc,) = started
-    server = proc.mcp["mcpServers"]["okf-grc"]
-    assert server["command"] == sys.executable and server["args"][:3] == ["-m", "okf_grc.cli", "mcp"]
+    server = proc.mcp["mcpServers"]["grc-evidence"]
+    assert server["command"] == sys.executable and server["args"][:3] == ["-m", "grc_evidence.cli", "mcp"]
     assert server["args"][-1] == str((tmp_path / "out").absolute())
     assert transcript["stopped"] == "max_turns" and proc.terminated
 
@@ -178,9 +178,9 @@ def test_the_draft_return_is_not_a_tool_call() -> None:
 
 def _api_out(tmp_path: Path) -> Path:
     """Outputs the in-process MCP server reads: the fixture bundle's mapping."""
-    from okf_grc.data import SCHEMA_VERSION
-    from okf_grc.map_findings import map_findings
-    from okf_grc.okf_lib import load_bundle
+    from grc_evidence.data import SCHEMA_VERSION
+    from grc_evidence.map_findings import map_findings
+    from grc_evidence.okf_lib import load_bundle
 
     fixtures = Path(__file__).parent / "fixtures"
     mapping = map_findings(load_bundle(fixtures / "bundle"), json.loads((fixtures / "findings.json").read_text()))
@@ -276,7 +276,7 @@ SCHEMA = {"type": "object", "properties": {"summary": {"type": "string"}}, "requ
 
 def _check(draft: dict, results: tuple[str, ...] = (STATUS_RESULT,)) -> list[str]:
     """Validate a draft against the fixture mapping, as if the tools had returned `results`."""
-    from okf_grc.contract import read_mapping
+    from grc_evidence.contract import read_mapping
 
     mapping = read_mapping(_api_out(Path(tempfile.mkdtemp())) / "mapping.json")
     calls = [{"name": "control_status", "arguments": {}, "result": r, "is_error": False} for r in results]

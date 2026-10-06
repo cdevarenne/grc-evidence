@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from okf_grc.config import ConfigError
-from okf_grc.map_findings import SDK_GAP, load_context, map_findings
-from okf_grc.okf_lib import BundleError, load_bundle
-from okf_grc.render_report import render_report
-from okf_grc.to_oscal import assessment_results
+from grc_evidence.config import ConfigError
+from grc_evidence.map_findings import SDK_GAP, load_context, map_findings
+from grc_evidence.okf_lib import BundleError, load_bundle
+from grc_evidence.render_report import render_report
+from grc_evidence.to_oscal import assessment_results
 
 ROOT = Path(__file__).parent.parent
 BUNDLE = load_bundle(ROOT / "knowledge")  # art-50's only rule reads Anthropic; a.6 also has an SDK-agnostic rule

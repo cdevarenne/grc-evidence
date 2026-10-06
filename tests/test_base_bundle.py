@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from okf_grc import data
-from okf_grc.okf_lib import load_bundle
+from grc_evidence import data
+from grc_evidence.okf_lib import load_bundle
 
 ROOT = Path(__file__).parent.parent
 BASE = Path(str(data.path("base")))

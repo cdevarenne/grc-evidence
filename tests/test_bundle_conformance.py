@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from okf_grc.map_findings import RISK_TIERS
-from okf_grc.okf_lib import FRAMEWORK_TYPES, load_bundle
+from grc_evidence.map_findings import RISK_TIERS
+from grc_evidence.okf_lib import FRAMEWORK_TYPES, load_bundle
 
 KNOWLEDGE = Path(__file__).parent.parent / "knowledge"
 TOOLS = {"semgrep", "trivy", "checkov", "conftest"}
@@ -100,7 +100,7 @@ def test_index_files_have_no_frontmatter_except_root_version() -> None:
         text = index.read_text(encoding="utf-8")
         if index.parent == KNOWLEDGE:
             fm = yaml.safe_load(text.split("---\n")[1])
-            assert fm == {"okf_version": "0.2", "base_version": version("okf-grc")}
+            assert fm == {"okf_version": "0.2", "base_version": version("grc-evidence")}
         else:
             assert not text.startswith("---"), index
 

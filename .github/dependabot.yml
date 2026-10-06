@@ -1,6 +1,6 @@
 # Version updates only (security alerts stay off: app/ is deliberately vulnerable). Never app/, whose old
 # versions are seeded issues (the uv ecosystem also finds app/requirements.txt, so it is excluded by path),
-# and never the scanner locks in src/okf_grc/data/locks/, which `make lock-scanners` regenerates whole.
+# and never the scanner locks in src/grc_evidence/data/locks/, which `make lock-scanners` regenerates whole.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -16,7 +16,7 @@ updates:
     directory: /
     exclude-paths:
       - app/**
-      - src/okf_grc/data/locks/**
+      - src/grc_evidence/data/locks/**
     schedule:
       interval: weekly
     groups:

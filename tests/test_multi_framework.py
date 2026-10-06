@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from okf_grc.map_findings import map_findings
-from okf_grc.okf_lib import BundleError, control_key, load_bundle
+from grc_evidence.map_findings import map_findings
+from grc_evidence.okf_lib import BundleError, control_key, load_bundle
 
 FIXTURES = Path(__file__).parent / "fixtures"
 AI = load_bundle(FIXTURES / "ai_bundle")

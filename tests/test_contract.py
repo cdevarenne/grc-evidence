@@ -12,15 +12,15 @@ import pytest
 from jsonschema import Draft202012Validator, FormatChecker, ValidationError
 from oscal_schema import validate as validate_oscal
 
-from okf_grc import data
-from okf_grc.config import load_config
-from okf_grc.contract import ContractError, read_mapping
-from okf_grc.manifest import OUTPUTS, build_manifest, run_id
-from okf_grc.manifest import main as manifest_main
-from okf_grc.map_findings import map_findings, read_findings
-from okf_grc.okf_lib import load_bundle
-from okf_grc.run_scan import dedupe
-from okf_grc.to_oscal import PROP_NS, assessment_results
+from grc_evidence import data
+from grc_evidence.config import load_config
+from grc_evidence.contract import ContractError, read_mapping
+from grc_evidence.manifest import OUTPUTS, build_manifest, run_id
+from grc_evidence.manifest import main as manifest_main
+from grc_evidence.map_findings import map_findings, read_findings
+from grc_evidence.okf_lib import load_bundle
+from grc_evidence.run_scan import dedupe
+from grc_evidence.to_oscal import PROP_NS, assessment_results
 
 ROOT = Path(__file__).parent.parent
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -88,7 +88,7 @@ def test_manifest_hashes_the_outputs_and_names_the_commit(tmp_path: Path) -> Non
     manifest = build_manifest(ROOT, out, load_config(ROOT), "id", NOW)
     assert manifest["outputs"] == {rel: hashlib.sha256((out / rel).read_bytes()).hexdigest() for rel in OUTPUTS}
     assert len(manifest["repository"]["commit"]) == 40
-    assert manifest["base_version"] == version("okf-grc")
+    assert manifest["base_version"] == version("grc-evidence")
     assert manifest["scanners"]["trivy"] == "0.74.0"
     assert "not_run" not in manifest
     skipped = build_manifest(ROOT, out, replace(load_config(ROOT), conftest_inputs=()), "id", NOW)

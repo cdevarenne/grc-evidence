@@ -17,7 +17,7 @@ LLM_MODE=claude-cli grc agent posture    # or LLM_MODE=anthropic with ANTHROPIC_
 |---|---|---|
 | `posture` | `control_status`, `findings`, `gaps`, `suppressions` | for the person who owns the repository: the controls not satisfied with their largest finding groups, the coverage gaps, the suppressions in force, and next steps |
 
-A workflow is one module under `src/okf_grc/agents/`: a versioned prompt and
+A workflow is one module under `src/grc_evidence/agents/`: a versioned prompt and
 task, its allowlisted tools, the draft's JSON Schema (every object closed with
 `additionalProperties: false`, which the Messages API requires), and a renderer
 to Markdown. Each has recorded runs under `tests/fixtures/agent/` that replay in

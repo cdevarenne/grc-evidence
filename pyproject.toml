@@ -1,6 +1,6 @@
 [project]
-name = "okf-grc"
-version = "1.8.1"
+name = "grc-evidence"
+version = "2.0.0"
 description = "Scan an app, map findings to SOC 2, ISO/IEC 42001, and EU AI Act controls through an OKF bundle, and emit OSCAL."
 requires-python = ">=3.14"
 dependencies = ["pyyaml>=6.0.2"]
@@ -10,11 +10,14 @@ llm = ["anthropic>=1.8"]
 mcp = ["mcp>=2.2,<3"]  # grc mcp: the MCP server
 
 [project.scripts]
-grc = "okf_grc.cli:main"
+grc = "grc_evidence.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.12,<0.13"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = ["grc_evidence", "okf_grc"]  # okf_grc: the deprecated alias, for one minor release
 
 [dependency-groups]
 dev = [
@@ -36,7 +39,7 @@ addopts = "-m 'not integration'"
 
 [tool.ruff]
 target-version = "py314"
-extend-exclude = ["src/okf_grc/data/policies/semgrep", "policies/semgrep", "app"]  # rule test fixtures (#97) and the sample app
+extend-exclude = ["src/grc_evidence/data/policies/semgrep", "policies/semgrep", "app"]  # rule test fixtures (#97) and the sample app
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "ISC", "FURB", "UP"]
@@ -44,8 +47,8 @@ ignore = ["E501"]  # long lines are left as they are, not reformatted wholesale
 
 [tool.mypy]
 python_version = "3.14"
-files = ["src/okf_grc", "tests"]
-exclude = ["src/okf_grc/data/policies/semgrep/"]
+files = ["src/grc_evidence", "src/okf_grc", "tests"]
+exclude = ["src/grc_evidence/data/policies/semgrep/"]
 
 [[tool.mypy.overrides]]
 module = ["anthropic"]  # the optional `llm` extra

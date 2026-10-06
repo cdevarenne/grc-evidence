@@ -8,13 +8,13 @@ from pathlib import Path
 
 import pytest
 
-from okf_grc import cli, data, manifest
-from okf_grc.config import Config, ConfigError
-from okf_grc.contract import ContractError
-from okf_grc.errors import GrcError
-from okf_grc.llm import LLMError
-from okf_grc.okf_lib import BundleError
-from okf_grc.run_scan import ScanError
+from grc_evidence import cli, data, manifest
+from grc_evidence.config import Config, ConfigError
+from grc_evidence.contract import ContractError
+from grc_evidence.errors import GrcError
+from grc_evidence.llm import LLMError
+from grc_evidence.okf_lib import BundleError
+from grc_evidence.run_scan import ScanError
 
 ROOT = Path(__file__).parent.parent
 
@@ -29,7 +29,7 @@ def _record(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, list[str] | None
 def test_version_is_the_package_version(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit):
         cli.main(["--version"])
-    assert capsys.readouterr().out.strip() == f"grc {version('okf-grc')}"
+    assert capsys.readouterr().out.strip() == f"grc {version('grc-evidence')}"
 
 
 def test_unknown_command_is_rejected() -> None:
@@ -173,7 +173,7 @@ def test_installed_tool_runs_the_pipeline(tmp_path: Path) -> None:
     env = os.environ | {"UV_TOOL_DIR": str(tmp_path / "tools"), "UV_TOOL_BIN_DIR": str(tmp_path / "bin")}
     subprocess.run(["uv", "tool", "install", "--quiet", str(ROOT)], env=env, check=True)
     grc = tmp_path / "bin" / "grc"
-    assert subprocess.run([grc, "--version"], capture_output=True, text=True, check=True).stdout.strip() == f"grc {version('okf-grc')}"
+    assert subprocess.run([grc, "--version"], capture_output=True, text=True, check=True).stdout.strip() == f"grc {version('grc-evidence')}"
     env["PATH"] = f"{ROOT / '.tools' / 'bin'}{os.pathsep}{env['PATH']}"
     env["TRIVY_CACHE_DIR"] = str(ROOT / ".tools" / "trivy-cache")
     out = tmp_path / "out"

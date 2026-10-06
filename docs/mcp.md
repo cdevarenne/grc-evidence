@@ -1,6 +1,6 @@
 # MCP server
 
-`grc mcp` serves one repository's okf-grc results over the Model Context
+`grc mcp` serves one repository's grc-evidence results over the Model Context
 Protocol, so any MCP-capable agent can run a scan and read its results without
 shell access. It is read-mostly: the only tool that writes is `scan`, and it
 writes only what `grc run` writes (`out/`). No tool can change `knowledge/`,
@@ -19,7 +19,7 @@ It serves on stdio for the repository it starts in (the working directory,
 like every `grc` command). In Claude Code, from the repository's root:
 
 ```
-claude mcp add --transport stdio okf-grc -- grc mcp
+claude mcp add --transport stdio grc-evidence -- grc mcp
 ```
 
 Or commit a project-scoped `.mcp.json` so everyone working in the repository
@@ -29,7 +29,7 @@ agents on the version CI uses:
 ```json
 {
   "mcpServers": {
-    "okf-grc": {
+    "grc-evidence": {
       "command": "uvx",
       "args": ["--from", "okf-grc[mcp] @ git+https://github.com/cdevarenne/grc-evidence@v1.8.1", "grc", "mcp"]
     }

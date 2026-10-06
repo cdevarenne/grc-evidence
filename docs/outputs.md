@@ -15,7 +15,7 @@ sha256 of every output. The OSCAL assessment results carry the same run id.
 after `run.json` exists, so a failed run leaves the previous run whole.
 `grc run --require-clean` refuses to scan inputs that differ from the commit,
 or a directory outside git; CI should use it. JSON Schemas for
-the three files ship with the engine in `src/okf_grc/data/schemas/`; additive
+the three files ship with the engine in `src/grc_evidence/data/schemas/`; additive
 changes bump the minor version, anything else the major. A sample is in
 [`examples/run.json`](../examples/run.json).
 

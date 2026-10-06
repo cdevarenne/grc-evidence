@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from okf_grc.config import Config, ConfigError, load_config
-from okf_grc.run_scan import (
+from grc_evidence.config import Config, ConfigError, load_config
+from grc_evidence.run_scan import (
     ScanError,
     conftest_inputs,
     scan,

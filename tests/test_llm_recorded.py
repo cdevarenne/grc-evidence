@@ -3,12 +3,12 @@
 import json
 from pathlib import Path
 
-from okf_grc.digest import bundle_digest, scan_digest
-from okf_grc.llm import LLM
-from okf_grc.map_findings import map_findings
-from okf_grc.narrate import narrate
-from okf_grc.okf_lib import load_bundle
-from okf_grc.triage import triage
+from grc_evidence.digest import bundle_digest, scan_digest
+from grc_evidence.llm import LLM
+from grc_evidence.map_findings import map_findings
+from grc_evidence.narrate import narrate
+from grc_evidence.okf_lib import load_bundle
+from grc_evidence.triage import triage
 
 FIXTURES = Path(__file__).parent / "fixtures"
 BUNDLE = load_bundle(FIXTURES / "bundle")

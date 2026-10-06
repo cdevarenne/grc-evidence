@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from okf_grc import cli
-from okf_grc.data import SCHEMA_VERSION
-from okf_grc.gate import baseline_doc, problems, summary
+from grc_evidence import cli
+from grc_evidence.data import SCHEMA_VERSION
+from grc_evidence.gate import baseline_doc, problems, summary
 
 BASE = {"soc2:cc6.1": "not-satisfied", "soc2:cc7.1": "no-violations-detected", "soc2:cc8.1": "not-assessed"}
 DOC = {"controls": BASE}  # a 1.2.x baseline: statuses only

@@ -18,7 +18,7 @@ subset, not a complete OSCAL implementation.
 ## assessment-plan.json
 
 What the scan intends to assess. Props this repo defines use the namespace
-`https://github.com/cdevarenne/okf-grc-skill/ns/oscal`.
+`https://github.com/cdevarenne/grc-evidence/ns/oscal`.
 
 | Field | Source |
 |---|---|

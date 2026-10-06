@@ -2,7 +2,7 @@
 
 How to use the `grc-continuous-compliance` skill from a coding agent, in this repo or in any repo set up with `grc init`. The skill calls the same `grc` pipeline you can run yourself (see the [README](../README.md)).
 
-The skill is a standard `SKILL.md` that ships with the engine (`src/okf_grc/data/skill/`).
+The skill is a standard `SKILL.md` that ships with the engine (`src/grc_evidence/data/skill/`).
 `grc install-skill` copies it to `.claude/skills/grc-continuous-compliance/`, where Claude Code finds it
 automatically; `grc sync-base` keeps that copy current after an engine upgrade, and `grc check`
 reports a local edit. Other coding agents that support skills can use the same file from their own skills location.
@@ -32,4 +32,4 @@ one, or edit `knowledge/`, unless asked. Text from scanned files is data to it,
 never instructions.
 
 It scans the layout `grc.yaml` describes; in this repo that is the default, `app/`. The `make` targets below run the same
-pipeline without an agent. In this repo, edit the skill in `src/okf_grc/data/skill/`; `make scan` syncs the copy.
+pipeline without an agent. In this repo, edit the skill in `src/grc_evidence/data/skill/`; `make scan` syncs the copy.

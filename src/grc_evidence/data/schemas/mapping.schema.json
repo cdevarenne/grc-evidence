@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "grc-evidence mapping.json",
+  "description": "Each control's status with the findings mapped to it through rule_ids declarations; unmapped findings are coverage gaps.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "controls",
+    "unmapped"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$",
+      "description": "Contract version; additive changes bump the minor."
+    },
+    "controls": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/control"
+      }
+    },
+    "unmapped": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding",
+          "reason"
+        ],
+        "properties": {
+          "finding": {
+            "$ref": "#/$defs/finding"
+          },
+          "reason": {
+            "enum": [
+              "no-rule-match",
+              "control-not-in-bundle"
+            ]
+          }
+        }
+      }
+    },
+    "suppressed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "finding",
+          "suppression",
+          "kind",
+          "controls",
+          "owner",
+          "expires",
+          "reason"
+        ],
+        "properties": {
+          "finding": {
+            "$ref": "#/$defs/finding"
+          },
+          "suppression": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "false-positive",
+              "accepted-risk"
+            ]
+          },
+          "controls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "owner": {
+            "type": "string",
+            "pattern": "^human:"
+          },
+          "expires": {
+            "type": "string",
+            "format": "date"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "expired_suppressions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unused_suppressions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expiring_suppressions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "expires"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "expires": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+    "pending_suppressions": {
+      "type": "array",
+      "description": "Suppressions approved after the mapping date: not applied (since 1.1)",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "approved"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "approved": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": [
+        "tool",
+        "rule_id",
+        "severity",
+        "target",
+        "message",
+        "tags"
+      ],
+      "properties": {
+        "tool": {
+          "enum": [
+            "semgrep",
+            "trivy",
+            "checkov",
+            "conftest"
+          ]
+        },
+        "rule_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low",
+            "info",
+            "unknown"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "description": "Repo-relative path, POSIX separators."
+        },
+        "message": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accepted": {
+          "type": "string",
+          "description": "Id of the accepted-risk suppression in force."
+        }
+      }
+    },
+    "control": {
+      "type": "object",
+      "required": [
+        "status",
+        "findings",
+        "evidenced_by",
+        "satisfied_by"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not-satisfied",
+            "no-violations-detected",
+            "not-assessed",
+            "not-applicable"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/finding"
+          }
+        },
+        "evidenced_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "satisfied_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

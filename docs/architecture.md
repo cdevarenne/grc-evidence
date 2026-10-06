@@ -1,6 +1,6 @@
 # Architecture
 
-How okf-grc fits together today, where the proposed features would attach, and
+How grc-evidence fits together today, where the proposed features would attach, and
 the order to build them in. Built parts are described from the code at
 `v1.8.1`; proposed parts are marked as such and are not specified unless a spec
 is linked.
@@ -9,13 +9,13 @@ is linked.
 
 | Layer | What it is | Where |
 |---|---|---|
-| **Knowledge** | An OKF bundle of plain Markdown concepts: controls (SOC 2, ISO/IEC 42001, EU AI Act), crosswalks, scanners, guardrail policies with their `rule_ids`, the stack, suppressions. Reusable concepts ship with the engine as the base bundle; an adopter's `knowledge/` holds copies plus its own stack and suppressions. | `src/okf_grc/data/base/`, `knowledge/` |
-| **Engine** | The `okf-grc` package and its `grc` CLI: scan with four pinned scanners, normalize, map findings to controls only through `rule_ids`, emit OSCAL, render the report, write the run manifest. Deterministic. | `src/okf_grc/` |
-| **Layout** | `grc.yaml`: which files each scanner reads and which policies it applies, checked to stay inside the repo. | `src/okf_grc/config.py` |
-| **Output contract** | `findings.json`, `mapping.json`, and `run.json` (commit, versions, layout, the sha256 of every output), each with a JSON Schema and a `schema_version`. OSCAL 1.2.3 component definition, assessment plan, and assessment results carrying the run id. | `src/okf_grc/data/schemas/`, `docs/oscal-subset.md` |
-| **LLM steps** | Optional, never change a status: `grc narrate` (prose per control, validated) and `grc triage` (proposed control or `none` per coverage gap, for a person to apply). | `src/okf_grc/narrate.py`, `triage.py`, `llm.py` |
-| **Agent entry** | A skill (`SKILL.md`) that calls `grc` and leaves every status, mapping, and suppression decision to a person; `grc mcp`, an MCP server whose tools run the pipeline and read its outputs, with scanner text marked untrusted; and `grc agent`, which runs a workflow with only its allowlisted tools and writes a draft only if it passes validation against the tool results. | `src/okf_grc/data/skill/`, `src/okf_grc/mcp_server.py`, `src/okf_grc/agent.py`, `docs/mcp.md`, `docs/agents.md` |
-| **Adoption** | `grc init` copies the base bundle and policies into a repo and writes starters; `grc check` reports drift from the base and unreviewed concepts; `grc sync-base` updates the copies to a newer engine's base. | `src/okf_grc/adopt.py` |
+| **Knowledge** | An OKF bundle of plain Markdown concepts: controls (SOC 2, ISO/IEC 42001, EU AI Act), crosswalks, scanners, guardrail policies with their `rule_ids`, the stack, suppressions. Reusable concepts ship with the engine as the base bundle; an adopter's `knowledge/` holds copies plus its own stack and suppressions. | `src/grc_evidence/data/base/`, `knowledge/` |
+| **Engine** | The `grc-evidence` package and its `grc` CLI: scan with four pinned scanners, normalize, map findings to controls only through `rule_ids`, emit OSCAL, render the report, write the run manifest. Deterministic. | `src/grc_evidence/` |
+| **Layout** | `grc.yaml`: which files each scanner reads and which policies it applies, checked to stay inside the repo. | `src/grc_evidence/config.py` |
+| **Output contract** | `findings.json`, `mapping.json`, and `run.json` (commit, versions, layout, the sha256 of every output), each with a JSON Schema and a `schema_version`. OSCAL 1.2.3 component definition, assessment plan, and assessment results carrying the run id. | `src/grc_evidence/data/schemas/`, `docs/oscal-subset.md` |
+| **LLM steps** | Optional, never change a status: `grc narrate` (prose per control, validated) and `grc triage` (proposed control or `none` per coverage gap, for a person to apply). | `src/grc_evidence/narrate.py`, `triage.py`, `llm.py` |
+| **Agent entry** | A skill (`SKILL.md`) that calls `grc` and leaves every status, mapping, and suppression decision to a person; `grc mcp`, an MCP server whose tools run the pipeline and read its outputs, with scanner text marked untrusted; and `grc agent`, which runs a workflow with only its allowlisted tools and writes a draft only if it passes validation against the tool results. | `src/grc_evidence/data/skill/`, `src/grc_evidence/mcp_server.py`, `src/grc_evidence/agent.py`, `docs/mcp.md`, `docs/agents.md` |
+| **Adoption** | `grc init` copies the base bundle and policies into a repo and writes starters; `grc check` reports drift from the base and unreviewed concepts; `grc sync-base` updates the copies to a newer engine's base. | `src/grc_evidence/adopt.py` |
 | **CI** | Tests on every push and pull request; a version tag releases. | `.github/workflows/` |
 
 ## Diagram
@@ -36,7 +36,7 @@ flowchart TB
     pol["policies/<br/>Rego + Semgrep"]
   end
 
-  subgraph engine["okf-grc engine: grc CLI"]
+  subgraph engine["grc-evidence engine: grc CLI"]
     direction LR
     scan["scan: Semgrep, Trivy,<br/>Checkov, Conftest"] --> map["map: rule_ids only,<br/>gaps reported"] --> oscal["oscal"] --> report["report"] --> manifest["manifest"]
     llm["narrate / triage:<br/>optional LLM, no statuses"]
