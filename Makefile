@@ -8,7 +8,7 @@ export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
 OKF := reference-agent @ git+https://github.com/GoogleCloudPlatform/open-knowledge-format@$(OKF_COMMIT)
 
-.PHONY: bootstrap lock-scanners sync-base audit examples-llm scan narrate triage eval-triage render test test-integration examples clean
+.PHONY: bootstrap lock-scanners sync-base audit examples-llm scan narrate triage eval-triage render test test-integration examples examples-h clean
 
 bootstrap:
 	uv sync
@@ -64,6 +64,15 @@ examples: scan
 	mkdir -p examples/oscal
 	cp out/oscal/*.json examples/oscal/
 	cp out/run.json examples/run.json
+
+# The Type 2 examples, offline: replay the recorded demo responses (logins already pseudonyms; no token,
+# no salt). The ledger goes under out/, so the replay never touches the evidence ledger.
+DEMO := tests/fixtures/github/demo
+examples-h:
+	GRC_GITHUB_FIXTURES=$(DEMO) $(GRC) collect changes --config $(DEMO)/replay.yaml --out out/type2
+	$(GRC) sample --list $(DEMO)/sample.csv --config $(DEMO)/replay.yaml --out out/type2
+	mkdir -p examples/collect
+	cp out/type2/collect/population.csv out/type2/collect/sample-evidence.csv examples/collect/
 
 # The examples with LLM prose: narrate the fresh scan (LLM_MODE=anthropic or claude-cli), then copy the
 # report and the run manifest narrate rewrote. A plain `make examples` afterwards would drop the prose again.

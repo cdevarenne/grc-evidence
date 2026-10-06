@@ -1,0 +1,9 @@
+# Offline replay of the recorded demo responses (`make examples-h`). The fixtures already hold pseudonyms,
+# so `people: real` keeps them as they are: no token and no salt are needed.
+window: {start: 2026-06-01, end: 2026-08-31}
+people: real
+ledger: out/type2/ledger.jsonl
+github:
+  scanner_jobs: [semgrep, trivy, checkov, conftest, codeql]
+  repos:
+    - {name: GoogleCloudPlatform/microservices-demo, tier: in-scope, collect: [changes]}

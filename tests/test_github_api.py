@@ -166,7 +166,7 @@ class _Upper:
 def test_recording_names_every_login_and_replays(tmp_path: Path) -> None:
     class _Inner:
         def graphql(self, query: str, variables: dict) -> dict:
-            return {"pr": {"author": {"login": "alice"}, "reviews": [{"author": {"login": "bob"}, "body": "alice"}]}}
+            return {"pr": {"title": "Merge from alice/fix", "author": {"login": "alice"}, "reviews": [{"author": {"login": "bob"}, "body": "alice"}]}}
 
         def rest(self, path: str) -> dict | list | None:
             if path.endswith("/protection"):
@@ -178,7 +178,7 @@ def test_recording_names_every_login_and_replays(tmp_path: Path) -> None:
     assert recording.rest("/repos/acme/api/rules/branches/main") is None
     replay = RecordedTransport(tmp_path)
     assert replay.graphql(QUERY, {"owner": "acme"}) == {
-        "pr": {"author": {"login": "p-ALICE"}, "reviews": [{"author": {"login": "p-BOB"}, "body": "alice"}]}
+        "pr": {"title": "", "author": {"login": "p-ALICE"}, "reviews": [{"author": {"login": "p-BOB"}, "body": "alice"}]}
     }
     assert replay.rest("/repos/acme/api/rules/branches/main") is None
     with pytest.raises(NotFound, match="404"):

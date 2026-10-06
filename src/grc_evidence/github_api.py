@@ -168,7 +168,8 @@ class RecordedTransport:
 
 
 class RecordingTransport:
-    """Reads through `inner` and writes each response for RecordedTransport, every `login` passed through `namer`.
+    """Reads through `inner` and writes each response for RecordedTransport, every `login` passed through `namer`
+    and every `title` emptied (a title can hold a login; fixtures are published).
 
     It returns the named response too, so a recording run and its offline replay give the same outputs.
     """
@@ -197,9 +198,17 @@ class RecordingTransport:
 
 
 def _named(value: Any, namer: Names) -> Any:
-    """`value` with every `login` string replaced by its name."""
+    """`value` with every `login` string replaced by its name and every `title` emptied."""
     if isinstance(value, dict):
-        return {k: namer.name(v) if k == "login" and isinstance(v, str) else _named(v, namer) for k, v in value.items()}
+        return {k: _field(k, v, namer) for k, v in value.items()}
     if isinstance(value, list):
         return [_named(v, namer) for v in value]
     return value
+
+
+def _field(key: str, value: Any, namer: Names) -> Any:
+    if key == "login" and isinstance(value, str):
+        return namer.name(value)
+    if key == "title" and isinstance(value, str):
+        return ""
+    return _named(value, namer)

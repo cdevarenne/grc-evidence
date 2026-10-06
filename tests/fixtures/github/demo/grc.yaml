@@ -1,0 +1,8 @@
+# Recording only (Spec H Part A, plan Task 12): the owner records the demo responses with a token and
+# GRC_PEOPLE_SALT. The recording saves every login as a pseudonym and every title empty. Never run in CI.
+window: {start: 2026-06-01, end: 2026-08-31}
+people: pseudonymous
+ledger: out/type2-record/ledger.jsonl
+github:
+  repos:
+    - {name: GoogleCloudPlatform/microservices-demo, tier: in-scope, collect: [changes]}
