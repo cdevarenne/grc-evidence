@@ -30,7 +30,16 @@ class GitHubError(GrcError, RuntimeError):
 
 
 class _NotReadable(GitHubError):
-    """HTTP 403 with no rate-limit signal, or 404: the token cannot read this resource."""
+    """HTTP 403 with no rate-limit signal: the token cannot read this resource."""
+
+
+class NotFound(GitHubError):
+    """HTTP 404. `reason` is GitHub's message: "Branch not protected" means no classic protection, other
+    messages (such as "Branch not found") do not."""
+
+    def __init__(self, message: str, reason: str) -> None:
+        super().__init__(message)
+        self.reason = reason
 
 
 class Transport(Protocol):
@@ -39,7 +48,7 @@ class Transport(Protocol):
         ...
 
     def rest(self, path: str) -> dict | list | None:
-        """A REST read, or None when the token cannot read it (403 with no rate-limit signal, or 404)."""
+        """A REST read, or None when the token cannot read it (403 with no rate-limit signal); NotFound on 404."""
         ...
 
 
@@ -106,26 +115,38 @@ class HttpTransport:
             with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
                 return json.loads(response.read())
         except urllib.error.HTTPError as e:
-            raise _http_error(e.code, e.headers, where) from None
+            raise _http_error(e.code, e.headers, where, _message(e.read())) from None
         except urllib.error.URLError as e:
             raise GitHubError(f"GitHub API unreachable on {where}: {e.reason}") from None
 
 
-def _http_error(status: int, headers: Message, where: str) -> GitHubError:
-    """A named rate limit, a not-readable resource, or a plain HTTP error."""
+def _message(body: bytes) -> str:
+    """The `message` of a GitHub error body, or "" when there is none."""
+    try:
+        doc = json.loads(body)
+    except ValueError:
+        return ""
+    return str(doc.get("message", "")) if isinstance(doc, dict) else ""
+
+
+def _http_error(status: int, headers: Message, where: str, message: str) -> GitHubError:
+    """A named rate limit, a not-readable resource, a 404 with its message, or a plain HTTP error."""
     if retry := headers.get("retry-after"):
         return GitHubError(f"GitHub API {status} on {where}: secondary rate limit; retry after {retry} s")
     if headers.get("x-ratelimit-remaining") == "0" or status == 429:
         reset = headers.get("x-ratelimit-reset")
         when = datetime.fromtimestamp(int(reset), UTC).strftime("%Y-%m-%dT%H:%M:%SZ") if reset else "unknown"
         return GitHubError(f"GitHub API {status} on {where}: rate limit; resets at {when}")
-    if status in (403, 404):
-        return _NotReadable(f"GitHub API {status} on {where}")
+    if status == 403:
+        return _NotReadable(f"GitHub API 403 on {where}")
+    if status == 404:
+        return NotFound(f"GitHub API 404 on {where}: {message}", message)
     return GitHubError(f"GitHub API {status} on {where}")
 
 
 class RecordedTransport:
-    """Responses read from files: `<graphql_key>` holds a GraphQL body, `<rest_key>` a REST body or `{"status": 404}`."""
+    """Responses read from files: `<graphql_key>` holds a GraphQL body; `<rest_key>` a REST body, `{"status": 403}`
+    (not readable) or `{"status": 404, "message": ...}`."""
 
     def __init__(self, root: Path) -> None:
         self._root = root
@@ -135,7 +156,9 @@ class RecordedTransport:
 
     def rest(self, path: str) -> dict | list | None:
         body = self._load(rest_key(path), path)
-        return None if body == {"status": 404} else body
+        if isinstance(body, dict) and body.get("status") == 404:
+            raise NotFound(f"GitHub API 404 on {path}: {body.get('message', '')}", body.get("message", ""))
+        return None if body == {"status": 403} else body
 
     def _load(self, key: str, what: str) -> Any:
         file = self._root / key
@@ -159,9 +182,13 @@ class RecordingTransport:
         return data
 
     def rest(self, path: str) -> dict | list | None:
-        body = self._inner.rest(path)
+        try:
+            body = self._inner.rest(path)
+        except NotFound as e:
+            self._write(rest_key(path), {"status": 404, "message": e.reason})
+            raise
         named = None if body is None else _named(body, self._namer)
-        self._write(rest_key(path), {"status": 404} if named is None else named)
+        self._write(rest_key(path), {"status": 403} if named is None else named)
         return named
 
     def _write(self, key: str, body: Any) -> None:

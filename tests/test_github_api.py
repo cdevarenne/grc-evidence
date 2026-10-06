@@ -16,6 +16,7 @@ from grc_evidence import github_queries
 from grc_evidence.github_api import (
     GitHubError,
     HttpTransport,
+    NotFound,
     RecordedTransport,
     RecordingTransport,
     graphql_key,
@@ -27,12 +28,12 @@ from grc_evidence.github_api import (
 QUERY = "query($owner: String!) {\n  repository(owner: $owner) { name }\n}"
 
 
-def _raise_http(status: int, headers: dict[str, str] | None = None) -> Callable[..., Any]:
+def _raise_http(status: int, headers: dict[str, str] | None = None, body: bytes = b"{}") -> Callable[..., Any]:
     def urlopen(request: urllib.request.Request, timeout: float) -> Any:
         hdrs = email.message.Message()
         for k, v in (headers or {}).items():
             hdrs[k] = v
-        raise urllib.error.HTTPError(request.full_url, status, "error", hdrs, io.BytesIO(b"{}"))
+        raise urllib.error.HTTPError(request.full_url, status, "error", hdrs, io.BytesIO(body))
     return urlopen
 
 
@@ -62,9 +63,25 @@ def test_missing_fixture_names_key(tmp_path: Path) -> None:
     assert "query($owner: String!) {" in str(e.value)
 
 
-def test_rest_404_is_none(tmp_path: Path) -> None:
-    (tmp_path / rest_key("/repos/acme/api/rules/branches/main")).write_text('{"status": 404}')
+def test_recorded_403_is_none_and_404_names_its_message(tmp_path: Path) -> None:
+    (tmp_path / rest_key("/repos/acme/api/rules/branches/main")).write_text('{"status": 403}')
     assert RecordedTransport(tmp_path).rest("/repos/acme/api/rules/branches/main") is None
+    (tmp_path / rest_key("/repos/acme/api/branches/main/protection")).write_text('{"status": 404, "message": "Branch not protected"}')
+    with pytest.raises(NotFound) as e:
+        RecordedTransport(tmp_path).rest("/repos/acme/api/branches/main/protection")
+    assert e.value.reason == "Branch not protected"
+
+
+def test_http_404_names_its_message(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The spike: classic protection answers 404 "Branch not protected" when there is none, "Branch not found" otherwise."""
+    monkeypatch.setattr(urllib.request, "urlopen", _raise_http(404, body=b'{"message": "Branch not protected", "status": "404"}'))
+    with pytest.raises(NotFound) as e:
+        HttpTransport("tok").rest("/repos/acme/api/branches/main/protection")
+    assert e.value.reason == "Branch not protected"
+    monkeypatch.setattr(urllib.request, "urlopen", _raise_http(404, body=b"not json"))
+    with pytest.raises(NotFound) as e:
+        HttpTransport("tok").rest("/repos/acme/api/branches/main/protection")
+    assert e.value.reason == ""
 
 
 def test_graphql_errors_raise(tmp_path: Path) -> None:
@@ -152,6 +169,8 @@ def test_recording_names_every_login_and_replays(tmp_path: Path) -> None:
             return {"pr": {"author": {"login": "alice"}, "reviews": [{"author": {"login": "bob"}, "body": "alice"}]}}
 
         def rest(self, path: str) -> dict | list | None:
+            if path.endswith("/protection"):
+                raise NotFound("GitHub API 404", "Branch not protected")
             return None
 
     recording = RecordingTransport(_Inner(), tmp_path, _Upper())
@@ -162,6 +181,11 @@ def test_recording_names_every_login_and_replays(tmp_path: Path) -> None:
         "pr": {"author": {"login": "p-ALICE"}, "reviews": [{"author": {"login": "p-BOB"}, "body": "alice"}]}
     }
     assert replay.rest("/repos/acme/api/rules/branches/main") is None
+    with pytest.raises(NotFound, match="404"):
+        recording.rest("/repos/acme/api/branches/main/protection")
+    with pytest.raises(NotFound) as e:
+        replay.rest("/repos/acme/api/branches/main/protection")
+    assert e.value.reason == "Branch not protected"
 
 
 def test_only_reads() -> None:
