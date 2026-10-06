@@ -43,3 +43,27 @@ What grc-evidence does not do, or does only partly. Read this before relying on 
   `app/ai-inventory.yaml`; nothing classifies the system. There is no
   conformity assessment, model evaluation, or NIST AI RMF control set
   (crosswalk links only).
+
+## Repository settings (Spec H)
+
+Recorded on 2026-10-06 with a fine-grained token (Contents, Metadata and
+Administration: read on the owner's repos). The commands and results are in
+[`tests/fixtures/github/spike/README.md`](../tests/fixtures/github/spike/README.md).
+
+- **Rulesets are readable on any public repo.**
+  `GET /repos/{owner}/{repo}/rules/branches/{branch}` needs only metadata read.
+  It returned `200` with `[]` on the owner's repo and on
+  `GoogleCloudPlatform/microservices-demo`.
+- **Classic branch protection needs administration read.**
+  `GET /repos/{owner}/{repo}/branches/{branch}/protection` returned `404` on the
+  owner's repo, which has no protection, and `403` on a repo the token cannot
+  administer. The GraphQL `branchProtectionRules` field needs the same
+  permission (`FORBIDDEN` on the second repo), so the collector does not use it.
+- **The collector reads both, rulesets first.** A repo's rules are readable only
+  when both reads succeed: rulesets `200`, and classic protection `200` or `404`
+  (no classic protection). A `403` on either gives `scm-rules-unreadable`, never
+  a pass. So on a repo the token cannot administer, the rules are reported as
+  unreadable even when its rulesets are empty.
+- **Not yet checked:** the Actions `GITHUB_TOKEN`. It has no administration
+  permission, so in CI classic protection is expected to be unreadable on every
+  repo, the token's own repo included.
