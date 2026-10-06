@@ -4,6 +4,6 @@ window: {start: 2026-06-01, end: 2026-08-31}
 people: real
 ledger: out/type2/ledger.jsonl
 github:
-  scanner_jobs: [semgrep, trivy, checkov, conftest, codeql]
+  scanner_jobs: [Analyze]  # upstream scans with CodeQL: checks "Analyze (go)", "Analyze (python)", ...
   repos:
     - {name: GoogleCloudPlatform/microservices-demo, tier: in-scope, collect: [changes]}

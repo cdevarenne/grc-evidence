@@ -1,0 +1,13 @@
+{
+ "data": {
+  "rateLimit": {
+   "cost": 1,
+   "remaining": 4998
+  },
+  "repository": {
+   "defaultBranchRef": {
+    "name": "main"
+   }
+  }
+ }
+}

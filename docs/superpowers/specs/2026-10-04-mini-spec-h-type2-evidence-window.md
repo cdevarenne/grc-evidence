@@ -181,6 +181,7 @@ Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<n
 - The upstream repo has no `scm` entries in the demo ledger, so each of its changes has the flag `rule_not_evidenced`.
 - The owner's repos are maintained by one person and have no required reviews. The tool reports this as `scm-no-required-review`. Spec I turns it into a signed risk acceptance.
 - The recorded API responses for the demo window are test fixtures. The committed outputs can be reproduced offline.
+- **Two windows** (owner decision, 2026-10-06). `grc window` reads only `run` entries recorded during the window, so a past window can never show control history. The engine's examples keep the past window for the population and the sample (recorded fixtures). The demo repo's own `grc.yaml` uses the current quarter (2026-10-01 to 2026-12-31), so its nightly runs build a real history.
 
 ## 11. Done when (Part A)
 
@@ -198,6 +199,6 @@ Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<n
    - an unreadable rules endpoint
    - pagination across the window start
 3. An edited ledger fails `grc ledger verify`.
-4. `examples/` has a population CSV, a sample table and a window report, all pseudonymized.
+4. `examples/` has a population CSV and a sample table, pseudonymized. The window report example comes from the demo's real ledger after its first weeks of nightly runs, in a v2.0.x docs commit (owner decision, 2026-10-06).
 5. `v2.0.0` is released with the package rename, and the demo pins it.
 6. `docs/limits.md` states what is not covered.
