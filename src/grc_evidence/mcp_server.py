@@ -295,7 +295,8 @@ def build_server(out: Path, repo: Path | None = None) -> MCPServer:
     async def scan(ctx: Context) -> ScanSummary:
         """Run the full pipeline (`grc run`) over this repository, with its own grc.yaml, and summarize the new run.
         It writes only the run outputs (out/), all at once when every step succeeded; a failed step is an error and
-        leaves the previous run whole. Takes seconds with warm scanners, longer when Trivy refreshes its database.
+        leaves the previous run whole. It never reads GitHub and never writes the evidence ledger: GitHub-only
+        controls come back not-assessed (rules-not-run). Takes seconds with warm scanners, longer when Trivy refreshes its database.
         One scan at a time."""
         if not scanning.acquire(blocking=False):
             raise ToolError("a scan is already running; read its results when it ends")
@@ -307,7 +308,7 @@ def build_server(out: Path, repo: Path | None = None) -> MCPServer:
             def pipeline() -> None:
                 # Over stdio the protocol owns stdout: a step's print would land in the message stream.
                 with contextlib.redirect_stdout(sys.stderr):
-                    cli.run(["--out", str(out)], on_step=on_step)
+                    cli.run(["--out", str(out)], on_step=on_step, collect=False)
 
             await anyio.to_thread.run_sync(pipeline)
         except (GrcError, FileNotFoundError) as e:

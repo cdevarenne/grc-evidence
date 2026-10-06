@@ -12,7 +12,7 @@ import yaml
 
 from grc_evidence.collect import FINDINGS, collectors_not_run
 from grc_evidence.config import ConfigError, load_config
-from grc_evidence.contract import read_findings
+from grc_evidence.contract import read_collected, read_findings
 from grc_evidence.data import SCHEMA_VERSION
 from grc_evidence.okf_lib import (
     EXPIRY_WARNING_DAYS,
@@ -179,10 +179,13 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     config = load_config(Path.cwd(), args.config, target=args.target, knowledge=args.knowledge)
     findings = read_findings(args.out / "findings.json")
-    if (github := args.out / FINDINGS).is_file():  # the GitHub collectors (Spec H)
-        findings += read_findings(github)
+    ran: list[str] = []
+    if (github := args.out / FINDINGS).is_file():  # the GitHub collectors (Spec H), as far as they ran
+        collected = read_collected(github)
+        findings += collected["findings"]
+        ran = collected.get("collectors", [])
     inventory = Path(config.target) / config.inventory
-    not_run = tools_not_run(config) + collectors_not_run(config)
+    not_run = tools_not_run(config) + collectors_not_run(ran)
     context = load_context(inventory) | ({"tools_not_run": not_run} if not_run else {})
     mapping = map_findings(load_bundle(Path(config.knowledge)), findings, context, args.today)
     doc = {"schema_version": SCHEMA_VERSION, **mapping}

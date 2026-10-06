@@ -13,6 +13,11 @@
       "pattern": "^1\\.[0-9]+$",
       "description": "Contract version; additive changes bump the minor."
     },
+    "collectors": {
+      "type": "array",
+      "items": {"enum": ["scm", "changes"]},
+      "description": "collect/github-findings.json only: the GitHub collectors that ran. A collector not listed did not run."
+    },
     "findings": {
       "type": "array",
       "items": {

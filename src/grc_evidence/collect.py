@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import os
+from collections.abc import Iterable
 from dataclasses import asdict
 from datetime import UTC, datetime
 from importlib.metadata import version
@@ -47,12 +48,13 @@ POSTURE = "collect/scm-posture.json"
 FIXTURES_ENV = "GRC_GITHUB_FIXTURES"  # tests and offline examples only: read recorded responses from this folder
 
 
-def collectors_not_run(config: Config) -> list[str]:
-    """`github` when no repo lists a collector, else the rule prefixes of the collectors none lists."""
-    listed = {c for repo in config.github_repos for c in repo.collect}
-    if not listed:
+def collectors_not_run(ran: Iterable[str]) -> list[str]:
+    """`github` when no collector ran, else the rule prefixes of the collectors that did not. Only what a run's
+    `collect/github-findings.json` records counts, never what grc.yaml lists: a skipped step is not a pass."""
+    ran = set(ran)
+    if not ran:
         return ["github"]
-    return [prefix for collector, prefix in COLLECTOR_RULES.items() if collector not in listed]
+    return [prefix for collector, prefix in COLLECTOR_RULES.items() if collector not in ran]
 
 
 def transport_from_env() -> Transport:
@@ -121,7 +123,7 @@ def run_collect(
             outputs = (FINDINGS, "collect/population.csv", "collect/changes.json")
         inputs = {"query_sha256": metered.queries(), "branch": branch}
         pending.append((collector, repo.name, inputs, summary, metered.rate_limit(), outputs))
-    hashes = _write(out, findings, postures, changes, summaries)
+    hashes = _write(out, sorted({c for _, c in wanted}), findings, postures, changes, summaries)
     engine = version("grc-evidence")
     return [
         ledger.make_entry(c, repo, window, inputs, {rel: hashes[rel] for rel in outputs}, summary, rl, now, engine)
@@ -129,8 +131,11 @@ def run_collect(
     ]
 
 
-def _write(out: Path, findings: list[dict], postures: list[dict], changes: list, summaries: dict) -> dict[str, str]:
-    files = {FINDINGS: json.dumps({"schema_version": SCHEMA_VERSION, "findings": findings}, indent=2) + "\n"}
+def _write(
+    out: Path, ran: list[str], findings: list[dict], postures: list[dict], changes: list, summaries: dict
+) -> dict[str, str]:
+    doc = {"schema_version": SCHEMA_VERSION, "collectors": ran, "findings": findings}
+    files = {FINDINGS: json.dumps(doc, indent=2) + "\n"}
     if postures:
         files[POSTURE] = json.dumps({"repos": postures}, indent=2) + "\n"
     (out / "collect").mkdir(parents=True, exist_ok=True)

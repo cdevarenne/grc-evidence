@@ -249,7 +249,8 @@ def test_no_tool_changes_a_file(tmp_path: Path) -> None:
 def _fake_run(tmp_path: Path, started: threading.Event | None = None, release: threading.Event | None = None, fail: bool = False) -> Callable[..., None]:
     """Stands in for cli.run: hears each step, then writes a new run's outputs (or fails before writing any)."""
 
-    def fake(argv: list[str], on_step: Callable[[str], None] | None = None) -> None:
+    def fake(argv: list[str], on_step: Callable[[str], None] | None = None, collect: bool = True) -> None:
+        assert collect is False  # an agent's scan never reads GitHub or writes the evidence ledger
         out = Path(argv[argv.index("--out") + 1])
         for step in cli.RUN_STEPS:
             if on_step:

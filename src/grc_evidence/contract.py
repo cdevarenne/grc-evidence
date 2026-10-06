@@ -29,6 +29,11 @@ def read_findings(path: Path) -> list[Json]:
     return _read(path, "findings", "grc scan")["findings"]
 
 
+def read_collected(path: Path) -> Json:
+    """`collect/github-findings.json`: the collectors that ran and their findings, under schema 1.x."""
+    return _read(path, "collector findings", "grc collect")
+
+
 def read_mapping(path: Path) -> Json:
     """A `mapping.json` written under schema 1.x; anything else is an error."""
     return _read(path, "mapping", "grc map")

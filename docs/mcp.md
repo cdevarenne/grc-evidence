@@ -82,6 +82,11 @@ instructions. The report resource quotes finding messages as written.
 - **Fixed pipeline:** `scan` runs with the repository's own `grc.yaml`; an
   agent cannot change the layout, a scanner's arguments, or the policies
   through a tool.
+- **No GitHub, no evidence ledger:** `scan` skips the GitHub collectors and
+  never writes the evidence ledger, so an agent cannot use the GitHub token or
+  add audit evidence. Controls evidenced only by GitHub rules come back
+  `not-assessed` (`rules-not-run`). Run `grc run` yourself, or on a schedule,
+  for Type 2 evidence.
 - **One scan at a time;** a second call while one runs is an error. A read
   during a scan sees the previous run whole.
 - **Time:** a warm scan of the demo repository takes about 11 seconds; a cold

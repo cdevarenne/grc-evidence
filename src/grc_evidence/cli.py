@@ -18,7 +18,6 @@ from types import ModuleType
 from grc_evidence import (
     adopt,
     agent,
-    collect,
     data,
     gate,
     ledger,
@@ -30,6 +29,7 @@ from grc_evidence import (
     to_oscal,
     triage,
 )
+from grc_evidence import collect as collect_step
 from grc_evidence.config import load_config
 from grc_evidence.errors import GrcError
 
@@ -50,9 +50,10 @@ def bootstrap() -> None:
 RUN_STEPS = ("scan", "collect", "map", "oscal", "report", "manifest")  # collect: the GitHub collectors (Spec H)
 
 
-def run(argv: list[str], on_step: Callable[[str], None] | None = None) -> None:
+def run(argv: list[str], on_step: Callable[[str], None] | None = None, collect: bool = True) -> None:
     """All steps over one target, as `make scan` runs them, ending with the run manifest. `on_step` hears each
-    step's name before it starts (the MCP server reports it as progress)."""
+    step's name before it starts (the MCP server reports it as progress). With `collect=False` (the MCP scan
+    tool) the GitHub collectors do not run and the evidence ledger is not written, so an agent can do neither."""
     parser = argparse.ArgumentParser(prog="grc run", description=run.__doc__)
     parser.add_argument("--config", help="scan layout (default: grc.yaml if present)")
     parser.add_argument("--target", help="scan target, relative to the repo root (overrides the config)")
@@ -88,7 +89,7 @@ def run(argv: list[str], on_step: Callable[[str], None] | None = None) -> None:
             if on_step:
                 on_step(step)
             if step == "collect":
-                entries = collect.run_step(config, staging, now)
+                entries = collect_step.run_step(config, staging, now) if collect else []
                 continue
             STEPS[step].main(step_args[step])
         for rel in (*manifest.OUTPUTS, "run.json"):
@@ -99,7 +100,8 @@ def run(argv: list[str], on_step: Callable[[str], None] | None = None) -> None:
             os.replace(staging / "collect", out / "collect")
     finally:
         shutil.rmtree(staging, ignore_errors=True)
-    collect.append_run(config, entries, out, now)
+    if collect:
+        collect_step.append_run(config, entries, out, now)
 
 
 def _unclean(state: dict) -> str | None:
@@ -175,7 +177,7 @@ def main(argv: list[str] | None = None) -> None:
         elif args.command == "agent":
             agent.main(args.args)
         elif args.command == "collect":
-            collect.main(args.args)
+            collect_step.main(args.args)
         elif args.command == "narrate":
             narrate_run(args.args)
         elif args.command == "run":

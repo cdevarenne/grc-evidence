@@ -17,6 +17,7 @@ from grc_evidence.github_api import GitHubError, NotFound
 from grc_evidence.github_queries import DEFAULT_BRANCH, MERGED_PRS, WORKFLOWS
 from grc_evidence.manifest import OPTIONAL_OUTPUTS
 from grc_evidence.map_findings import NOT_RUN, map_findings
+from grc_evidence.map_findings import main as map_main
 from grc_evidence.okf_lib import load_bundle
 
 NOW = "2026-10-06T06:00:00+00:00"
@@ -59,9 +60,10 @@ def _config(*repos: str, collect_on: tuple[str, ...] = ("scm", "changes")) -> Co
 
 
 def test_collectors_not_run() -> None:
-    assert collectors_not_run(Config()) == ["github"]
-    assert collectors_not_run(_config("acme/api", collect_on=("scm",))) == ["github:change-"]
-    assert collectors_not_run(_config("acme/api")) == []
+    """Only collectors that actually ran count, whatever grc.yaml lists."""
+    assert collectors_not_run(()) == ["github"]
+    assert collectors_not_run(("scm",)) == ["github:change-"]
+    assert collectors_not_run(("scm", "changes")) == []
 
 
 def _github_only_bundle(tmp_path: Path, rule_ids: str) -> Path:
@@ -73,15 +75,15 @@ def _github_only_bundle(tmp_path: Path, rule_ids: str) -> Path:
     return bundle
 
 
-@pytest.mark.parametrize(("config", "status"), [
-    (Config(), "not-assessed"),
-    (_config("acme/api", collect_on=("scm",)), "no-violations-detected"),
-    (_config("acme/api"), "no-violations-detected"),
+@pytest.mark.parametrize(("ran", "status"), [
+    ((), "not-assessed"),
+    (("scm",), "no-violations-detected"),
+    (("scm", "changes"), "no-violations-detected"),
 ])
-def test_github_rules_not_run_without_config(tmp_path: Path, config: Config, status: str) -> None:
+def test_github_rules_not_run_without_config(tmp_path: Path, ran: tuple[str, ...], status: str) -> None:
     """Review focus 1: a control evidenced only by github rules is never a pass when the collectors did not run."""
     bundle = load_bundle(_github_only_bundle(tmp_path, '["github:scm-*", "github:change-*"]'))
-    entry = map_findings(bundle, [], {"tools_not_run": collectors_not_run(config)})["controls"]["soc2:cc7.2"]
+    entry = map_findings(bundle, [], {"tools_not_run": collectors_not_run(ran)})["controls"]["soc2:cc7.2"]
     assert entry["status"] == status
     if status == "not-assessed":
         assert entry["reason"] == NOT_RUN
@@ -89,7 +91,7 @@ def test_github_rules_not_run_without_config(tmp_path: Path, config: Config, sta
 
 def test_change_rules_not_run_when_only_scm_is_collected(tmp_path: Path) -> None:
     bundle = load_bundle(_github_only_bundle(tmp_path, '["github:change-*"]'))
-    context = {"tools_not_run": collectors_not_run(_config("acme/api", collect_on=("scm",)))}
+    context = {"tools_not_run": collectors_not_run(("scm",))}
     assert map_findings(bundle, [], context)["controls"]["soc2:cc7.2"]["status"] == "not-assessed"
 
 
@@ -107,7 +109,9 @@ def test_run_collect_writes_outputs_and_entries(tmp_path: Path, monkeypatch: pyt
     scm, changes = entries
     assert scm["summary"] == {"required_reviews": 0, "required_checks": [], "bypass": False, "readable": True}
     assert changes["summary"]["in_population"] == 1 and changes["summary"]["flags"]["no_approval"] == 1
-    findings = json.loads((tmp_path / "out" / "collect" / "github-findings.json").read_text())["findings"]
+    doc = json.loads((tmp_path / "out" / "collect" / "github-findings.json").read_text())
+    assert doc["collectors"] == ["changes", "scm"]
+    findings = doc["findings"]
     assert {f["rule_id"] for f in findings} == {"scm-no-required-review", "scm-no-required-checks", "change-no-approval"}
     assert not (tmp_path / "evidence").exists()  # run_collect returns entries; the caller appends them
 
@@ -204,3 +208,38 @@ def test_schema_accepts_github_target() -> None:
     Draft202012Validator(schema).validate({"schema_version": "1.2", "findings": [finding]})
     assert data.SCHEMA_VERSION == "1.2"
 
+
+
+def _map_status(repo: Path) -> str:
+    """Map an empty scan in `repo` (grc.yaml lists acme/api); cc7.2 has only github rules."""
+    (repo / "out").mkdir(exist_ok=True)
+    (repo / "out" / "findings.json").write_text(json.dumps({"schema_version": data.SCHEMA_VERSION, "findings": []}))
+    map_main(["--out", "out"])
+    return json.loads((repo / "out" / "mapping.json").read_text())["controls"]["soc2:cc7.2"]["status"]
+
+
+def test_map_trusts_only_a_collection_that_ran(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """grc.yaml lists collectors, but a run without the collect step maps github rules as not run."""
+    repo = _repo(tmp_path, monkeypatch, {"acme/api": []}, GITHUB)
+    shutil.rmtree(repo / "knowledge")
+    shutil.copytree(_github_only_bundle(repo / "b", '["github:scm-*", "github:change-*"]'), repo / "knowledge")
+    assert _map_status(repo) == "not-assessed"
+    (repo / "out" / "collect").mkdir()
+    (repo / "out" / "collect" / "github-findings.json").write_text(
+        json.dumps({"schema_version": data.SCHEMA_VERSION, "collectors": ["scm", "changes"], "findings": []}))
+    assert _map_status(repo) == "no-violations-detected"
+
+
+def test_run_without_collect_reaches_neither_github_nor_the_ledger(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The MCP scan tool runs the pipeline this way: an agent cannot reach GitHub or write evidence."""
+    repo = _repo(tmp_path, monkeypatch, {}, GITHUB)
+
+    def no_github() -> FakeGitHub:
+        raise AssertionError("an agent's scan must not read GitHub")
+
+    monkeypatch.setattr(collect, "transport_from_env", no_github)
+    cli.run(["--out", "out"], collect=False)
+    assert (repo / "out" / "run.json").is_file()
+    assert not (repo / "out" / "collect").exists() and not (repo / "evidence").exists()
+    run = json.loads((repo / "out" / "run.json").read_text())
+    assert not set(OPTIONAL_OUTPUTS) & set(run["outputs"])
