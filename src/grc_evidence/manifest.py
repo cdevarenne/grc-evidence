@@ -32,6 +32,8 @@ OUTPUTS = (
     "oscal/assessment-results.json",
     "report.md",
 )
+# The GitHub collectors' outputs (Spec H), hashed when a run wrote them.
+OPTIONAL_OUTPUTS = ("collect/github-findings.json", "collect/scm-posture.json", "collect/population.csv", "collect/changes.json")
 SCANNERS = ("semgrep", "trivy", "checkov", "conftest")
 
 
@@ -96,7 +98,10 @@ def build_manifest(
             "resolved": resolved(config),
             "sha256": config_sha256(config),
         },
-        "outputs": {rel: hashlib.sha256((out / rel).read_bytes()).hexdigest() for rel in OUTPUTS},
+        "outputs": {
+            rel: hashlib.sha256((out / rel).read_bytes()).hexdigest()
+            for rel in (*OUTPUTS, *(r for r in OPTIONAL_OUTPUTS if (out / r).is_file()))
+        },
     }
 
 

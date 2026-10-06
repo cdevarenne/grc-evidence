@@ -18,6 +18,7 @@ from types import ModuleType
 from grc_evidence import (
     adopt,
     agent,
+    collect,
     data,
     gate,
     ledger,
@@ -37,7 +38,7 @@ STEPS: dict[str, ModuleType] = {
     "scan": run_scan, "map": map_findings, "oscal": to_oscal, "report": render_report, "manifest": manifest,
     "triage": triage, "gate": gate, "ledger": ledger,
 }
-COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "mcp", "agent", "run", "narrate", *STEPS)
+COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "mcp", "agent", "run", "narrate", "collect", *STEPS)
 
 
 def bootstrap() -> None:
@@ -46,7 +47,7 @@ def bootstrap() -> None:
         subprocess.run(["bash", str(script)], cwd=Path.cwd(), check=True)
 
 
-RUN_STEPS = ("scan", "map", "oscal", "report", "manifest")
+RUN_STEPS = ("scan", "collect", "map", "oscal", "report", "manifest")  # collect: the GitHub collectors (Spec H)
 
 
 def run(argv: list[str], on_step: Callable[[str], None] | None = None) -> None:
@@ -82,15 +83,23 @@ def run(argv: list[str], on_step: Callable[[str], None] | None = None) -> None:
             "report": [*_flag(args, "knowledge"), *common, "--now", now],
             "manifest": [*layout, *stamp, "--exclude", str(out)],
         }
+        entries: list[dict] = []
         for step in RUN_STEPS:
             if on_step:
                 on_step(step)
+            if step == "collect":
+                entries = collect.run_step(config, staging, now)
+                continue
             STEPS[step].main(step_args[step])
         for rel in (*manifest.OUTPUTS, "run.json"):
             (out / rel).parent.mkdir(parents=True, exist_ok=True)
             os.replace(staging / rel, out / rel)
+        shutil.rmtree(out / "collect", ignore_errors=True)  # never keep a previous run's collector outputs
+        if (staging / "collect").is_dir():
+            os.replace(staging / "collect", out / "collect")
     finally:
         shutil.rmtree(staging, ignore_errors=True)
+    collect.append_run(config, entries, out, now)
 
 
 def _unclean(state: dict) -> str | None:
@@ -165,6 +174,8 @@ def main(argv: list[str] | None = None) -> None:
             mcp_main(args.args)
         elif args.command == "agent":
             agent.main(args.args)
+        elif args.command == "collect":
+            collect.main(args.args)
         elif args.command == "narrate":
             narrate_run(args.args)
         elif args.command == "run":

@@ -68,3 +68,6 @@ Administration: read on the owner's repos). The commands and results are in
 - **Not yet checked:** the Actions `GITHUB_TOKEN`. It has no administration
   permission, so in CI classic protection is expected to be unreadable on every
   repo, the token's own repo included.
+- **`GRC_GITHUB_FIXTURES` is for tests and offline examples only.** When it names
+  a folder, the collectors read recorded responses from it instead of GitHub.
+  A real evidence run must not set it.

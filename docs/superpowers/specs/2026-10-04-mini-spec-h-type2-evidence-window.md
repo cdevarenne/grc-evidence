@@ -40,7 +40,7 @@ Code converts the window to UTC bounds `[start 00:00:00Z, end+1 00:00:00Z)`. Eve
 
 ### 3.2 Ledger
 
-`evidence/ledger.jsonl` (path set by `ledger:` in `grc.yaml`). One JSON object per line. Lines are only appended.
+`evidence/ledger.jsonl` (path set by `ledger:` in `grc.yaml`). One JSON object per line. Lines are only appended. The ledger is written only when `grc.yaml` has a `window`: that is how a repo opts into Type 2 evidence, so `grc run` in other repos creates no ledger.
 
 | Field | Meaning |
 |---|---|

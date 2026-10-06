@@ -284,7 +284,7 @@ def test_scan_runs_the_pipeline_and_summarizes_the_new_run(tmp_path: Path, monke
     assert result.structured_content == {"run_id": "run-2", "generated": "2026-10-02T00:00:00+00:00", "commit": "abc", "dirty": False,
                                          "engine": "1.6.0", "statuses": dict(sorted(Counter(e["status"] for e in MAPPING["controls"].values()).items())),
                                          "findings": 5, "gaps": 2}
-    assert messages == ["scan (1/5)", "map (2/5)", "oscal (3/5)", "report (4/5)", "manifest (5/5)", "done"]
+    assert messages == ["scan (1/6)", "collect (2/6)", "map (3/6)", "oscal (4/6)", "report (5/6)", "manifest (6/6)", "done"]
 
 
 def test_a_failed_scan_is_an_error_and_keeps_the_previous_run(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

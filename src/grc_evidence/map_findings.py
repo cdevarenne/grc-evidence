@@ -10,6 +10,7 @@ from typing import Any
 
 import yaml
 
+from grc_evidence.collect import FINDINGS, collectors_not_run
 from grc_evidence.config import ConfigError, load_config
 from grc_evidence.contract import read_findings
 from grc_evidence.data import SCHEMA_VERSION
@@ -79,9 +80,13 @@ def _sdk_gap(bundle: Bundle, key: str, context: dict[str, Any]) -> bool:
 
 
 def _rules_not_run(bundle: Bundle, key: str, context: dict[str, Any]) -> bool:
-    """Every rule declared for the control belongs to a tool the layout turned off (`tools_not_run`)."""
+    """Every rule declared for the control belongs to a tool, or a rule prefix such as `github:change-`, that
+    did not run (`tools_not_run`)."""
+    not_run = context.get("tools_not_run", ())
     rules = [r for c in bundle.declaring(key) for r in c.rule_ids]
-    return bool(rules) and all(r.partition(":")[0] in context.get("tools_not_run", ()) for r in rules)
+    return bool(rules) and all(
+        r.partition(":")[0] in not_run or any(":" in n and r.startswith(n) for n in not_run) for r in rules
+    )
 
 
 def _suppression_entry(finding: Finding, s: Suppression, keys: list[str]) -> dict[str, Any]:
@@ -174,8 +179,11 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     config = load_config(Path.cwd(), args.config, target=args.target, knowledge=args.knowledge)
     findings = read_findings(args.out / "findings.json")
+    if (github := args.out / FINDINGS).is_file():  # the GitHub collectors (Spec H)
+        findings += read_findings(github)
     inventory = Path(config.target) / config.inventory
-    context = load_context(inventory) | ({"tools_not_run": not_run} if (not_run := tools_not_run(config)) else {})
+    not_run = tools_not_run(config) + collectors_not_run(config)
+    context = load_context(inventory) | ({"tools_not_run": not_run} if not_run else {})
     mapping = map_findings(load_bundle(Path(config.knowledge)), findings, context, args.today)
     doc = {"schema_version": SCHEMA_VERSION, **mapping}
     (args.out / "mapping.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")

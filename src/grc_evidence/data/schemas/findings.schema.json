@@ -37,7 +37,8 @@
             "semgrep",
             "trivy",
             "checkov",
-            "conftest"
+            "conftest",
+            "github"
           ]
         },
         "rule_id": {
@@ -56,7 +57,7 @@
         },
         "target": {
           "type": "string",
-          "description": "Repo-relative path, POSIX separators."
+          "description": "Repo-relative path, POSIX separators; for tool github, github:<owner>/<name> or github:<owner>/<name>#<number>."
         },
         "message": {
           "type": "string"

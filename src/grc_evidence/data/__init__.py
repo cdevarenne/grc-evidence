@@ -4,7 +4,8 @@ from importlib.resources import files
 from importlib.resources.abc import Traversable
 
 # Version of the output contract (schemas/*.schema.json): additive changes bump the minor version.
-SCHEMA_VERSION = "1.1"  # 1.1: run.json lists untracked scan inputs; mapping.json lists pending suppressions
+SCHEMA_VERSION = "1.2"  # 1.1: run.json lists untracked scan inputs; mapping.json lists pending suppressions
+# 1.2: tool `github` and its targets `github:<owner>/<name>[#n]`; run.json hashes the optional collect/ outputs
 
 
 def path(name: str) -> Traversable:
