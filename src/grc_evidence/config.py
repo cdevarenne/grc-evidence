@@ -56,6 +56,14 @@ class RepoSpec:
 
 
 @dataclass(frozen=True)
+class AcceptedBot:
+    """A bot whose review approvals count, with the team's reason, for an auditor to accept or reject."""
+
+    login: str  # lower case, without GitHub's `[bot]` suffix
+    reason: str
+
+
+@dataclass(frozen=True)
 class Config:
     """The resolved scan layout; field names are the YAML keys with `.` as `_`."""
 
@@ -79,6 +87,7 @@ class Config:
     github_repos: tuple[RepoSpec, ...] = ()
     github_branches: tuple[str, ...] = ()  # production branches beside each repo's default branch
     github_scanner_jobs: tuple[str, ...] = ()  # CI job names that must run a scanner and fail the build
+    github_accepted_bots: tuple[AcceptedBot, ...] = ()  # bot reviewers whose approvals count; none by default
 
     def bounds(self) -> Bounds:
         """The window as UTC bounds; an error when `grc.yaml` has no window."""
@@ -142,7 +151,7 @@ def _date(value: Any, key: str) -> date:
 def _github(repo: Path, raw: Any) -> dict[str, Any]:
     if not isinstance(raw, dict):
         raise ConfigError("'github' must be a mapping")
-    if unknown := sorted(raw.keys() - {"repos", "repos_file", "branches", "scanner_jobs"}):
+    if unknown := sorted(raw.keys() - {"repos", "repos_file", "branches", "scanner_jobs", "accepted_bots"}):
         raise ConfigError(f"unknown key 'github.{unknown[0]}'")
     lists = {k: raw[k] for k in ("branches", "scanner_jobs") if k in raw}
     items = raw.get("repos", [])
@@ -151,7 +160,26 @@ def _github(repo: Path, raw: Any) -> dict[str, Any]:
     labeled = [(f"github.repos[{i}]", item) for i, item in enumerate(items)]
     if "repos_file" in raw:
         labeled += _repos_file(repo, raw["repos_file"])
-    return {"github_repos": _repos(labeled), **_fields(lists, {"branches": list, "scanner_jobs": list}, "github.")}
+    return {
+        "github_repos": _repos(labeled), "github_accepted_bots": _accepted_bots(raw.get("accepted_bots", [])),
+        **_fields(lists, {"branches": list, "scanner_jobs": list}, "github."),
+    }
+
+
+def _accepted_bots(items: Any) -> tuple[AcceptedBot, ...]:
+    if not isinstance(items, list):
+        raise ConfigError("'github.accepted_bots' must be a list of {login, reason}")
+    bots = []
+    for i, item in enumerate(items):
+        key = f"github.accepted_bots[{i}]"
+        if not isinstance(item, dict) or item.keys() != {"login", "reason"}:
+            raise ConfigError(f"'{key}' must be a mapping with login and reason")
+        if not isinstance(item["login"], str) or not item["login"].strip():
+            raise ConfigError(f"'{key}.login' must be a bot login")
+        if not isinstance(item["reason"], str) or not item["reason"].strip():
+            raise ConfigError(f"'{key}.reason' must say why this bot's approvals are accepted")
+        bots.append(AcceptedBot(item["login"].strip().lower().removesuffix("[bot]"), item["reason"].strip()))
+    return tuple(bots)
 
 
 def _repos_file(repo: Path, rel: Any) -> list[tuple[str, Any]]:

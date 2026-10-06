@@ -566,6 +566,7 @@ git commit -am "Add the change population collector with approval rules and a de
     - returns ledger entries for the caller to append only after every repo succeeded
     - each entry's `inputs` = `{"query_sha256": sha256 of the GraphQL query text, "branch": default branch}`; `rate_limit` from `github_api.rate_limit`
   - `grc run` appends its `collect` entries plus one `run` entry. The `run` entry's summary is `{control_key: status}` from `mapping.json`. It is appended after `os.replace` of the outputs.
+  - `run_collect` passes `frozenset(b.login for b in config.github_accepted_bots)` to `collect_changes`.
   - `grc collect` alone writes the collector outputs and appends its `scm` and `changes` entries, but no `run` entry. Control status, and so the window report, comes only from `grc run`. `grc collect` is for a quick posture check and for recording fixtures (`--record`).
 
 - [ ] **Step 1: Write the failing tests**
@@ -749,7 +750,7 @@ github:
   - Run `uv run zizmor .github` with no high findings.
   - Pin `OKF_GRC_VERSION` (rename it to `GRC_VERSION`) to `v2.0.0` and the package to `grc-evidence[...]`, then `make baseline` in the same commit.
 - [ ] **Step 6: Docs.**
-  - `docs/limits.md`: GitHub only; read-only; unreadable rules; no back-fill; the pseudonymization scope; the fixtures variable; a rate limit stops the run with no retry; the cost of `grc collect changes` grows with the number of PRs updated since the window start (the ledger records the cost per run; GitHub search is not used, because it stops at 1,000 results). Pseudonymization replaces `login` fields only: a login typed into a title ("Merge … from alice/branch") stays. A change updated while the collector pages may move ahead of the cursor and be missed in that run.
+  - `docs/limits.md`: GitHub only; read-only; unreadable rules; no back-fill; the pseudonymization scope; the fixtures variable; a rate limit stops the run with no retry; the cost of `grc collect changes` grows with the number of PRs updated since the window start (the ledger records the cost per run; GitHub search is not used, because it stops at 1,000 results). In pseudonymous mode, titles are left empty, because a title can hold a login. A change updated while the collector pages may move ahead of the cursor and be missed in that run.
   - `docs/roadmap.md`: Spec H Part A built; Part B and Spec I next.
 - [ ] **Step 7: Verify everything**
 

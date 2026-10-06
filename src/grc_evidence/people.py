@@ -32,6 +32,10 @@ class Namer:
     def __repr__(self) -> str:
         return f"Namer({self._mode!r})"
 
+    @property
+    def pseudonymous(self) -> bool:
+        return self._mode == "pseudonymous"
+
     def name(self, login: str | None) -> str:
         if login is None or login == GHOST:
             return GHOST

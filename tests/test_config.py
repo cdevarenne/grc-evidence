@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from grc_evidence.config import Config, ConfigError, RepoSpec, load_config
+from grc_evidence.config import AcceptedBot, Config, ConfigError, RepoSpec, load_config
 from grc_evidence.run_scan import (
     ScanError,
     conftest_inputs,
@@ -225,6 +225,11 @@ def test_repos_file_joins_the_repo_list(tmp_path: Path) -> None:
     assert [r.name for r in c.github_repos] == ["acme/api", "acme/web"]
 
 
+def test_accepted_bots_need_a_reason(tmp_path: Path) -> None:
+    c = load_config(_repo(tmp_path, "github:\n  accepted_bots:\n    - login: CodeRabbitAI[bot]\n      reason: AI review accepted by team policy\n"))
+    assert c.github_accepted_bots == (AcceptedBot("coderabbitai", "AI review accepted by team policy"),)
+
+
 def test_no_window_has_no_bounds(tmp_path: Path) -> None:
     with pytest.raises(ConfigError, match="no window in grc.yaml"):
         load_config(_repo(tmp_path)).bounds()
@@ -241,6 +246,9 @@ def test_no_window_has_no_bounds(tmp_path: Path) -> None:
     ("github:\n  repos:\n    - {name: api, tier: in-scope}\n", "github.repos[0].name"),
     ("github:\n  repos:\n    - {name: acme/api, tier: in-scope, owner: me}\n", "github.repos[0]"),
     ("github:\n  colour: blue\n", "github.colour"),
+    ("github:\n  accepted_bots:\n    - {login: coderabbitai}\n", "github.accepted_bots[0]"),
+    ("github:\n  accepted_bots:\n    - {login: coderabbitai, reason: ''}\n", "github.accepted_bots[0].reason"),
+    ("github:\n  accepted_bots: coderabbitai\n", "github.accepted_bots"),
     ("people: anonymous\n", "people"),
     ("people_salt_env: 'my salt'\n", "people_salt_env"),
     ("ledger: ../ledger.jsonl\n", "ledger"),

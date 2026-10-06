@@ -112,12 +112,15 @@ For each repo with `changes` in its `collect` list, it uses one paged GraphQL qu
 For each PR:
 
 - repo, number, title, author, merged by, merged at, merge commit SHA, base branch
-- the reviews: author, state and submitted at
+- the reviews: author (and whether it is a bot), state, submitted at, the commit reviewed, and whether the reviewer can push to the repo
+- the final commit of the pull request (`headRefOid`)
 - the checks on the merge commit: name and conclusion
 
 ### 5.2 Rules (code decides)
 
-- **Approvers:** the latest review state per reviewer, among reviews submitted before `mergedAt`, where the reviewer is not the author. Only the states `APPROVED`, `CHANGES_REQUESTED` and `DISMISSED` count. A `COMMENTED` review does not withdraw an approval on GitHub, so it is ignored. A reviewer counts as an approver when that state is `APPROVED`.
+- **Approvers:** the latest review state per reviewer, among reviews submitted before `mergedAt`, where the reviewer is not the author. Only the states `APPROVED`, `CHANGES_REQUESTED` and `DISMISSED` count. A `COMMENTED` review does not withdraw an approval on GitHub, so it is ignored. A reviewer counts as an approver when that state is `APPROVED`, the reviewer can push to the repo (GitHub ignores approvals from people who cannot), and the approval was given on the final commit.
+- **Bots:** a review by a bot is ignored, unless `github.accepted_bots` lists the bot with a reason (`{login, reason}`). A listed bot's approval counts without push access, and the change gets the flag `bot_approval`. The reason is in the resolved config in `run.json`. Accepting it is the team's decision; an auditor can reject it.
+- `approval_not_on_final_commit` (a flag, not a finding): an approval was given on an earlier commit and does not count.
 - `change-no-approval`: no approver.
 - `change-self-merge-without-review`: the author merged it and there is no approver. Both logins must be present: a deleted author and an unknown merger are not a self-merge.
 - `merged_before_rule` (a flag, not a finding): the last `scm` ledger entry for the repo on or before `mergedAt` shows fewer than 1 required review.
@@ -135,7 +138,7 @@ Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<n
 
 ### 5.4 People
 
-`people: real | pseudonymous` (default `real`). With `pseudonymous`, every login in every output becomes `p-` plus the first 10 hex characters of HMAC-SHA256(salt, login). The salt comes from the environment variable that `people_salt_env` names (default `GRC_PEOPLE_SALT`). It is never written to an output. The collector applies the names when it reads the data, so no real login reaches a finding message, `mapping.json`, the report, OSCAL or the ledger. If the salt is not set, the run stops with an error. An adopter's audit needs real names. A public demo that republishes other people's activity does not.
+`people: real | pseudonymous` (default `real`). With `pseudonymous`, every login in every output becomes `p-` plus the first 10 hex characters of HMAC-SHA256(salt, login). The salt comes from the environment variable that `people_salt_env` names (default `GRC_PEOPLE_SALT`). It is never written to an output. The collector applies the names when it reads the data, so no real login reaches a finding message, `mapping.json`, the report, OSCAL or the ledger. Titles are left empty, because a title can hold a login ("Merge … from alice/branch", "@alice"). If the salt is not set, the run stops with an error. An adopter's audit needs real names. A public demo that republishes other people's activity does not.
 
 ## 6. Sample and window report
 

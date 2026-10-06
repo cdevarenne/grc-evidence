@@ -27,10 +27,17 @@ from grc_evidence.window import utc_bounds
 B = utc_bounds(date(2026, 6, 1), date(2026, 8, 31))
 REAL = Namer("real", None)
 REPO = RepoSpec("acme/api", "in-scope", ("changes",))
+HEAD = "a" * 40  # the final commit of every synthetic pull request
+MERGED = datetime(2026, 7, 2, tzinfo=UTC)
 
 
-def _review(login: str | None, state: str, at: str) -> dict:
-    return {"author": {"login": login} if login else None, "state": state, "submittedAt": at}
+def _review(login: str | None, state: str, at: str, *, push: bool | None = True, bot: bool = False, commit: str | None = HEAD) -> dict:
+    return {"author": {"login": login, "__typename": "Bot" if bot else "User"} if login else None, "state": state,
+            "submittedAt": at, "authorCanPushToRepository": push, "commit": {"oid": commit} if commit else None}
+
+
+def _approved(reviews: list[dict], accepted: frozenset[str] = frozenset()) -> tuple[str, ...]:
+    return approvers(reviews, "alice", MERGED, HEAD, accepted)[0]
 
 
 def _pr(number: int, merged_at: str, *, author: str | None = "alice", merged_by: str | None = "bob",
@@ -41,7 +48,7 @@ def _pr(number: int, merged_at: str, *, author: str | None = "alice", merged_by:
               {"__typename": "StatusContext", "context": "ci/legacy", "state": "SUCCESS"}] if checks is None else checks
     return {
         "number": number, "title": f"Change {number}", "updatedAt": updated_at or merged_at, "mergedAt": merged_at,
-        "baseRefName": base, "author": {"login": author} if author else None,
+        "baseRefName": base, "headRefOid": HEAD, "author": {"login": author} if author else None,
         "mergedBy": {"login": merged_by} if merged_by else None,
         "mergeCommit": {"oid": f"{number:040x}", "statusCheckRollup": {"contexts": {
             "totalCount": len(checks) if check_total is None else check_total, "nodes": checks}}},
@@ -101,29 +108,60 @@ def test_self_merge_without_review() -> None:
 
 def test_dismissed_after_approval_not_approver() -> None:
     """GitHub turns the dismissed approval itself into a DISMISSED review."""
-    reviews = [_review("carol", "DISMISSED", "2026-07-01T09:00:00Z")]
-    assert approvers(reviews, "alice", datetime(2026, 7, 2, tzinfo=UTC)) == ()
+    assert _approved([_review("carol", "DISMISSED", "2026-07-01T09:00:00Z")]) == ()
 
 
 def test_comment_after_approval_keeps_approver() -> None:
     reviews = [_review("carol", "APPROVED", "2026-07-01T09:00:00Z"), _review("carol", "COMMENTED", "2026-07-01T10:00:00Z")]
-    assert approvers(reviews, "alice", datetime(2026, 7, 2, tzinfo=UTC)) == ("carol",)
+    assert _approved(reviews) == ("carol",)
 
 
 def test_changes_requested_after_approval_not_approver() -> None:
     reviews = [_review("carol", "APPROVED", "2026-07-01T09:00:00Z"), _review("carol", "CHANGES_REQUESTED", "2026-07-01T10:00:00Z")]
-    assert approvers(reviews, "alice", datetime(2026, 7, 2, tzinfo=UTC)) == ()
+    assert _approved(reviews) == ()
 
 
 def test_review_after_merge_ignored() -> None:
-    reviews = [_review("carol", "APPROVED", "2026-07-02T00:00:00Z")]
-    assert approvers(reviews, "alice", datetime(2026, 7, 2, tzinfo=UTC)) == ()
+    assert _approved([_review("carol", "APPROVED", "2026-07-02T00:00:00Z")]) == ()
 
 
 def test_author_review_ignored() -> None:
     reviews = [_review("Alice", "APPROVED", "2026-07-01T09:00:00Z"), _review("dave", "APPROVED", "2026-07-01T09:00:00Z"),
                _review(None, "APPROVED", "2026-07-01T09:00:00Z")]
-    assert approvers(reviews, "alice", datetime(2026, 7, 2, tzinfo=UTC)) == ("dave",)
+    assert _approved(reviews) == ("dave",)
+
+
+def test_approval_without_write_access_does_not_count() -> None:
+    """Anyone can approve a public pull request; GitHub ignores approvals from people who cannot push."""
+    assert _approved([_review("eve", "APPROVED", "2026-07-01T09:00:00Z", push=False)]) == ()
+    assert _approved([_review("eve", "APPROVED", "2026-07-01T09:00:00Z", push=None)]) == ()
+
+
+def test_approval_of_an_earlier_commit_does_not_count() -> None:
+    c = _change(_pr(1, "2026-07-02T00:00:00Z", reviews=[_review("carol", "APPROVED", "2026-07-01T09:00:00Z", commit="b" * 40)]))
+    assert c.approvers == () and {"approval_not_on_final_commit", "no_approval"} <= set(c.flags)
+    reapproved = [_review("carol", "APPROVED", "2026-07-01T09:00:00Z", commit="b" * 40), _review("carol", "APPROVED", "2026-07-01T11:00:00Z")]
+    assert _approved(reapproved) == ("carol",)
+
+
+def test_no_final_commit_fails_closed() -> None:
+    pr = {**_pr(1, "2026-07-02T00:00:00Z"), "headRefOid": None}
+    assert _change(pr).approvers == () and "approval_not_on_final_commit" in _change(pr).flags
+
+
+def test_bot_review_is_ignored_unless_accepted() -> None:
+    bot = [_review("coderabbitai", "APPROVED", "2026-07-01T09:00:00Z", push=False, bot=True)]
+    assert _approved(bot) == ()
+    assert approvers(bot, "alice", MERGED, HEAD, frozenset({"coderabbitai"})) == (("coderabbitai",), frozenset({"bot_approval"}))
+    blocking = [*bot, _review("coderabbitai", "CHANGES_REQUESTED", "2026-07-01T10:00:00Z", bot=True)]
+    assert _approved(blocking) == ()
+
+
+def test_accepted_bot_approval_is_flagged_on_the_change() -> None:
+    pr = _pr(1, "2026-07-02T00:00:00Z", reviews=[_review("coderabbitai", "APPROVED", "2026-07-01T09:00:00Z", push=False, bot=True)])
+    c = to_change(pr, "acme/api", B, [], REAL, frozenset({"coderabbitai"}))
+    assert c.approvers == ("coderabbitai",) and "bot_approval" in c.flags and "no_approval" not in c.flags
+    assert "no_approval" in to_change(pr, "acme/api", B, [], REAL).flags
 
 
 def test_rule_became_active_mid_window() -> None:
@@ -205,6 +243,13 @@ def test_pseudonymous_no_raw_login_anywhere(tmp_path: Path) -> None:
         p.read_text() for p in (tmp_path / "collect").iterdir())
     for login in ("alice", "bob", "carol"):
         assert login not in text
+
+
+def test_pseudonymous_drops_titles() -> None:
+    """A title can hold a login ("Merge ... from alice/branch", "@alice"), so pseudonymous outputs carry none."""
+    pr = {**_pr(1, "2026-07-02T00:00:00Z"), "title": "Merge pull request #1 from alice/fix, thanks @carol"}
+    assert _change(pr, namer=Namer("pseudonymous", b"salt")).title == ""
+    assert _change(pr).title == pr["title"]
 
 
 def test_csv_header_and_utc_z(tmp_path: Path) -> None:

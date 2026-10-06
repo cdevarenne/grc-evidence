@@ -2,7 +2,12 @@
 wrote, approved and merged it, and the count of all merged changes beside it (a zero needs a denominator).
 
 Code decides each flag. Logins pass through the `Namer` here, so no real login leaves this module when
-`people: pseudonymous`. Rules that compare people (self-merge, the author's own review) use the raw logins.
+`people: pseudonymous`, and titles are dropped there, because a title can hold a login. Rules that compare
+people (self-merge, the author's own review) use the raw logins.
+
+An approval counts only when the reviewer can push to the repo (GitHub ignores the others too) and it was
+given on the final commit. A bot's review counts only when `github.accepted_bots` lists it with a reason, and
+the change then carries the flag `bot_approval`, for an auditor to accept or reject.
 """
 
 from __future__ import annotations
@@ -26,7 +31,7 @@ from grc_evidence.window import Bounds, in_window, near_boundary, parse_ts
 
 FLAGS = (
     "no_approval", "self_merge_without_review", "merged_before_rule", "rule_not_evidenced", "near_boundary",
-    "reviews_incomplete", "checks_incomplete",
+    "reviews_incomplete", "checks_incomplete", "approval_not_on_final_commit", "bot_approval",
 )
 COUNTED_STATES = ("APPROVED", "CHANGES_REQUESTED", "DISMISSED")  # a COMMENTED review does not withdraw an approval
 CSV_HEADER = ("repo", "number", "title", "author", "merged_by", "merged_at", "merge_sha", "base", "approvers", "flags")
@@ -74,17 +79,39 @@ def _login(actor: dict | None) -> str | None:
     return (actor or {}).get("login")
 
 
-def approvers(reviews: list[dict], author: str | None, merged_at: datetime) -> tuple[str, ...]:
-    """Raw logins whose latest counted review before the merge is APPROVED, the author excluded."""
-    latest: dict[str, tuple[str, str]] = {}
+def _bot_login(login: str) -> str:
+    return login.lower().removesuffix("[bot]")
+
+
+def approvers(
+    reviews: list[dict], author: str | None, merged_at: datetime, head: str | None,
+    accepted_bots: frozenset[str] = frozenset(),
+) -> tuple[tuple[str, ...], frozenset[str]]:
+    """Raw logins whose latest counted review before the merge approves the final commit `head`, the author
+    excluded; and the flags `approval_not_on_final_commit` and `bot_approval` when they apply."""
+    latest: dict[str, dict] = {}
     for review in sorted((r for r in reviews if r.get("submittedAt")), key=lambda r: parse_ts(r["submittedAt"])):
-        login = _login(review.get("author"))
+        actor = review.get("author") or {}
+        login = actor.get("login")
         if not login or (author and login.lower() == author.lower()) or review.get("state") not in COUNTED_STATES:
             continue
         if parse_ts(review["submittedAt"]) >= merged_at:
             continue
-        latest[login.lower()] = (login, review["state"])
-    return tuple(sorted(login for login, state in latest.values() if state == "APPROVED"))
+        if actor.get("__typename") == "Bot" and _bot_login(login) not in accepted_bots:
+            continue  # an unlisted bot is not a reviewer
+        latest[login.lower()] = review
+    approved, flags = [], set()
+    for review in latest.values():
+        bot = review["author"].get("__typename") == "Bot"
+        if review["state"] != "APPROVED" or (not bot and review.get("authorCanPushToRepository") is not True):
+            continue
+        if not head or (review.get("commit") or {}).get("oid") != head:
+            flags.add("approval_not_on_final_commit")
+            continue
+        approved.append(review["author"]["login"])
+        if bot:
+            flags.add("bot_approval")
+    return tuple(sorted(approved)), frozenset(flags)
 
 
 def rule_state(entries: list[dict], repo: str, at: datetime) -> str:
@@ -100,7 +127,9 @@ def rule_state(entries: list[dict], repo: str, at: datetime) -> str:
     return "on" if summary["required_reviews"] >= 1 else "off"
 
 
-def to_change(pr: dict, repo: str, bounds: Bounds, entries: list[dict], namer: Namer) -> Change:
+def to_change(
+    pr: dict, repo: str, bounds: Bounds, entries: list[dict], namer: Namer, accepted_bots: frozenset[str] = frozenset()
+) -> Change:
     merged_at = parse_ts(pr["mergedAt"])
     author, merged_by = _login(pr.get("author")), _login(pr.get("mergedBy"))
     reviews = pr.get("reviews") or {"totalCount": 0, "nodes": []}
@@ -111,7 +140,8 @@ def to_change(pr: dict, repo: str, bounds: Bounds, entries: list[dict], namer: N
         flags.add("reviews_incomplete")
         approved: tuple[str, ...] = ()
     else:
-        approved = approvers(reviews["nodes"], author, merged_at)
+        approved, review_flags = approvers(reviews["nodes"], author, merged_at, pr.get("headRefOid"), accepted_bots)
+        flags |= review_flags
     if contexts["totalCount"] > len(contexts["nodes"]):
         flags.add("checks_incomplete")
     if not approved:
@@ -130,7 +160,7 @@ def to_change(pr: dict, repo: str, bounds: Bounds, entries: list[dict], namer: N
         for n in contexts["nodes"]
     )
     return Change(
-        repo=repo, number=pr["number"], title=pr.get("title") or "", author=namer.name(author),
+        repo=repo, number=pr["number"], title="" if namer.pseudonymous else pr.get("title") or "", author=namer.name(author),
         merged_by=namer.name(merged_by), merged_at=merged_at, merge_sha=commit.get("oid") or "",
         base=pr["baseRefName"], approvers=tuple(sorted(namer.name(a) for a in approved)),
         flags=tuple(f for f in FLAGS if f in flags), checks=checks,
@@ -139,7 +169,7 @@ def to_change(pr: dict, repo: str, bounds: Bounds, entries: list[dict], namer: N
 
 def collect_changes(
     t: Transport, repo: RepoSpec, bounds: Bounds, branches: tuple[str, ...], default_branch: str,
-    entries: list[dict], namer: Namer,
+    entries: list[dict], namer: Namer, accepted_bots: frozenset[str] = frozenset(),
 ) -> tuple[list[Change], dict[str, Any]]:
     """The population of `repo` (merged into the default branch or a listed branch in the window) and its
     summary: `in_population`, `merged_all_branches` (the denominator) and a count per flag."""
@@ -149,7 +179,7 @@ def collect_changes(
             merged.setdefault(pr["number"], pr)  # a change updated during paging can appear twice
     production = {default_branch, *branches}
     changes = sorted(
-        (to_change(pr, repo.name, bounds, entries, namer) for pr in merged.values() if pr["baseRefName"] in production),
+        (to_change(pr, repo.name, bounds, entries, namer, accepted_bots) for pr in merged.values() if pr["baseRefName"] in production),
         key=lambda c: c.number,
     )
     summary = {

@@ -27,7 +27,7 @@ MERGED_PRS = """query($owner: String!, $name: String!, $cursor: String) {
     pullRequests(states: MERGED, first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
       pageInfo { hasNextPage endCursor }
       nodes {
-        number title updatedAt mergedAt baseRefName
+        number title updatedAt mergedAt baseRefName headRefOid
         author { login }
         mergedBy { login }
         mergeCommit {
@@ -39,7 +39,10 @@ MERGED_PRS = """query($owner: String!, $name: String!, $cursor: String) {
             }
           }
         }
-        reviews(first: 100) { totalCount nodes { author { login } state submittedAt } }
+        reviews(first: 100) {
+          totalCount
+          nodes { author { __typename login } state submittedAt authorCanPushToRepository commit { oid } }
+        }
       }
     }
   }
