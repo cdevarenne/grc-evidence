@@ -79,7 +79,7 @@ For each repo with `scm` in its `collect` list:
   - the number of required approving reviews
   - whether stale reviews are dismissed
   - the required status checks
-  - whether admins can bypass the rules
+  - whether anyone can bypass the rules (admins, ruleset bypass actors, classic review bypass allowances)
 - The workflow files in `.github/workflows/` at the default branch head. For each job whose id or name matches an entry of `github.scanner_jobs`, read whether the job or any of its steps has `continue-on-error: true`.
 
 The rules endpoint that a read-only token can call is decided by the Part A spike (plan Task 4). If the token cannot read the rules of a repo, the collector says so (`scm-rules-unreadable`). It never treats an unreadable setting as a pass.
@@ -92,7 +92,7 @@ The collector emits findings in the existing findings contract, with `tool: "git
 |---|---|
 | `scm-no-required-review` | fewer than 1 required approving review on the default branch |
 | `scm-no-required-checks` | no required status checks |
-| `scm-admin-bypass` | admins can bypass the rules |
+| `scm-bypass` | someone can bypass the rules: admins when they are not enforced, a ruleset bypass actor in any mode, or a classic review bypass allowance |
 | `scm-scanner-job-missing` | a `github.scanner_jobs` entry matches no job |
 | `scm-scanner-job-can-fail` | a matching job or step has `continue-on-error: true` |
 | `scm-rules-unreadable` | the token cannot read the branch rules |
@@ -101,7 +101,7 @@ A new base-bundle concept, `scanners/github.md`, declares `rule_ids: ["github:sc
 
 ### 4.3 Outputs
 
-`out/collect/scm-posture.json`: one object per repo with the fields of §4.1 and a `readable` flag. The ledger summary per repo holds `required_reviews`, `required_checks`, `admin_bypass` and `readable`.
+`out/collect/scm-posture.json`: one object per repo with the fields of §4.1 and a `readable` flag. The ledger summary per repo holds `required_reviews`, `required_checks`, `bypass` and `readable`.
 
 ## 5. Change population (`grc collect changes`)
 

@@ -33,7 +33,7 @@ class Posture:
     required_reviews: int | None
     dismiss_stale: bool | None
     required_checks: tuple[str, ...]
-    admin_bypass: bool | None  # admins, ruleset bypass actors, or classic review bypass allowances
+    bypass: bool | None  # admins, ruleset bypass actors, or classic review bypass allowances
     scanner_jobs: dict[str, dict[str, bool]]
     workflow_errors: tuple[str, ...]
 
@@ -43,7 +43,7 @@ class _Rules:
     required_reviews: int
     dismiss_stale: bool
     required_checks: tuple[str, ...]
-    admin_bypass: bool
+    bypass: bool
 
 
 def read_posture(t: Transport, repo: RepoSpec, scanner_jobs: tuple[str, ...]) -> Posture:
@@ -58,7 +58,7 @@ def read_posture(t: Transport, repo: RepoSpec, scanner_jobs: tuple[str, ...]) ->
         required_reviews=rules.required_reviews if rules else None,
         dismiss_stale=rules.dismiss_stale if rules else None,
         required_checks=rules.required_checks if rules else (),
-        admin_bypass=rules.admin_bypass if rules else None,
+        bypass=rules.bypass if rules else None,
         scanner_jobs=jobs, workflow_errors=tuple(sorted((*unreadable, *errors))),
     )
 
@@ -166,8 +166,8 @@ def posture_findings(p: Posture) -> list[Finding]:
             found.append(("scm-no-required-review", "high", f"branch {p.branch} requires no approving review"))
         if not p.required_checks:
             found.append(("scm-no-required-checks", "medium", f"branch {p.branch} requires no status check"))
-        if p.admin_bypass:
-            found.append(("scm-admin-bypass", "medium", f"the rules of branch {p.branch} can be bypassed"))
+        if p.bypass:
+            found.append(("scm-bypass", "medium", f"the rules of branch {p.branch} can be bypassed"))
     errors = f" (workflow files not read: {', '.join(p.workflow_errors)})" if p.workflow_errors else ""
     for pattern, job in p.scanner_jobs.items():
         if not job["present"]:
@@ -181,5 +181,5 @@ def posture_summary(p: Posture) -> dict[str, Any]:
     """The ledger summary of one repo's posture (spec §4.3)."""
     return {
         "required_reviews": p.required_reviews, "required_checks": list(p.required_checks),
-        "admin_bypass": p.admin_bypass, "readable": p.readable,
+        "bypass": p.bypass, "readable": p.readable,
     }

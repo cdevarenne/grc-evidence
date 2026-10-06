@@ -76,7 +76,7 @@ supersedes.
 |---|---|
 | `ledger_entry` | one per Spec H ledger line: `entry_id` (sha256), `prev_id`, `schema_version`, `recorded_at`, `engine_version`, `collector`, `repo`, `window_start`, `window_end`, `inputs` (jsonb), `outputs` (jsonb: path → sha256), `summary` (jsonb), `rate_limit` (jsonb, nullable), `supersedes` |
 | `change` | one per merged change per collection: `entry_id`, `repo`, `number`, `author`, `merged_by`, `merged_at`, `merge_sha`, `base_ref`, `approvers` (array), `flags` (array) |
-| `posture_snapshot` | one per repo per collection: `entry_id`, `repo`, `branch`, `required_reviews`, `required_checks` (array), `admin_bypass`, `scanner_jobs` (jsonb), `readable` |
+| `posture_snapshot` | one per repo per collection: `entry_id`, `repo`, `branch`, `required_reviews`, `required_checks` (array), `bypass`, `scanner_jobs` (jsonb), `readable` |
 
 - **Import:** `grc ledger import evidence/ledger.jsonl` loads the JSON Lines
   ledger. It checks the hash chain first and stops on the first broken link.

@@ -85,7 +85,7 @@ def _rules(p: Any) -> list[str]:
 
 def test_protected_repo_has_no_findings() -> None:
     p = _read({"acme/api": {"classic": PROTECTED, "workflows": {"ci.yml": SCANNER}}})
-    assert (p.readable, p.required_reviews, p.dismiss_stale, p.admin_bypass) == (True, 1, True, False)
+    assert (p.readable, p.required_reviews, p.dismiss_stale, p.bypass) == (True, 1, True, False)
     assert p.required_checks == ("ci", "semgrep")
     assert _rules(p) == []
 
@@ -104,7 +104,7 @@ def test_unprotected_repo() -> None:
 
 def test_unreadable_is_not_a_pass() -> None:
     p = _read({"acme/locked": {"classic": None, "workflows": {"ci.yml": SCANNER}}}, "acme/locked")
-    assert not p.readable and p.required_reviews is None and p.admin_bypass is None
+    assert not p.readable and p.required_reviews is None and p.bypass is None
     assert _rules(p) == ["scm-rules-unreadable"]
     assert posture_findings(p)[0]["severity"] == "unknown"
 
@@ -119,10 +119,10 @@ def test_a_404_other_than_not_protected_is_unreadable() -> None:
     assert _rules(p) == ["scm-rules-unreadable"]
 
 
-def test_admin_bypass_from_classic_protection() -> None:
+def test_bypass_from_classic_protection() -> None:
     classic = {**PROTECTED, "enforce_admins": {"enabled": False}}
     p = _read({"acme/api": {"classic": classic, "workflows": {"ci.yml": SCANNER}}})
-    assert p.admin_bypass is True and _rules(p) == ["scm-admin-bypass"]
+    assert p.bypass is True and _rules(p) == ["scm-bypass"]
 
 
 def test_rulesets_give_reviews_checks_and_bypass() -> None:
@@ -132,8 +132,8 @@ def test_rulesets_give_reviews_checks_and_bypass() -> None:
     ]
     details = {7: {"id": 7, "bypass_actors": [{"actor_type": "RepositoryRole", "bypass_mode": "always"}]}}
     p = _read({"acme/api": {"rulesets": rulesets, "details": details, "workflows": {"ci.yml": SCANNER}}})
-    assert (p.required_reviews, p.dismiss_stale, p.required_checks, p.admin_bypass) == (2, True, ("semgrep",), True)
-    assert _rules(p) == ["scm-admin-bypass"]
+    assert (p.required_reviews, p.dismiss_stale, p.required_checks, p.bypass) == (2, True, ("semgrep",), True)
+    assert _rules(p) == ["scm-bypass"]
 
 
 @pytest.mark.parametrize("mode", ["always", "pull_request", "exempt"])
@@ -143,14 +143,14 @@ def test_every_ruleset_bypass_mode_is_a_bypass(mode: str) -> None:
                 {"type": "required_status_checks", "ruleset_id": 7, "parameters": {"required_status_checks": [{"context": "ci"}]}}]
     details = {7: {"id": 7, "bypass_actors": [{"actor_type": "Team", "bypass_mode": mode}]}}
     p = _read({"acme/api": {"rulesets": rulesets, "details": details, "workflows": {"ci.yml": SCANNER}}})
-    assert p.admin_bypass is True and _rules(p) == ["scm-admin-bypass"]
+    assert p.bypass is True and _rules(p) == ["scm-bypass"]
 
 
 def test_ruleset_with_no_bypass_actor_is_not_a_bypass() -> None:
     rulesets = [{"type": "pull_request", "ruleset_id": 7, "parameters": {"required_approving_review_count": 1}},
                 {"type": "required_status_checks", "ruleset_id": 7, "parameters": {"required_status_checks": [{"context": "ci"}]}}]
     p = _read({"acme/api": {"rulesets": rulesets, "details": {7: {"id": 7, "bypass_actors": []}}, "workflows": {"ci.yml": SCANNER}}})
-    assert p.admin_bypass is False and _rules(p) == []
+    assert p.bypass is False and _rules(p) == []
 
 
 @pytest.mark.parametrize("kind", ["users", "teams", "apps"])
@@ -158,14 +158,14 @@ def test_classic_review_bypass_allowances_are_a_bypass(kind: str) -> None:
     """Classic protection can let named users, teams or apps merge without the required reviews."""
     reviews = {**REVIEWS, "bypass_pull_request_allowances": {kind: [{"login": "x"}]}}
     p = _read({"acme/api": {"classic": {**PROTECTED, "required_pull_request_reviews": reviews}, "workflows": {"ci.yml": SCANNER}}})
-    assert p.admin_bypass is True and _rules(p) == ["scm-admin-bypass"]
+    assert p.bypass is True and _rules(p) == ["scm-bypass"]
     assert "can be bypassed" in posture_findings(p)[0]["message"]
 
 
 def test_empty_bypass_allowances_are_not_a_bypass() -> None:
     reviews = {**REVIEWS, "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []}}
     p = _read({"acme/api": {"classic": {**PROTECTED, "required_pull_request_reviews": reviews}, "workflows": {"ci.yml": SCANNER}}})
-    assert p.admin_bypass is False
+    assert p.bypass is False
 
 
 def test_a_job_that_never_runs_is_not_present() -> None:
@@ -210,7 +210,7 @@ def test_branch_with_a_slash_is_quoted() -> None:
 
 def test_summary_holds_the_ledger_fields() -> None:
     p = _read({"acme/api": {"classic": PROTECTED, "workflows": {"ci.yml": SCANNER}}})
-    assert posture_summary(p) == {"required_reviews": 1, "required_checks": ["ci", "semgrep"], "admin_bypass": False, "readable": True}
+    assert posture_summary(p) == {"required_reviews": 1, "required_checks": ["ci", "semgrep"], "bypass": False, "readable": True}
 
 
 @pytest.mark.parametrize("rule", ["scm-no-required-review", "scm-rules-unreadable", "change-no-approval"])

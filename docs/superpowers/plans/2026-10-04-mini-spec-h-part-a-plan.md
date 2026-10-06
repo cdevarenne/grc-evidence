@@ -422,7 +422,7 @@ git commit -am "Add real or pseudonymous names for people in outputs"
   - `@dataclass(frozen=True) class Posture`:
     - `repo: str`, `branch: str`, `readable: bool`
     - `required_reviews: int | None`, `dismiss_stale: bool | None`
-    - `required_checks: tuple[str, ...]`, `admin_bypass: bool | None`
+    - `required_checks: tuple[str, ...]`, `bypass: bool | None`
     - `scanner_jobs: dict[str, dict[str, bool]]` (`{"present": bool, "can_fail": bool}`)
     - `workflow_errors: tuple[str, ...]`
   - `read_posture(t: Transport, repo: RepoSpec, scanner_jobs: tuple[str, ...]) -> Posture`
