@@ -18,7 +18,7 @@ done
 | Read | `cdevarenne/grc-evidence` (owned) | `GoogleCloudPlatform/microservices-demo` | Permission GitHub names (`X-Accepted-GitHub-Permissions`) |
 |---|---|---|---|
 | `rules/branches/main` (rulesets) | `200`, `[]` | `200`, `[]` | `metadata=read` |
-| `branches/main/protection` (classic) | `404` (no protection) | `403` | `administration=read` |
+| `branches/main/protection` (classic) | `404`, "Branch not protected" | `403` | `administration=read` |
 | GraphQL `branchProtectionRules` | `nodes: []` | `FORBIDDEN`: "Resource not accessible by personal access token" | — |
 
 Not run: the same reads with the Actions `GITHUB_TOKEN`.
