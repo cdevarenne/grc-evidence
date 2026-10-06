@@ -1,7 +1,10 @@
 """The evidence ledger: one JSON object per line, only appended, each line chained to the one before (Spec H §3.2).
 
 `entry_id` is the sha256 of the canonical JSON of the entry without `entry_id`; `prev_id` is the `entry_id`
-of the line before, or null on the first line. An edited, deleted or reordered line fails `verify`.
+of the line before, or null on the first line. An edited, deleted or reordered line fails `verify`. Time never
+goes back and never runs ahead: a line recorded before the line before it, or in the future, fails too, so an
+appended line cannot fill a past gap in the window report. The chain cannot tell a made-up entry recorded now
+from a real one: who can write the ledger is what guards that.
 """
 
 from __future__ import annotations
@@ -9,13 +12,16 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from grc_evidence.config import load_config
 from grc_evidence.errors import GrcError
+from grc_evidence.window import parse_ts
 
 LEDGER_SCHEMA = "1.0"
+CLOCK_SLACK = timedelta(minutes=5)  # a runner's clock may run a little ahead of the machine that verifies
 Entry = dict[str, Any]
 
 
@@ -53,6 +59,8 @@ def read(path: Path) -> list[Entry]:
 def append(path: Path, entry: Entry) -> Entry:
     """Chain `entry` to the last line and append it; returns the stored entry."""
     entries = read(path)
+    if entries and _recorded_at(entry) < _recorded_at(entries[-1]):
+        raise LedgerError(f"{path}: entry recorded at {entry.get('recorded_at')} is before the line before")
     stored = {**entry, "schema_version": LEDGER_SCHEMA, "prev_id": entries[-1]["entry_id"] if entries else None}
     stored["entry_id"] = _entry_id(stored)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -61,11 +69,19 @@ def append(path: Path, entry: Entry) -> Entry:
     return stored
 
 
-def first_problem(path: Path) -> tuple[int, str] | None:
+def _recorded_at(entry: Entry) -> datetime:
+    try:
+        return parse_ts(entry["recorded_at"])
+    except (KeyError, TypeError, ValueError):
+        raise LedgerError(f"entry has no valid recorded_at: {entry.get('recorded_at')!r}") from None
+
+
+def first_problem(path: Path, now: datetime | None = None) -> tuple[int, str] | None:
     """The 1-based number of the first bad line and why, or None for a valid chain."""
     if not path.is_file():
         return None
-    prev = None
+    latest = (now or datetime.now(UTC)) + CLOCK_SLACK
+    prev, prev_at = None, None
     for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         try:
             entry = json.loads(line)
@@ -79,7 +95,15 @@ def first_problem(path: Path) -> tuple[int, str] | None:
             return number, "hash mismatch"
         if entry.get("prev_id") != prev:
             return number, "broken chain"
-        prev = entry["entry_id"]
+        try:
+            at = _recorded_at(entry)
+        except LedgerError:
+            return number, "no valid recorded_at"
+        if prev_at is not None and at < prev_at:
+            return number, "recorded before the line before"
+        if at > latest:
+            return number, "recorded in the future"
+        prev, prev_at = entry["entry_id"], at
     return None
 
 

@@ -3,6 +3,7 @@
 import hashlib
 import json
 from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -10,6 +11,7 @@ import pytest
 from grc_evidence import cli
 from grc_evidence.ledger import (
     LEDGER_SCHEMA,
+    LedgerError,
     append,
     canonical,
     first_problem,
@@ -119,3 +121,35 @@ def test_cli_verify_exit_code(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, c
     p.write_text(lines[0].replace('"scm"', '"run"') + "\n")
     with pytest.raises(SystemExit, match="ledger line 1: hash mismatch"):
         cli.main(["ledger", "verify"])
+
+
+def _at(entry: dict, recorded_at: str) -> dict:
+    return {**entry, "recorded_at": recorded_at}
+
+
+def test_a_back_dated_entry_fails(tmp_path: Path) -> None:
+    """The chain proves no line changed; time must also never go back, or an appended line could fill a past gap."""
+    p = tmp_path / "l.jsonl"
+    append(p, _at(_entry("run"), "2026-06-20T06:00:00+00:00"))
+    with pytest.raises(LedgerError, match="before the line before"):
+        append(p, _at(_entry("run"), "2026-06-10T06:00:00+00:00"))
+    first = p.read_text()
+    second = json.loads(first)
+    second = {k: v for k, v in second.items() if k not in ("entry_id", "schema_version", "prev_id")}
+    stored = {**_at(second, "2026-06-10T06:00:00+00:00"), "schema_version": LEDGER_SCHEMA, "prev_id": json.loads(first)["entry_id"]}
+    stored["entry_id"] = hashlib.sha256(canonical(stored)).hexdigest()
+    p.write_text(first + canonical(stored).decode() + "\n")  # chained correctly, but back-dated
+    assert first_problem(p) == (2, "recorded before the line before")
+
+
+def test_a_future_entry_fails(tmp_path: Path) -> None:
+    p = tmp_path / "l.jsonl"
+    append(p, _at(_entry("run"), "2026-06-20T06:00:00+00:00"))
+    assert first_problem(p, now=datetime(2026, 6, 20, 6, 4, tzinfo=UTC)) is None  # within the clock slack
+    assert first_problem(p, now=datetime(2026, 6, 20, 5, 0, tzinfo=UTC)) == (1, "recorded in the future")
+
+
+def test_a_missing_recorded_at_fails(tmp_path: Path) -> None:
+    p = tmp_path / "l.jsonl"
+    append(p, {k: v for k, v in _entry("run").items() if k != "recorded_at"})
+    assert first_problem(p) == (1, "no valid recorded_at")

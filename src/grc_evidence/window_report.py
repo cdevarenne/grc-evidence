@@ -29,12 +29,13 @@ def _days(bounds: Bounds, today: date, by_day: dict[date, dict]) -> list[date]:
 
 
 def _by_day(entries: list[dict], bounds: Bounds) -> dict[date, dict]:
-    """The summary of the last `run` entry of each day in the window (ledger order is time order)."""
-    days: dict[date, dict] = {}
+    """The summary of each day's latest `run` entry in the window, by its time, not its line."""
+    latest: dict[date, tuple[datetime, dict]] = {}
     for e in entries:
         if e.get("collector") == "run" and in_window(ts := parse_ts(e["recorded_at"]), bounds):
-            days[ts.date()] = e.get("summary") or {}
-    return days
+            if ts.date() not in latest or ts >= latest[ts.date()][0]:
+                latest[ts.date()] = (ts, e.get("summary") or {})
+    return {day: summary for day, (_, summary) in latest.items()}
 
 
 def _silent(days: list[date], by_day: dict[date, dict], max_gap_days: int) -> set[date]:

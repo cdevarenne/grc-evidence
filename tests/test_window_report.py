@@ -1,5 +1,6 @@
 """`grc window`: each control's history over the audit window, from the ledger's `run` entries only (Spec H §6)."""
 
+import hashlib
 import json
 from datetime import date
 from pathlib import Path
@@ -118,3 +119,21 @@ def test_grc_window_refuses_a_broken_ledger(tmp_path: Path, monkeypatch: pytest.
     with pytest.raises(SystemExit, match="ledger line 1: hash mismatch"):
         cli.main(["window"])
     assert not (repo / "out" / "window.json").exists()
+
+
+def test_a_back_dated_run_cannot_fill_a_gap(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Review: an appended run dated on a past day would hide a silence; grc window refuses the ledger."""
+    repo = _repo(tmp_path, monkeypatch, [_run("2026-06-01"), _run("2026-06-20")])
+    path = repo / "evidence" / "ledger.jsonl"
+    last = json.loads(path.read_text().splitlines()[-1])
+    forged = {**{k: v for k, v in last.items() if k not in ("entry_id", "schema_version", "prev_id")},
+              "recorded_at": "2026-06-10T06:00:00+00:00", "schema_version": "1.0", "prev_id": last["entry_id"]}
+    forged["entry_id"] = hashlib.sha256(ledger.canonical(forged)).hexdigest()
+    path.write_text(path.read_text() + ledger.canonical(forged).decode() + "\n")
+    with pytest.raises(SystemExit, match="ledger line 3: recorded before the line before"):
+        cli.main(["window"])
+
+
+def test_the_later_run_of_a_day_wins_by_time_not_position() -> None:
+    entries = [*_daily(1, 30), _run("2026-06-15", BAD, at="01:00:00")]  # appended last, but earlier that day
+    assert _cc81(entries)["gaps"] == []

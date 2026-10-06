@@ -71,3 +71,9 @@ Administration: read on the owner's repos). The commands and results are in
 - **`GRC_GITHUB_FIXTURES` is for tests and offline examples only.** When it names
   a folder, the collectors read recorded responses from it instead of GitHub.
   A real evidence run must not set it.
+- **The evidence ledger shows tampering, it does not prevent it.** `grc ledger
+  verify` fails on an edited, deleted or reordered line, and on a line recorded
+  before the line before it or in the future, so no appended line can fill a
+  past gap in the window report. But a made-up entry appended now, with the
+  current time, passes. What guards against that is who can write the ledger:
+  in the demo only the nightly job pushes the `ledger` branch.
