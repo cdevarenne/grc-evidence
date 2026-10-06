@@ -13,7 +13,7 @@ from jsonschema import Draft202012Validator, FormatChecker, ValidationError
 from oscal_schema import validate as validate_oscal
 
 from grc_evidence import data
-from grc_evidence.config import load_config
+from grc_evidence.config import RepoSpec, load_config
 from grc_evidence.contract import ContractError, read_mapping
 from grc_evidence.manifest import OUTPUTS, build_manifest, run_id
 from grc_evidence.manifest import main as manifest_main
@@ -93,6 +93,17 @@ def test_manifest_hashes_the_outputs_and_names_the_commit(tmp_path: Path) -> Non
     assert "not_run" not in manifest
     skipped = build_manifest(ROOT, out, replace(load_config(ROOT), conftest_inputs=()), "id", NOW)
     assert skipped["not_run"] == ["conftest"]  # #71
+
+
+def test_manifest_records_an_evidence_config_as_json(tmp_path: Path) -> None:
+    """Spec H: the window dates and the repo list reach run.json as JSON, and the layout hash still works."""
+    config = replace(load_config(ROOT), window_start=date(2026, 6, 1), window_end=date(2026, 8, 31),
+                     github_repos=(RepoSpec("acme/api", "in-scope", ("changes",)),))
+    manifest = build_manifest(ROOT, _outputs(tmp_path / "out"), config, "id", NOW)
+    resolved = json.loads(json.dumps(manifest))["config"]["resolved"]
+    assert (resolved["window_start"], resolved["window_end"]) == ("2026-06-01", "2026-08-31")
+    assert resolved["github_repos"] == [{"name": "acme/api", "tier": "in-scope", "collect": ["changes"]}]
+    assert run_id(ROOT, config, NOW) != run_id(ROOT, load_config(ROOT), NOW)
 
 
 def test_manifest_outside_git_has_no_commit(tmp_path: Path) -> None:

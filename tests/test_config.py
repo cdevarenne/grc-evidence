@@ -2,12 +2,14 @@
 
 import json
 import os
+import re
 import subprocess
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
 
-from grc_evidence.config import Config, ConfigError, load_config
+from grc_evidence.config import Config, ConfigError, RepoSpec, load_config
 from grc_evidence.run_scan import (
     ScanError,
     conftest_inputs,
@@ -191,3 +193,59 @@ def test_an_explicit_empty_conftest_inputs_skips_conftest(tmp_path: Path) -> Non
     assert [r.tool for r in scanner_runs(config, [])] == ["semgrep", "trivy", "trivy", "checkov"]
     with pytest.raises(ScanError, match="conftest.inputs"):
         conftest_inputs(tmp_path, Config(conftest_inputs=("k8s/*.yaml",)))
+
+
+WINDOW = "window: {start: 2026-06-01, end: 2026-08-31}\n"
+
+
+def test_github_repos_from_yaml(tmp_path: Path) -> None:
+    repo = _repo(tmp_path, WINDOW + "github:\n  repos:\n    - {name: acme/api, tier: in-scope, collect: [scm, changes]}\n")
+    c = load_config(repo)
+    assert c.github_repos == (RepoSpec("acme/api", "in-scope", ("scm", "changes")),)
+    assert (c.window_start, c.window_end, c.window_max_gap_days) == (date(2026, 6, 1), date(2026, 8, 31), 7)
+    assert c.bounds() == (datetime(2026, 6, 1, tzinfo=UTC), datetime(2026, 9, 1, tzinfo=UTC))
+
+
+def test_evidence_settings_from_yaml(tmp_path: Path) -> None:
+    c = load_config(_repo(tmp_path, (
+        "window: {start: '2026-06-01', end: '2026-08-31', max_gap_days: 3}\n"
+        "ledger: audit/ledger.jsonl\npeople: pseudonymous\npeople_salt_env: DEMO_SALT\n"
+        "github:\n  branches: [release]\n  scanner_jobs: [semgrep, trivy]\n"
+        "  repos:\n    - {name: acme/lib, tier: library}\n"
+    )))
+    assert (c.window_start, c.window_max_gap_days, c.ledger) == (date(2026, 6, 1), 3, "audit/ledger.jsonl")
+    assert (c.people, c.people_salt_env) == ("pseudonymous", "DEMO_SALT")
+    assert (c.github_branches, c.github_scanner_jobs) == (("release",), ("semgrep", "trivy"))
+    assert c.github_repos == (RepoSpec("acme/lib", "library", ()),)
+
+
+def test_repos_file_joins_the_repo_list(tmp_path: Path) -> None:
+    (tmp_path / "repos.yaml").write_text("- {name: acme/web, tier: dormant}\n")
+    c = load_config(_repo(tmp_path, "github:\n  repos_file: repos.yaml\n  repos:\n    - {name: acme/api, tier: in-scope}\n"))
+    assert [r.name for r in c.github_repos] == ["acme/api", "acme/web"]
+
+
+def test_no_window_has_no_bounds(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError, match="no window in grc.yaml"):
+        load_config(_repo(tmp_path)).bounds()
+
+
+@pytest.mark.parametrize(("yaml_text", "key"), [
+    ("window: {start: 2026-08-31, end: 2026-06-01}\n", "window.end"),
+    ("window: {start: 2026-06-01}\n", "window.end"),
+    ("window: {start: 2026-06-01, end: 2026-08-31, max_gap_days: 0}\n", "window.max_gap_days"),
+    ("window: {start: June, end: 2026-08-31}\n", "window.start"),
+    ("github:\n  repos:\n    - {name: acme/api, tier: prod}\n", "github.repos[0].tier"),
+    ("github:\n  repos:\n    - {name: acme/api, tier: in-scope, collect: [scan]}\n", "github.repos[0].collect"),
+    ("github:\n  repos:\n    - {name: acme/api, tier: in-scope}\n    - {name: Acme/API, tier: library}\n", "github.repos[1].name"),
+    ("github:\n  repos:\n    - {name: api, tier: in-scope}\n", "github.repos[0].name"),
+    ("github:\n  repos:\n    - {name: acme/api, tier: in-scope, owner: me}\n", "github.repos[0]"),
+    ("github:\n  colour: blue\n", "github.colour"),
+    ("people: anonymous\n", "people"),
+    ("people_salt_env: 'my salt'\n", "people_salt_env"),
+    ("ledger: ../ledger.jsonl\n", "ledger"),
+    ("github:\n  repos_file: ../repos.yaml\n", "github.repos_file"),
+])
+def test_evidence_settings_are_checked(tmp_path: Path, yaml_text: str, key: str) -> None:
+    with pytest.raises(ConfigError, match=re.escape(key)):
+        load_config(_repo(tmp_path, yaml_text))

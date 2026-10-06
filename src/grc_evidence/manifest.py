@@ -10,7 +10,7 @@ import subprocess
 import uuid
 from collections.abc import Iterable
 from dataclasses import asdict
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from importlib.metadata import version
 from pathlib import Path
 from typing import Any
@@ -35,9 +35,14 @@ OUTPUTS = (
 SCANNERS = ("semgrep", "trivy", "checkov", "conftest")
 
 
+def resolved(config: Config) -> Json:
+    """The resolved layout as JSON: the window dates become `YYYY-MM-DD`."""
+    return json.loads(json.dumps(asdict(config), default=date.isoformat))
+
+
 def config_sha256(config: Config) -> str:
     """Hash of the resolved layout (file, defaults, and flags together), not of the file's bytes."""
-    return hashlib.sha256(json.dumps(asdict(config), sort_keys=True).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(resolved(config), sort_keys=True).encode()).hexdigest()
 
 
 def run_id(repo: Path, config: Config, now: str) -> str:
@@ -88,7 +93,7 @@ def build_manifest(
         **({"not_run": not_run} if (not_run := tools_not_run(config)) else {}),
         "config": {
             "file": CONFIG_FILE if (repo / CONFIG_FILE).is_file() else None,
-            "resolved": asdict(config),
+            "resolved": resolved(config),
             "sha256": config_sha256(config),
         },
         "outputs": {rel: hashlib.sha256((out / rel).read_bytes()).hexdigest() for rel in OUTPUTS},
