@@ -147,7 +147,7 @@ Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<n
 - **`grc window`.** It reads the `run` entries of the ledger inside the window and writes `out/window.json` and `out/window.md`. For each control it gives:
   - `first_satisfied`: the first entry date with `no-violations-detected`
   - `last_evidence`: the last entry date
-  - `gaps`: periods inside the window where the status was anything else, and periods longer than `window_max_gap_days` (default 7) with no entry. Such a period is a gap for its whole length.
+  - `gaps`: periods inside the window where the status was anything else (a control missing from a run counts), and periods longer than `window_max_gap_days` (default 7) with no entry. Such a period is a gap for its whole length. While the window is open, it is read up to today. A ledger that fails `grc ledger verify` gives no report.
 
 ## 7. Package rename (v2.0.0)
 
@@ -184,7 +184,7 @@ Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<n
 
 ## 11. Done when (Part A)
 
-1. `grc collect scm`, `grc collect changes`, `grc sample`, `grc window` and `grc ledger verify` work in the demo CI with the default read-only `GITHUB_TOKEN`.
+1. `grc collect scm`, `grc collect changes`, `grc sample`, `grc window` and `grc ledger verify` work in the demo CI with a fine-grained read-only token (owner decision, 2026-10-06: the Actions `GITHUB_TOKEN` cannot read classic branch protection; see `docs/limits.md`).
 2. Unit tests run offline from recorded responses. They cover:
    - a merge at `end 23:59:59Z` (in), and one at `end+1 00:00:00Z` (out)
    - a self-merge with no review

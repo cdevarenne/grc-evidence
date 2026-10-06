@@ -682,7 +682,7 @@ Expected: FAIL.
   - a day whose last entry has a status other than `no-violations-detected`, or
   - a day inside a silence (consecutive days with no entry) that is longer than `max_gap_days`. The whole silence is the gap, not only the days after `max_gap_days`. A silence that starts at the window start counts too.
 
-  Days after the last entry, up to the end of the window, are not a gap if that end is in the future (`today < end`).
+  While the window is open (`today < end`), it is read up to today, and today only once it has a run. A silence that is still going counts the same as any other: a gap once it is longer than `max_gap_days`. A control missing from a day's `run` entry is not satisfied that day. `grc window` refuses a ledger that fails `grc ledger verify`.
 - [ ] **Step 4: Run tests**
 
 Run: `uv run pytest -q`
