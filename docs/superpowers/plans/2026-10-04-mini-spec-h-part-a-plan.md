@@ -749,7 +749,7 @@ github:
   - Run `uv run zizmor .github` with no high findings.
   - Pin `OKF_GRC_VERSION` (rename it to `GRC_VERSION`) to `v2.0.0` and the package to `grc-evidence[...]`, then `make baseline` in the same commit.
 - [ ] **Step 6: Docs.**
-  - `docs/limits.md`: GitHub only; read-only; unreadable rules; no back-fill; the pseudonymization scope; the fixtures variable; a rate limit stops the run with no retry; the cost of `grc collect changes` grows with the number of PRs updated since the window start (the ledger records the cost per run; GitHub search is not used, because it stops at 1,000 results).
+  - `docs/limits.md`: GitHub only; read-only; unreadable rules; no back-fill; the pseudonymization scope; the fixtures variable; a rate limit stops the run with no retry; the cost of `grc collect changes` grows with the number of PRs updated since the window start (the ledger records the cost per run; GitHub search is not used, because it stops at 1,000 results). Pseudonymization replaces `login` fields only: a login typed into a title ("Merge … from alice/branch") stays. A change updated while the collector pages may move ahead of the cursor and be missed in that run.
   - `docs/roadmap.md`: Spec H Part A built; Part B and Spec I next.
 - [ ] **Step 7: Verify everything**
 

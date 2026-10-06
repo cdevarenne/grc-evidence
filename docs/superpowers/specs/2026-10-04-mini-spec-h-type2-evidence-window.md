@@ -123,12 +123,13 @@ For each PR:
 - `merged_before_rule` (a flag, not a finding): the last `scm` ledger entry for the repo on or before `mergedAt` shows fewer than 1 required review.
 - `rule_not_evidenced` (a flag, not a finding): no readable `scm` ledger entry for the repo exists on or before `mergedAt`. The rule may have been on or off; the ledger has no evidence. It is never read as "rule on".
 - `near_boundary` (a flag, not a finding): `mergedAt` is within 8 hours of either window bound.
+- `reviews_incomplete` and `checks_incomplete` (flags, not findings): GitHub returned only the first 100 reviews or checks of the change. With `reviews_incomplete` the change counts as having no approver, because a later dismissal may be cut off: it fails closed.
 
 Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<number>"`, so suppressions and risk acceptances can name one change.
 
 ### 5.3 Outputs
 
-- `out/collect/population.csv` — one row per change: `repo,number,title,author,merged_by,merged_at,merge_sha,base,approvers,flags`. Lists are joined with `;`. Times are UTC ISO 8601 with `Z`.
+- `out/collect/population.csv` — one row per change: `repo,number,title,author,merged_by,merged_at,merge_sha,base,approvers,flags`. Lists are joined with `;`. Times are UTC ISO 8601 with `Z`. A text cell that starts with `=`, `+`, `-` or `@` gets a leading `'`, so a spreadsheet does not run a pull request title as a formula.
 - `out/collect/changes.json` — the same rows plus the checks, for `grc sample`.
 - **Summary** (in the ledger and in `changes.json`): `in_population`, `merged_all_branches` (the denominator, always present), and a count per flag.
 
