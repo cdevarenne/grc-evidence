@@ -1,6 +1,6 @@
 ---
 okf_version: "0.2"
-base_version: "2.0.0"  # the grc-evidence base bundle these controls, crosswalks, scanners, and generic policies were copied from
+base_version: "2.0.1"  # the grc-evidence base bundle these controls, crosswalks, scanners, and generic policies were copied from
 ---
 # OKF-GRC Knowledge Bundle
 

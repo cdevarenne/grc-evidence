@@ -12,7 +12,7 @@ takes a file path.
 The server needs the optional `mcp` extra:
 
 ```
-uv tool install 'grc-evidence[mcp] @ git+https://github.com/cdevarenne/grc-evidence@v2.0.0'
+uv tool install 'grc-evidence[mcp] @ git+https://github.com/cdevarenne/grc-evidence@v2.0.1'
 ```
 
 It serves on stdio for the repository it starts in (the working directory,
@@ -31,7 +31,7 @@ agents on the version CI uses:
   "mcpServers": {
     "grc-evidence": {
       "command": "uvx",
-      "args": ["--from", "grc-evidence[mcp] @ git+https://github.com/cdevarenne/grc-evidence@v2.0.0", "grc", "mcp"]
+      "args": ["--from", "grc-evidence[mcp] @ git+https://github.com/cdevarenne/grc-evidence@v2.0.1", "grc", "mcp"]
     }
   }
 }

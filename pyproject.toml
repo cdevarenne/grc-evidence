@@ -1,6 +1,6 @@
 [project]
 name = "grc-evidence"
-version = "2.0.0"
+version = "2.0.1"
 description = "Scan an app, map findings to SOC 2, ISO/IEC 42001, and EU AI Act controls through an OKF bundle, and emit OSCAL."
 requires-python = ">=3.14"
 dependencies = ["pyyaml>=6.0.2"]
