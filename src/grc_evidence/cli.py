@@ -29,6 +29,7 @@ from grc_evidence import (
     sample,
     to_oscal,
     triage,
+    window_report,
 )
 from grc_evidence import collect as collect_step
 from grc_evidence.config import load_config
@@ -38,6 +39,7 @@ from grc_evidence.errors import GrcError
 STEPS: dict[str, ModuleType] = {
     "scan": run_scan, "map": map_findings, "oscal": to_oscal, "report": render_report, "manifest": manifest,
     "triage": triage, "gate": gate, "ledger": ledger, "sample": sample,
+    "window": window_report,
 }
 COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "mcp", "agent", "run", "narrate", "collect", *STEPS)
 
