@@ -33,7 +33,7 @@ class Posture:
     required_reviews: int | None
     dismiss_stale: bool | None
     required_checks: tuple[str, ...]
-    admin_bypass: bool | None
+    admin_bypass: bool | None  # admins, ruleset bypass actors, or classic review bypass allowances
     scanner_jobs: dict[str, dict[str, bool]]
     workflow_errors: tuple[str, ...]
 
@@ -80,6 +80,8 @@ def _read_rules(t: Transport, repo: str, branch: str) -> _Rules | None:
         if prr := classic.get("required_pull_request_reviews"):
             reviews.append(prr.get("required_approving_review_count", 0))
             stale |= bool(prr.get("dismiss_stale_reviews"))
+            # Named users, teams or apps may merge without the required reviews.
+            bypass |= any((prr.get("bypass_pull_request_allowances") or {}).values())
         if rsc := classic.get("required_status_checks"):
             checks |= set(rsc.get("contexts") or []) | {c["context"] for c in rsc.get("checks") or []}
         bypass |= not (classic.get("enforce_admins") or {}).get("enabled", False)
@@ -97,7 +99,8 @@ def _read_rules(t: Transport, repo: str, branch: str) -> _Rules | None:
             return None
         if not isinstance(detail, dict) or "bypass_actors" not in detail:  # the list needs administration read
             return None
-        bypass |= any(a.get("bypass_mode") == "always" for a in detail["bypass_actors"])
+        # Every mode is a bypass: `pull_request` actors can merge without the required reviews, `exempt` skips the rules.
+        bypass |= bool(detail["bypass_actors"])
     return _Rules(max(reviews), stale, tuple(sorted(checks)), bypass)
 
 
@@ -134,7 +137,11 @@ def scanner_job_status(
         if not isinstance(file_jobs, dict):
             errors.append(file)
             continue
-        jobs += [(str(i), str(j.get("name", "")), _can_fail(j)) for i, j in file_jobs.items() if isinstance(j, dict)]
+        jobs += [
+            (str(i), str(j.get("name", "")), _can_fail(j))
+            for i, j in file_jobs.items()
+            if isinstance(j, dict) and j.get("if") is not False  # a job with `if: false` never runs
+        ]
     status = {}
     for pattern in patterns:
         p = pattern.lower()
@@ -160,7 +167,7 @@ def posture_findings(p: Posture) -> list[Finding]:
         if not p.required_checks:
             found.append(("scm-no-required-checks", "medium", f"branch {p.branch} requires no status check"))
         if p.admin_bypass:
-            found.append(("scm-admin-bypass", "medium", f"admins can bypass the rules of branch {p.branch}"))
+            found.append(("scm-admin-bypass", "medium", f"the rules of branch {p.branch} can be bypassed"))
     errors = f" (workflow files not read: {', '.join(p.workflow_errors)})" if p.workflow_errors else ""
     for pattern, job in p.scanner_jobs.items():
         if not job["present"]:

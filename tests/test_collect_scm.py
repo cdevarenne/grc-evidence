@@ -37,8 +37,9 @@ SOFT_STEP = """jobs:
       - run: semgrep scan
         continue-on-error: ${{ github.event_name == 'pull_request' }}
 """
-PROTECTED = {
-    "required_pull_request_reviews": {"required_approving_review_count": 1, "dismiss_stale_reviews": True},
+REVIEWS: dict[str, Any] = {"required_approving_review_count": 1, "dismiss_stale_reviews": True}
+PROTECTED: dict[str, Any] = {
+    "required_pull_request_reviews": REVIEWS,
     "required_status_checks": {"contexts": ["ci"], "checks": [{"context": "ci"}, {"context": "semgrep"}]},
     "enforce_admins": {"enabled": True},
 }
@@ -135,12 +136,42 @@ def test_rulesets_give_reviews_checks_and_bypass() -> None:
     assert _rules(p) == ["scm-admin-bypass"]
 
 
-def test_ruleset_bypass_only_through_a_pull_request_is_not_a_bypass() -> None:
+@pytest.mark.parametrize("mode", ["always", "pull_request", "exempt"])
+def test_every_ruleset_bypass_mode_is_a_bypass(mode: str) -> None:
+    """Fail closed: a pull_request-mode actor can merge without the required reviews; exempt skips the rules."""
     rulesets = [{"type": "pull_request", "ruleset_id": 7, "parameters": {"required_approving_review_count": 1}},
                 {"type": "required_status_checks", "ruleset_id": 7, "parameters": {"required_status_checks": [{"context": "ci"}]}}]
-    details = {7: {"id": 7, "bypass_actors": [{"actor_type": "Team", "bypass_mode": "pull_request"}]}}
+    details = {7: {"id": 7, "bypass_actors": [{"actor_type": "Team", "bypass_mode": mode}]}}
     p = _read({"acme/api": {"rulesets": rulesets, "details": details, "workflows": {"ci.yml": SCANNER}}})
+    assert p.admin_bypass is True and _rules(p) == ["scm-admin-bypass"]
+
+
+def test_ruleset_with_no_bypass_actor_is_not_a_bypass() -> None:
+    rulesets = [{"type": "pull_request", "ruleset_id": 7, "parameters": {"required_approving_review_count": 1}},
+                {"type": "required_status_checks", "ruleset_id": 7, "parameters": {"required_status_checks": [{"context": "ci"}]}}]
+    p = _read({"acme/api": {"rulesets": rulesets, "details": {7: {"id": 7, "bypass_actors": []}}, "workflows": {"ci.yml": SCANNER}}})
     assert p.admin_bypass is False and _rules(p) == []
+
+
+@pytest.mark.parametrize("kind", ["users", "teams", "apps"])
+def test_classic_review_bypass_allowances_are_a_bypass(kind: str) -> None:
+    """Classic protection can let named users, teams or apps merge without the required reviews."""
+    reviews = {**REVIEWS, "bypass_pull_request_allowances": {kind: [{"login": "x"}]}}
+    p = _read({"acme/api": {"classic": {**PROTECTED, "required_pull_request_reviews": reviews}, "workflows": {"ci.yml": SCANNER}}})
+    assert p.admin_bypass is True and _rules(p) == ["scm-admin-bypass"]
+    assert "can be bypassed" in posture_findings(p)[0]["message"]
+
+
+def test_empty_bypass_allowances_are_not_a_bypass() -> None:
+    reviews = {**REVIEWS, "bypass_pull_request_allowances": {"users": [], "teams": [], "apps": []}}
+    p = _read({"acme/api": {"classic": {**PROTECTED, "required_pull_request_reviews": reviews}, "workflows": {"ci.yml": SCANNER}}})
+    assert p.admin_bypass is False
+
+
+def test_a_job_that_never_runs_is_not_present() -> None:
+    disabled = SCANNER.replace("    runs-on: ubuntu-latest\n", "    runs-on: ubuntu-latest\n    if: false\n")
+    status, _ = scanner_job_status({"ci.yml": disabled}, ("semgrep",))
+    assert status == {"semgrep": {"present": False, "can_fail": False}}
 
 
 def test_ruleset_without_readable_bypass_list_is_unreadable() -> None:
