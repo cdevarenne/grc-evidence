@@ -213,7 +213,7 @@ def _row(c: Change) -> dict[str, Any]:
     }
 
 
-def _cell(value: Any) -> Any:
+def csv_cell(value: Any) -> Any:
     """A text cell that a spreadsheet would read as a formula gets a leading quote; titles are not trusted."""
     return f"'{value}" if isinstance(value, str) and value.startswith(_FORMULA_START) else value
 
@@ -224,7 +224,7 @@ def write_population(out: Path, changes: list[Change], summary: dict[str, Any]) 
     text = io.StringIO()
     writer = csv.writer(text, lineterminator="\n")
     writer.writerow(CSV_HEADER)
-    writer.writerows([_cell(v) for v in _row(c).values()] for c in changes)
+    writer.writerows([csv_cell(v) for v in _row(c).values()] for c in changes)
     doc = {"summary": summary, "changes": [{**_row(c), "checks": [list(check) for check in c.checks]} for c in changes]}
     files = {"collect/population.csv": text.getvalue(), "collect/changes.json": json.dumps(doc, indent=1) + "\n"}
     (out / "collect").mkdir(parents=True, exist_ok=True)
