@@ -11,7 +11,7 @@ from grc_evidence.map_findings import RISK_TIERS
 from grc_evidence.okf_lib import FRAMEWORK_TYPES, load_bundle
 
 KNOWLEDGE = Path(__file__).parent.parent / "knowledge"
-TOOLS = {"semgrep", "trivy", "checkov", "conftest"}
+TOOLS = {"semgrep", "trivy", "checkov", "conftest", "github"}
 TYPES = {
     *FRAMEWORK_TYPES.values(), "Crosswalk", "Stack Component", "Rego Policy", "Semgrep Rule", "Scanner Check", "Scanner", "Reference",
     "Suppression",
