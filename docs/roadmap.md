@@ -52,6 +52,13 @@ rejected draft one correction round.
 `1.8.1` binds a number right beside a control, rule, or suppression to that
 identifier only, so it cannot pass by matching an unrelated total.
 
+`2.0.0` collects SOC 2 Type 2 evidence over an audit window (Spec H Part A):
+repo settings and the change population from the GitHub API for N repos, an
+auditor's sample, a hash-chained evidence ledger, and each control's history
+over the window. The package is renamed `grc-evidence` (module `grc_evidence`;
+`okf_grc` stays as a deprecated alias for one minor release), and the output
+contract is 1.2.
+
 Built beyond the engine:
 
 - **Adopter repo** (Spec F Part B):
@@ -63,6 +70,13 @@ Built beyond the engine:
   and [Spec F](superpowers/specs/2026-09-29-mini-spec-f-engine-and-adopter-repo.md).
 - **Agentic workflows, first part** (Spec G, G1 and G2): `grc mcp`
   ([docs/mcp.md](mcp.md)) and `grc agent posture` ([docs/agents.md](agents.md)).
+
+Next:
+
+- **Spec H Part B:** scan N repos with the code scanners (clone, scan,
+  aggregate, shard in CI).
+- **Spec I:** signed risk acceptances, an OSCAL POA&M, and an attestation for an
+  empty population.
 
 Deliberately left out, or not started:
 

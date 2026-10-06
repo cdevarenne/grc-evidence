@@ -19,6 +19,32 @@ the three files ship with the engine in `src/grc_evidence/data/schemas/`; additi
 changes bump the minor version, anything else the major. A sample is in
 [`examples/run.json`](../examples/run.json).
 
+## Type 2 evidence (Spec H)
+
+When `grc.yaml` lists GitHub repos with collectors, `grc run` also writes
+`out/collect/`, and `run.json` hashes each file it wrote (contract 1.2):
+
+| File | What it holds |
+|---|---|
+| `collect/github-findings.json` | the collectors that ran (`collectors`) and their findings, tool `github`, targets `github:<owner>/<name>` or `github:<owner>/<name>#<number>` |
+| `collect/scm-posture.json` | per repo: the default branch, whether its rules are readable, required reviews, required checks, `bypass`, and each scanner job (present, can fail) |
+| `collect/population.csv` | one row per change merged into a production branch in the window: `repo,number,title,author,merged_by,merged_at,merge_sha,base,approvers,flags` |
+| `collect/changes.json` | the same rows with the checks on each merge commit, and per repo the summary: `in_population`, `merged_all_branches` (the denominator) and a count per flag |
+
+Commands that read them:
+
+- `grc sample --list sample.csv` writes `out/collect/sample-evidence.csv`
+  (`repo,number,merged_at,approvers,ci_conclusion,scanner_checks,missing`) for
+  the changes an auditor sampled. A change with a gap is listed in `missing`.
+- `grc window` writes `out/window.json` and `out/window.md`: per control, the
+  first date it was satisfied, the last evidence, and the gaps over the window.
+
+The evidence ledger (`evidence/ledger.jsonl`, written only when `grc.yaml` has a
+`window`) is append-only JSON Lines with a hash chain; `grc ledger verify`
+checks it. Each line records the collector, the repo, the window, what was
+read, the hash of each output, the summary and the rate-limit cost. Samples:
+[`examples/collect/`](../examples/collect/).
+
 ## OSCAL output
 
 `make scan` writes three OSCAL 1.2.3 documents to `out/oscal/`, each validated

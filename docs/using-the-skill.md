@@ -25,6 +25,12 @@ coverage gaps, the controls not assessed or not applicable, and the state of the
 suppressions. It can add LLM prose per control (`grc narrate`) and propose
 controls for coverage gaps (`grc triage`).
 
+**Type 2 evidence.** In a repo whose `grc.yaml` has a `window` and GitHub repos, ask
+"Which changes merged in the window without an independent approval?" or "Which controls
+have gaps over the window?" The skill reads `out/collect/` and `out/window.md`. A `grc run`
+there also appends to the evidence ledger, so leave the dated record to the scheduled job,
+and ask the skill to read rather than rerun. The MCP `scan` tool never collects or writes the ledger.
+
 **What it leaves to a reviewer/auditor.** It never changes a status, a count, or a
 finding, and it never applies its own mapping proposals: a person adds
 `rule_ids`. It drafts suppressions for review but does not add, renew, or extend

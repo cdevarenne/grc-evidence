@@ -1,6 +1,6 @@
 # grc-evidence
 
-Turns security scans into compliance evidence for SOC 2, ISO/IEC 42001 and the EU AI Act. Code decides status. An LLM drafts prose. A person reviews.
+Turns scans, repo settings and change history into SOC 2 Type 2 evidence over an audit window. Code decides status. An LLM drafts prose. A person signs.
 
 > **This is a work in progress.**
 
@@ -68,6 +68,7 @@ make narrate           # optional: LLM prose per control, validated, then re-ren
 make triage            # optional: LLM proposals for coverage gaps → out/proposals.json (review only)
 make eval-triage       # optional: score triage variants on labeled gaps (tune + holdout) via the Batch API
 make audit             # supply chain: the engine's dependencies (Trivy) and workflows (zizmor)
+make examples-h        # Type 2 examples, offline, from the recorded demo responses
 make test              # unit + Rego + Semgrep rule tests
 make test-integration  # full scan; asserts every seeded issue lands where expected
 make clean             # remove out/
@@ -75,6 +76,39 @@ make clean             # remove out/
 
 Supported platforms: macOS arm64 and Linux x86_64 (the pinned scanner binaries).
 
+
+## Type 2 evidence over a window
+
+A SOC 2 Type 2 audit asks whether controls operated over an observation window,
+not on one day. With a `window` and a list of GitHub repos in `grc.yaml`, `grc run`
+also reads each repo through the GitHub API (no clone) and keeps a dated record:
+
+```yaml
+window: {start: 2026-10-01, end: 2026-12-31}
+people: pseudonymous          # or real (the default): logins in outputs become p-<HMAC>
+github:
+  scanner_jobs: [semgrep, trivy]
+  repos:
+    - {name: acme/api, tier: in-scope, collect: [scm, changes]}
+```
+
+- **Repo settings** (`scm`): required reviews, required checks, who can bypass
+  them, and whether each scanner job can fail the build. Rules the token cannot
+  read are reported as unreadable, never as a pass.
+- **Change population** (`changes`): every change merged in the window, with its
+  author, merger and independent approvers, and the count of all merged changes
+  beside it. A change with no approval, or merged by its author with none, is a
+  finding on CC8.1.
+- **Evidence ledger:** every collection and run appends a line to
+  `evidence/ledger.jsonl`, hash-chained; `grc ledger verify` checks it.
+- `grc sample --list sample.csv` gives the evidence for the changes an auditor
+  sampled, and `grc window` the history of each control over the window, with
+  its gaps.
+
+The token is read-only and comes from `GITHUB_TOKEN` or `GH_TOKEN`. See
+[docs/outputs.md](docs/outputs.md) for the files, [docs/limits.md](docs/limits.md)
+for what is not covered, and [`examples/collect/`](examples/collect/) for a
+population and a sample from Google's `microservices-demo`, pseudonymized.
 
 ## Use it
 
