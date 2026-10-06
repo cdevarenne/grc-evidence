@@ -174,8 +174,8 @@ def _suppression_sections(mapping: Json) -> list[str]:
         lines += ["", "## Expired suppressions", "", "No longer applied; their findings count again. Renew or remove.", ""]
         lines += [f"- `{sid}`" for sid in expired]
     if pending := mapping.get("pending_suppressions"):
-        lines += ["", "## Pending suppressions", "", "Approved after this scan's date, so not applied yet; their findings count.", ""]
-        lines += [f"- `{p['id']}` approved {p['approved']}" for p in pending]
+        lines += ["", "## Pending suppressions", "", "Not applied yet, so their findings count.", ""]
+        lines += [f"- `{p['id']}` approved {p['approved']}: {p['reason']}" for p in pending]
     if unused := mapping.get("unused_suppressions"):
         lines += ["", "## Unused suppressions", "", "Match no finding in this scan. Remove them.", ""]
         lines += [f"- `{sid}`" for sid in unused]

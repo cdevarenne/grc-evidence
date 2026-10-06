@@ -151,7 +151,7 @@ def test_run_maps_github_findings_to_cc81(tmp_path: Path, monkeypatch: pytest.Mo
     assert cc81["status"] == "not-satisfied"
     assert {f["rule_id"] for f in cc81["findings"] if f["tool"] == "github"} >= {"scm-no-required-review", "change-no-approval"}
     run = json.loads((repo / "out" / "run.json").read_text())
-    assert set(OPTIONAL_OUTPUTS) <= set(run["outputs"]) and run["schema_version"] == "1.2"
+    assert set(OPTIONAL_OUTPUTS) <= set(run["outputs"]) and run["schema_version"] == data.SCHEMA_VERSION
 
 
 def test_run_appends_run_entry_last(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -206,7 +206,6 @@ def test_schema_accepts_github_target() -> None:
     finding = {"tool": "github", "rule_id": "change-no-approval", "severity": "high", "target": "github:acme/api#1",
                "message": "m", "tags": []}
     Draft202012Validator(schema).validate({"schema_version": "1.2", "findings": [finding]})
-    assert data.SCHEMA_VERSION == "1.2"
 
 
 
@@ -243,3 +242,15 @@ def test_run_without_collect_reaches_neither_github_nor_the_ledger(tmp_path: Pat
     assert not (repo / "out" / "collect").exists() and not (repo / "evidence").exists()
     run = json.loads((repo / "out" / "run.json").read_text())
     assert not set(OPTIONAL_OUTPUTS) & set(run["outputs"])
+
+
+def test_grc_run_no_collect_flag(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """2.0.1: pull request runs skip the collectors, so they need no token and write no ledger."""
+    repo = _repo(tmp_path, monkeypatch, {}, GITHUB)
+
+    def no_github() -> FakeGitHub:
+        raise AssertionError("a --no-collect run must not read GitHub")
+
+    monkeypatch.setattr(collect, "transport_from_env", no_github)
+    cli.main(["run", "--no-collect"])
+    assert (repo / "out" / "run.json").is_file() and not (repo / "evidence").exists()

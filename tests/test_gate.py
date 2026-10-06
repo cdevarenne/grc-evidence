@@ -127,3 +127,13 @@ def test_a_baseline_without_findings_checks_statuses_only() -> None:
 def test_summary_counts_findings_not_in_the_baseline() -> None:
     table = summary(_mapping(BASE, findings=[*OLD, _f("KSV-0012", "high", message="two"), _f("KSV-0020", "low")]), WITH_FINDINGS)
     assert table.endswith("Findings not in the baseline (any kind and severity): 2\n")
+
+
+def test_change_findings_never_fail_the_gate() -> None:
+    """2.0.1: an upstream merge makes a change-* finding with no change to this repo; it is evidence, not a regression.
+    A new scm-* finding (a branch rule turned off) still fails."""
+    change = _f("change-no-approval", "high", "github:acme/api#7", tool="github")
+    scm = _f("scm-no-required-review", "high", "github:acme/api", tool="github")
+    assert problems(_mapping(BASE, findings=[*OLD, change]), WITH_FINDINGS) == []
+    assert problems(_mapping(BASE, findings=[*OLD, change, scm]), WITH_FINDINGS) == [
+        "new finding: github:scm-no-required-review github:acme/api (0 -> 1)"]

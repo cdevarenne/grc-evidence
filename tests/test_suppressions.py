@@ -22,11 +22,12 @@ NOW = "2026-10-01T12:00:00+00:00"
 
 def _suppression(kind: str, tool: str, rule_id: str, target: str, *, approved: str = "2026-09-28",
                  expires: str = "2026-12-27", owner: str = "human:reviewer", extra: str = "",
-                 reason: str = "Reviewed: does not apply here.") -> str:
+                 reason: str = "Reviewed: does not apply here.", verified_by: str | None = "human:reviewer") -> str:
+    verified = f"verified:\n  - by: \"{verified_by}\"\n    at: \"2026-09-28T10:00:00+00:00\"\n" if verified_by else ""
     return (
         f"---\ntype: Suppression\ntitle: t\nkind: {kind}\n"
         f"finding:\n  tool: {tool}\n  rule_id: {rule_id}\n  target: {target}\n{extra}"
-        f"owner: {owner}\napproved: \"{approved}\"\nexpires: \"{expires}\"\ntags: [suppression]\n---\n"
+        f"owner: {owner}\napproved: \"{approved}\"\nexpires: \"{expires}\"\ntags: [suppression]\n{verified}---\n"
         f"# Reason\n\n{reason}\n"
     )
 
@@ -116,11 +117,21 @@ def test_suppression_applies_from_approval_through_expiry(tmp_path: Path, today:
 def test_suppression_approved_after_today_is_pending_and_listed(tmp_path: Path) -> None:
     """#69: not an error, not silently ignored: not applied, and listed with its approval date."""
     m = _mapping(tmp_path, today=date(2026, 9, 27), fp=FALSE_POSITIVE)
-    assert m["pending_suppressions"] == [{"id": "suppressions/fp", "approved": "2026-09-28"}]
+    assert m["pending_suppressions"] == [{"id": "suppressions/fp", "approved": "2026-09-28", "reason": "approved after this scan's date"}]
     assert m["suppressed"] == [] and "suppressions/fp" not in m["unused_suppressions"]
     assert "CKV_TEST_99" in [u["finding"]["rule_id"] for u in m["unmapped"]]
     report = render_report(_bundle(tmp_path / "r", fp=FALSE_POSITIVE), m, NOW)
-    assert "## Pending suppressions" in report and "- `suppressions/fp` approved 2026-09-28" in report
+    assert "## Pending suppressions" in report and "- `suppressions/fp` approved 2026-09-28: approved after this scan's date" in report
+
+
+@pytest.mark.parametrize("verified_by", [None, "claude-code/claude-opus-5-5"])
+def test_an_unverified_suppression_is_pending_and_not_applied(tmp_path: Path, verified_by: str | None) -> None:
+    """2.0.1: a drafted acceptance must not hide a finding before a person signs it."""
+    draft = _suppression("false-positive", "checkov", "CKV_TEST_99", "app/Dockerfile", verified_by=verified_by)
+    m = _mapping(tmp_path, fp=draft)
+    assert m["pending_suppressions"] == [{"id": "suppressions/fp", "approved": "2026-09-28", "reason": "not verified by a person"}]
+    assert m["suppressed"] == [] and "suppressions/fp" not in m["unused_suppressions"]
+    assert "CKV_TEST_99" in [u["finding"]["rule_id"] for u in m["unmapped"]]
 
 
 def test_expired_suppression_puts_the_finding_back(tmp_path: Path) -> None:

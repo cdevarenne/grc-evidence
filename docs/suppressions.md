@@ -22,7 +22,9 @@ optionally a message substring; there are no wildcards, and an accepted risk on
 a coverage gap is rejected when the bundle loads. `map_findings.py --today`
 sets the date used for expiry; a suppression approved after that date (a
 reviewer's date east of UTC, or a typo) is **pending**: not applied, and listed
-under **Pending suppressions** so it is never silently ignored.
+under **Pending suppressions** so it is never silently ignored. A suppression with no `verified` entry by a person (`human:...`) is pending
+too, whatever its dates: a drafted acceptance never hides a finding before
+someone signs it (2.0.1).
 
 The two sample suppressions were approved on 2026-09-28 and expire on
 2026-12-27, deliberately: from 2026-12-13 a scan lists them under **Expiring

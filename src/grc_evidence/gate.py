@@ -64,6 +64,10 @@ def problems(mapping: Json, baseline: Json, fail_on: str = "high") -> list[str]:
     produces one. A new vulnerability finding (tagged at scan time) fails at or above `fail_on`, because a new
     advisory can appear with no change at all. A control already `not-satisfied` in the baseline does not fail
     again; improvements never fail. A baseline without `findings` skips the finding check.
+
+    A `change-*` finding (a change merged without an independent approval, Spec H) never fails the gate: it
+    comes from a repo's merge history, with no change to this repository, and is evidence for the window. A
+    new `scm-*` finding (a branch rule turned off) still fails.
     """
     statuses = baseline["controls"]
     found = [
@@ -74,6 +78,8 @@ def problems(mapping: Json, baseline: Json, fail_on: str = "high") -> list[str]:
     if "findings" in baseline:
         known, levels = _counts(baseline), RANKED[: RANKED.index(fail_on) + 1]
         for fid, fs in _new(mapping, baseline).items():
+            if all(f["tool"] == "github" and f["rule_id"].startswith("change-") for f in fs):
+                continue
             count = f"{known.get(fid, 0)} -> {len(fs)}"
             if not any(VULNERABILITY in f["tags"] for f in fs):
                 found.append(f"new finding: {fid} ({count})")

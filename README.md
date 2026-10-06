@@ -105,7 +105,9 @@ github:
   sampled, and `grc window` the history of each control over the window, with
   its gaps.
 
-The token is read-only and comes from `GITHUB_TOKEN` or `GH_TOKEN`. See
+The token is read-only and comes from `GITHUB_TOKEN` or `GH_TOKEN`. Collect on a schedule; pull request runs use
+`grc run --no-collect`, which needs no token and writes no ledger. `grc gate` never fails on a `change-*`
+finding: it comes from merge history, not from the change under review. See
 [docs/outputs.md](docs/outputs.md) for the files, [docs/limits.md](docs/limits.md)
 for what is not covered, and [`examples/collect/`](examples/collect/) for a
 population and a sample from Google's `microservices-demo`, pseudonymized.

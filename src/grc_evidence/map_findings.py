@@ -101,6 +101,15 @@ def _suppression_entry(finding: Finding, s: Suppression, keys: list[str]) -> dic
     }
 
 
+def _pending(s: Suppression, today: date) -> str | None:
+    """Why a suppression is not applied yet, or None."""
+    if not s.verified:
+        return "not verified by a person"
+    if s.approved > today:
+        return "approved after this scan's date"
+    return None
+
+
 def map_findings(
     bundle: Bundle, findings: list[Finding], context: dict[str, Any] | None = None, today: date | None = None
 ) -> dict[str, Any]:
@@ -108,11 +117,12 @@ def map_findings(
 
     Active suppressions (Spec C) change how a matching finding is counted, never whether it is shown:
     a false positive leaves its control or the gap list; an accepted risk stays on its control, marked.
-    A suppression approved after `today` (a reviewer's date east of UTC, or a typo) is pending: not applied, and listed.
+    A suppression approved after `today` (a reviewer's date east of UTC, or a typo), or not yet verified by a person,
+    is pending: not applied, and listed with the reason.
     """
     today = today or datetime.now(UTC).date()
     suppressions = bundle.suppressions()
-    active = [s for s in suppressions if s.active(today)]
+    active = [s for s in suppressions if s.verified and s.active(today)]
     used: set[str] = set()
     controls: dict[str, dict[str, Any]] = {}
     for c in bundle.controls():
@@ -158,7 +168,11 @@ def map_findings(
         mapping |= {
             "suppressed": suppressed,
             "expired_suppressions": [s.id for s in suppressions if today > s.expires],
-            "pending_suppressions": [{"id": s.id, "approved": s.approved.isoformat()} for s in suppressions if s.approved > today],
+            "pending_suppressions": [
+                {"id": s.id, "approved": s.approved.isoformat(), "reason": reason}
+                for s in suppressions
+                if (reason := _pending(s, today))
+            ],
             "unused_suppressions": [s.id for s in active if s.id not in used],
             "expiring_suppressions": [
                 {"id": s.id, "expires": s.expires.isoformat()}

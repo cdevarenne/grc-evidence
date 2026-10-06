@@ -63,7 +63,10 @@ def run(argv: list[str], on_step: Callable[[str], None] | None = None, collect: 
     parser.add_argument("--knowledge", help="knowledge bundle (overrides the config)")
     parser.add_argument("--out", default="out")
     parser.add_argument("--require-clean", action="store_true", help="fail if the scan inputs differ from the commit (CI)")
+    parser.add_argument("--no-collect", action="store_true",
+                        help="skip the GitHub collectors and the evidence ledger (pull request runs): no token needed")
     args = parser.parse_args(argv)
+    collect = collect and not args.no_collect
     repo, out = Path.cwd(), Path(args.out)
     now = datetime.now(UTC).isoformat(timespec="seconds")
     config = load_config(repo, Path(args.config) if args.config else None, target=args.target, knowledge=args.knowledge)

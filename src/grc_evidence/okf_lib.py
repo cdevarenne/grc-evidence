@@ -96,6 +96,7 @@ class Suppression:
     approved: date
     expires: date
     reason: str
+    verified: bool = False  # a person (`human:`) verified it; until then it is pending, never applied
 
     def matches(self, finding: Mapping[str, Any]) -> bool:
         """Exact tool, rule id, and target; `message_contains` narrows it when set. No wildcards."""
@@ -271,7 +272,13 @@ def _suppression(concept: Concept, reason: str) -> Suppression:
         approved=_date(concept.path, fm["approved"], "approved"),
         expires=_date(concept.path, fm["expires"], "expires"),
         reason=reason,
+        verified=any(str(v.get("by", "")).startswith("human:") for v in _verified(fm) if isinstance(v, dict)),
     )
+
+
+def _verified(fm: Mapping[str, Any]) -> list[Any]:
+    entries = fm.get("verified")
+    return entries if isinstance(entries, list) else [entries] if entries else []
 
 
 def _check_accepted_risks(bundle: Bundle) -> None:

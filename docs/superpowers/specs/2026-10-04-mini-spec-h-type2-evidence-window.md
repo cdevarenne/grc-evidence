@@ -128,7 +128,7 @@ For each PR:
 - `near_boundary` (a flag, not a finding): `mergedAt` is within 8 hours of either window bound.
 - `reviews_incomplete` and `checks_incomplete` (flags, not findings): GitHub returned only the first 100 reviews or checks of the change. With `reviews_incomplete` the change counts as having no approver, because a later dismissal may be cut off: it fails closed.
 
-Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<number>"`, so suppressions and risk acceptances can name one change.
+Each `change-*` result is also a finding with `target: "github:<owner>/<name>#<number>"`, so suppressions and risk acceptances can name one change. `grc gate` never fails on a `change-*` finding (2.0.1): it comes from merge history, not from a change to the repository, and is evidence for the window.
 
 ### 5.3 Outputs
 
