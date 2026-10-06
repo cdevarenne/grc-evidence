@@ -20,7 +20,7 @@ Read-only collectors over the GitHub API (`grc collect`), with no clone of the
 target repos:
 
 - **SCM posture** (`scm-*`): on each repo's default branch, the required
-  approving reviews, the required status checks, whether admins can bypass the
+  approving reviews, the required status checks, whether anyone can bypass the
   rules, and whether each configured scanner job is present and can fail the
   build. Rules the token cannot read give `scm-rules-unreadable`, never a pass.
 - **Change population** (`change-*`): every change merged in the audit window,
