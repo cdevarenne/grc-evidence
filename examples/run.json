@@ -1,9 +1,9 @@
 {
-  "schema_version": "1.1",
-  "run_id": "5723064b-f91e-5965-9ac4-0821671daa44",
-  "generated": "2026-10-06T00:11:14+00:00",
+  "schema_version": "1.2",
+  "run_id": "7970d740-3f27-53e0-9b3a-2b862a118dea",
+  "generated": "2026-10-06T20:09:35+00:00",
   "repository": {
-    "commit": "e1a0789669a75ffdb523c0050f7a439430d99a61",
+    "commit": "432de73abcbb0fb783a7ebd4651a44bba3406038",
     "dirty": false,
     "untracked": []
   },
@@ -44,16 +44,26 @@
         "policies/rego"
       ],
       "scanner_timeout": 900,
-      "allow_external_symlinks": false
+      "allow_external_symlinks": false,
+      "window_start": null,
+      "window_end": null,
+      "window_max_gap_days": 7,
+      "ledger": "evidence/ledger.jsonl",
+      "people": "real",
+      "people_salt_env": "GRC_PEOPLE_SALT",
+      "github_repos": [],
+      "github_branches": [],
+      "github_scanner_jobs": [],
+      "github_accepted_bots": []
     },
-    "sha256": "24fa9088eb063372ac7903c7699893ba364be2f27b019cedbde9ca4133acbb14"
+    "sha256": "094d36c110c0c02cc0caa916624f5d7ea06b8471a96a953f9e68916ab206ffea"
   },
   "outputs": {
-    "findings.json": "b0a2c769cf23d4997ab81db313c8ca90f3be1830930423d69fb15e9e4ef92447",
-    "mapping.json": "246bc15c13825c9ef561e0ce3bf365d3888c5c6bc74b5b1c9724cb7131ade8e2",
-    "oscal/component-definition.json": "aaf2283e2ea1895e6836feebfad62d364abddc7a58f6f6b14f3ce24c8b5838cb",
-    "oscal/assessment-plan.json": "cc684585ee4b2e1bf5089f35c1b09b545e5f2462056f0e52ecb8521c553e04f0",
-    "oscal/assessment-results.json": "f15076980605f4f2b84b44f86581652b2f5e8ea563c131c1b74b21a89c5f5683",
-    "report.md": "a05688768f9c3439c3affd4682463c0adaafd5e87d1a340550a2094317f90ae6"
+    "findings.json": "03e8219eb28511d20dba10d3cdbcd9dc70d5c7b49438bfd6c865c64f58ce9e16",
+    "mapping.json": "896ac3d26364c4d9eb7d7c74cd72315734bd542a60f3f994f7a6069461d52883",
+    "oscal/component-definition.json": "4039952c254064640cdfdc8d77563ee5017cb523e957286a2461df3b95dc0d84",
+    "oscal/assessment-plan.json": "8b3ca8ab86f06e0edb33d6ee387db967604910fc25affc2a68485e839dfc19bf",
+    "oscal/assessment-results.json": "f9693a5744a06d22b445c1e4455e88a9f5185e7ea29b2e557d2a9c11b6f66a6a",
+    "report.md": "d2f35378f38e549424ee3a9e712c497565ef228dd77a9418d5b20a2c67878e6a"
   }
 }

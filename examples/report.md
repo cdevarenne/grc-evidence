@@ -1,6 +1,6 @@
 # Compliance Scan Report
 
-Generated 2026-10-06T00:11:14+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-10-06T20:09:35+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
@@ -225,7 +225,7 @@ advisories, then re-scan.
 
 **Findings:** 1 high, 1 medium, 2 unclassified
 
-**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Trivy](../knowledge/scanners/trivy.md), [Deny :latest image tag](../knowledge/policies/deny-latest-tag.md), [Pin images and modules to reviewed sources](../knowledge/policies/pin-image-provenance.md)
+**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [GitHub collectors](../knowledge/scanners/github.md), [Trivy](../knowledge/scanners/trivy.md), [Deny :latest image tag](../knowledge/policies/deny-latest-tag.md), [Pin images and modules to reviewed sources](../knowledge/policies/pin-image-provenance.md)
 
 **Open findings:**
 
@@ -389,4 +389,4 @@ Out of scope at the declared AI risk tier. Findings stay listed; they do not cha
 
 ---
 
-LLM step: 1 call(s), 0 billed, model claude-haiku-4-5, mode anthropic. Tokens: 2279 in, 1139 out, 0 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.
+LLM step: 1 call(s), 0 billed, model claude-haiku-4-5, mode claude-cli. Tokens: 2279 in, 1139 out, 0 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.
