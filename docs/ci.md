@@ -66,7 +66,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7  # v10.2.0
-      - run: uv tool install git+https://github.com/cdevarenne/grc-evidence@v1.8.1
+      - run: uv tool install git+https://github.com/cdevarenne/grc-evidence@v2.0.0
       - run: grc bootstrap
       - run: grc check
       - run: grc run --require-clean
