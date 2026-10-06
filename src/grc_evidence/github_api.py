@@ -99,7 +99,7 @@ class HttpTransport:
         return body
 
     def _send(self, request: urllib.request.Request, where: str) -> Any:
-        request.add_header("Authorization", f"Bearer {self._token}")
+        request.add_unredirected_header("Authorization", f"Bearer {self._token}")  # never copied to a redirect
         request.add_header("User-Agent", "grc-evidence")
         request.add_header("Accept", "application/vnd.github+json")
         try:

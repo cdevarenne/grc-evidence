@@ -1,6 +1,7 @@
 """The read-only GitHub transport: recorded responses for tests, HTTPS for real runs, and named rate limits."""
 
 import email.message
+import http.client
 import io
 import json
 import urllib.error
@@ -178,3 +179,14 @@ def test_network_failure_is_named(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(urllib.request, "urlopen", urlopen)
     with pytest.raises(GitHubError, match="GitHub API unreachable on graphql: no route"):
         HttpTransport("tok").graphql(QUERY, {})
+
+
+def test_token_is_not_sent_on_a_redirect(monkeypatch: pytest.MonkeyPatch) -> None:
+    """urllib follows redirects and copies normal headers to the new URL, even on another host."""
+    seen: list[urllib.request.Request] = []
+    monkeypatch.setattr(urllib.request, "urlopen", _reply({"id": 1}, seen))
+    HttpTransport("tok").rest("/repos/acme/api")
+    (request,) = seen
+    redirected = urllib.request.HTTPRedirectHandler().redirect_request(request, io.BytesIO(), 302, "Found", http.client.HTTPMessage(), "https://evil.example/x")
+    assert redirected is not None and "Authorization" not in redirected.headers
+    assert request.unredirected_hdrs["Authorization"] == "Bearer tok"
