@@ -1,17 +1,17 @@
 {
   "schema_version": "1.3",
-  "run_id": "5826d446-7c21-5515-ba41-65e779337afa",
-  "generated": "2026-10-06T22:54:26+00:00",
+  "run_id": "7ca1346d-0f9c-5483-ba06-06f88bff62a2",
+  "generated": "2026-10-07T03:03:51+00:00",
   "repository": {
-    "commit": "1aca8f826548200f4f7e4ab676ce3551ac64f63a",
+    "commit": "b27fcec1a193b2314388d797c33d427349c3f929",
     "dirty": false,
     "untracked": []
   },
   "engine": {
     "package": "grc-evidence",
-    "version": "2.0.1"
+    "version": "2.1.0"
   },
-  "base_version": "2.0.1",
+  "base_version": "2.1.0",
   "scanners": {
     "semgrep": "1.178.0",
     "trivy": "0.74.0",
@@ -19,7 +19,7 @@
     "conftest": "0.70.1"
   },
   "config": {
-    "file": null,
+    "file": "grc.yaml",
     "resolved": {
       "target": "app",
       "knowledge": "knowledge",
@@ -54,16 +54,57 @@
       "github_repos": [],
       "github_branches": [],
       "github_scanner_jobs": [],
-      "github_accepted_bots": []
+      "github_accepted_bots": [],
+      "review_default": "1y",
+      "review_by_type": [
+        [
+          "SOC 2 Control",
+          "1y"
+        ],
+        [
+          "ISO/IEC 42001 Control",
+          "1y"
+        ],
+        [
+          "EU AI Act Article",
+          "1y"
+        ],
+        [
+          "Crosswalk",
+          "6m"
+        ],
+        [
+          "Rego Policy",
+          "6m"
+        ],
+        [
+          "Semgrep Rule",
+          "6m"
+        ],
+        [
+          "Scanner Check",
+          "6m"
+        ],
+        [
+          "Scanner",
+          "6m"
+        ],
+        [
+          "Stack Component",
+          "90d"
+        ]
+      ],
+      "review_warn_before": "30d",
+      "review_base": "fail"
     },
-    "sha256": "094d36c110c0c02cc0caa916624f5d7ea06b8471a96a953f9e68916ab206ffea"
+    "sha256": "f9e656b9ace010aba6148f4d05ad2e559c382643b1368d8d484b93e1a40f4887"
   },
   "outputs": {
     "findings.json": "bc2cc9bdb2a2762a592e08b7e70743ed0497b5bdc0a5f03eab32d7bebb132ed4",
     "mapping.json": "b6c14bc01a96227d878791ce6cc0cefef7532a9503d6c6ee855a9381868a4e01",
-    "oscal/component-definition.json": "5f4b92cc748df72c9dfbbdaf172779097316db526eff46af809f2fd9ee497880",
-    "oscal/assessment-plan.json": "df5bba7a7b0ba85b5629e30135946a00a0d2359712dcf86afb42cee3c0f4b5a7",
-    "oscal/assessment-results.json": "7ace7d64fa9084cfb128f95c51a42bf84b50112b444d6057766253d27ae0935a",
-    "report.md": "e7d0f5d212283498dbc84c7714ace7c1eaad7e4d815cae4673508a48b89113b6"
+    "oscal/component-definition.json": "cbe92cc75791daf4687cb0ad3daf6a910f6dcea82ef905555b41c1e9ae2be9fb",
+    "oscal/assessment-plan.json": "056aa6838436a5ea09dd90390da7d6c78fe0f62ce88e62b3abbee8e9b8c2ac32",
+    "oscal/assessment-results.json": "a3dd711d329b71b9db2f0812ab974ec6afc7925c7e0dfb86b8c4ffbdc230fa0d",
+    "report.md": "9970d48d8ab877d63d330cf724f0dc7d3cc58d5c0786bd4954339eb6a3279b4e"
   }
 }

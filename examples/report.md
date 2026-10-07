@@ -1,6 +1,6 @@
 # Compliance Scan Report
 
-Generated 2026-10-06T22:54:26+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-10-07T03:03:51+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
@@ -40,9 +40,9 @@ it is evidence, not a control attestation.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 5 low-severity and 7 unknown-severity findings (12 total).
+**Summary (LLM):** Processing capacity and the use of system components are maintained, monitored, and managed to meet availability objectives — status is not-satisfied with 12 findings (5 low, 7 unknown).
 
-**Auditor note (LLM):** Implement capacity planning, monitoring, and health-check declaration for workloads to meet availability objectives.
+**Auditor note (LLM):** Review the 5 low-severity and 7 unknown-severity findings to identify gaps in capacity planning, monitoring, and component management.
 
 **Findings:** 5 low, 7 unclassified
 
@@ -71,9 +71,9 @@ every container, sized from observed use.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 5 high-severity, 2 medium-severity, 5 low-severity, and 9 unknown-severity findings (21 total).
+**Summary (LLM):** Access to systems and data is restricted to authorized, least-privileged identities — status is not-satisfied with 21 findings (5 high, 2 medium, 5 low, 9 unknown).
 
-**Auditor note (LLM):** Enforce least-privilege access controls across identities and workloads; prioritize the 5 high-severity findings.
+**Auditor note (LLM):** Prioritize the 5 high-severity findings to address authentication, authorization, and privilege escalation paths.
 
 **Findings:** 5 high, 2 medium, 5 low, 9 unclassified
 
@@ -116,9 +116,9 @@ or a secret manager, and rotate any key that was committed.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 2 high-severity and 2 unknown-severity findings (4 total).
+**Summary (LLM):** Resources are protected from access originating outside the system boundary — status is not-satisfied with 4 findings (2 high, 2 unknown).
 
-**Auditor note (LLM):** Secure the system boundary by enforcing NetworkPolicy rules and protecting data in transit at the perimeter.
+**Auditor note (LLM):** Address the 2 high-severity findings to strengthen external boundary protection, network policies, and encryption in transit.
 
 **Findings:** 2 high, 2 unclassified
 
@@ -138,9 +138,9 @@ accounts only, and enforce public access prevention on the bucket.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 2 critical, 17 high-severity, 22 medium-severity, and 11 low-severity findings (52 total), plus 1 accepted risk.
+**Summary (LLM):** Vulnerabilities in code, dependencies, images, and configuration are detected — status is not-satisfied with 52 findings (2 critical, 17 high, 22 medium, 11 low) and 1 accepted risk.
 
-**Auditor note (LLM):** Address the 2 critical and 17 high-severity vulnerabilities across source code, dependencies, and container images.
+**Auditor note (LLM):** Address the 2 critical and 17 high-severity vulnerabilities as immediate priorities; review the rationale for the 1 accepted risk.
 
 **Findings:** 3 critical, 17 high, 22 medium, 11 low
 
@@ -209,9 +209,9 @@ advisories, then re-scan.
 
 **Status:** no-violations-detected
 
-**Summary (LLM):** Status is no-violations-detected with 0 findings.
+**Summary (LLM):** System components are monitored for anomalous and malicious activity — status is no-violations-detected.
 
-**Auditor note (LLM):** Verify that security monitoring continues to function and confirm the scope of detection logic.
+**Auditor note (LLM):** Verify that monitoring controls are configured and active across all workloads and that alerting thresholds are appropriate.
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Log network flows](../knowledge/policies/network-flow-logs.md)
 
@@ -219,9 +219,9 @@ advisories, then re-scan.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 1 high-severity, 1 medium-severity, and 2 unknown-severity findings (4 total).
+**Summary (LLM):** Changes to infrastructure and software are controlled, reproducible, and reviewed — status is not-satisfied with 4 findings (1 high, 1 medium, 2 unknown).
 
-**Auditor note (LLM):** Enforce change management controls to ensure artifacts are pinned and changes pass policy review before release.
+**Auditor note (LLM):** Review the high-severity finding to confirm that all changes pass automated policy gates and are reproducible before release.
 
 **Findings:** 1 high, 1 medium, 2 unclassified
 
@@ -245,9 +245,9 @@ Authorization on the cluster.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 1 high-severity finding.
+**Summary (LLM):** The organization knows and records the resources each AI system depends on — status is not-satisfied with 1 high-severity finding.
 
-**Auditor note (LLM):** Establish and maintain a complete inventory of AI system resources, dependencies, and owners.
+**Auditor note (LLM):** Examine the high-severity finding to identify which AI system resources are not recorded in the inventory.
 
 **Findings:** 1 high
 
@@ -264,9 +264,9 @@ purpose, then review its risk tier.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 1 high-severity and 1 medium-severity finding.
+**Summary (LLM):** AI systems are designed, built, deployed, and operated under defined controls — status is not-satisfied with 2 findings (1 high, 1 medium).
 
-**Auditor note (LLM):** Define and enforce engineering controls across the AI system lifecycle, including deployment and operational governance.
+**Auditor note (LLM):** Review both findings to identify gaps in lifecycle controls across design, build, deploy, and operate phases.
 
 **Findings:** 1 high, 1 medium
 
@@ -286,9 +286,9 @@ chat model, sized to the feature's latency and cost budget.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 1 high-severity finding.
+**Summary (LLM):** Data that enters or leaves an AI system is governed for quality, provenance, and protection — status is not-satisfied with 1 high-severity finding.
 
-**Auditor note (LLM):** Implement data governance controls for prompts, context, and model outputs to prevent data escape from protected handling.
+**Auditor note (LLM):** Investigate the high-severity finding to determine what data governance or protection controls are missing.
 
 **Findings:** 1 high
 
@@ -307,9 +307,9 @@ Keep full transcripts, if needed, in a store with its own access control and ret
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Status is not-satisfied with 1 medium-severity finding.
+**Summary (LLM):** People are told when they interact with an AI system or see AI-generated content — status is not-satisfied with 1 medium-severity finding.
 
-**Auditor note (LLM):** Review how users are informed when interacting with or receiving AI-generated content and implement missing disclosure controls.
+**Auditor note (LLM):** Review the medium-severity finding to determine what AI-interaction disclosure is missing or incomplete.
 
 **Findings:** 1 medium
 
@@ -389,4 +389,4 @@ Out of scope at the declared AI risk tier. Findings stay listed; they do not cha
 
 ---
 
-LLM step: 1 call(s), 0 billed, model claude-haiku-4-5, mode claude-cli. Tokens: 2279 in, 1139 out, 0 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.
+LLM step: 1 call(s), 1 billed, model claude-haiku-4-5, mode claude-cli. Tokens: 10 in, 4271 out, 0 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.
