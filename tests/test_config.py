@@ -257,3 +257,24 @@ def test_no_window_has_no_bounds(tmp_path: Path) -> None:
 def test_evidence_settings_are_checked(tmp_path: Path, yaml_text: str, key: str) -> None:
     with pytest.raises(ConfigError, match=re.escape(key)):
         load_config(_repo(tmp_path, yaml_text))
+
+
+def test_review_section_from_yaml(tmp_path: Path) -> None:
+    c = load_config(_repo(tmp_path, "review:\n  default: 1y\n  by_type:\n    Stack Component: 90d\n    Crosswalk: 6m\n"
+                                    "  warn_before: 14d\n  base: fail\n"))
+    assert (c.review_default, c.review_warn_before, c.review_base) == ("1y", "14d", "fail")
+    assert c.review_by_type == (("Stack Component", "90d"), ("Crosswalk", "6m"))
+    assert (Config().review_default, Config().review_warn_before, Config().review_base) == (None, "30d", "warn")
+
+
+@pytest.mark.parametrize(("yaml_text", "key"), [
+    ("review:\n  default: 1 year\n", "review.default"),
+    ("review:\n  default: 0d\n", "review.default"),
+    ("review:\n  by_type:\n    Crosswalk: 6w\n", "review.by_type.Crosswalk"),
+    ("review:\n  base: ignore\n", "review.base"),
+    ("review:\n  every: 1y\n", "review.every"),
+    ("review: 1y\n", "review"),
+])
+def test_review_section_is_checked(tmp_path: Path, yaml_text: str, key: str) -> None:
+    with pytest.raises(ConfigError, match=re.escape(key)):
+        load_config(_repo(tmp_path, yaml_text))

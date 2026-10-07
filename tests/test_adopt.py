@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import subprocess
+from datetime import date
 from importlib.metadata import version
 from pathlib import Path
 
@@ -190,3 +191,26 @@ def test_cli_installs_the_skill(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
     monkeypatch.chdir(tmp_path)
     cli.main(["install-skill"])
     assert "added .claude/skills/grc-continuous-compliance/SKILL.md" in capsys.readouterr().out
+
+
+def test_check_warns_before_a_review_is_due_and_fails_after(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                            capsys: pytest.CaptureFixture[str]) -> None:
+    """Spec J: a local concept due soon is a warning; overdue, grc check fails. Base copies only warn in an adopter."""
+    adopt.init(tmp_path)
+    for stub in (tmp_path / "knowledge/stack").glob("*.md"):
+        if stub.name != "index.md":
+            stub.unlink()
+    (tmp_path / "knowledge/stack/app.md").write_text(
+        '---\ntype: Stack Component\ntitle: App\ndescription: d\ntags: [app]\n'
+        'verified:\n  - by: "human:r"\n    at: "2026-09-29T10:00:00-07:00"\n---\n# App\n')
+    review = "review:\n  default: 1y\n  by_type:\n    Stack Component: 90d\n    Crosswalk: 1d\n"
+    (tmp_path / "grc.yaml").write_text((tmp_path / "grc.yaml").read_text() + review)
+    config = load_config(tmp_path)
+    problems, warnings = adopt.check_report(tmp_path, config, date(2026, 12, 1))
+    assert "knowledge/stack/app.md: review due 2026-12-28" in warnings and problems == []
+    assert any("crosswalk" in w and "overdue in the engine" in w for w in warnings)  # base copies: 1d is long past
+    assert adopt.check(tmp_path, config, date(2026, 12, 29)) == ["knowledge/stack/app.md: review due 2026-12-28: verify it again"]
+    monkeypatch.chdir(tmp_path)
+    adopt.check_main([])  # today: no problem, so no exit; the overdue base crosswalks are printed as warnings
+    out = capsys.readouterr().out
+    assert "warning: knowledge/crosswalk/" in out and "overdue in the engine" in out and out.rstrip().endswith("review date")

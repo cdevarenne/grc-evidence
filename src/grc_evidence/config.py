@@ -3,7 +3,8 @@
 Scan inputs (`inventory`, `conftest.inputs`, `checkov.skip_paths`) are relative to the target;
 `target`, `knowledge`, `semgrep.configs`, `rego`, `ledger` and `github.repos_file` are relative to the
 repo root. With no file, the defaults are the v1.0 layout. The evidence keys (`window`, `ledger`,
-`people`, `people_salt_env`, `github`) configure the Type 2 collectors (Spec H).
+`people`, `people_salt_env`, `github`) configure the Type 2 collectors (Spec H); `review` sets how long a
+person's verification of a concept stays valid (Spec J).
 """
 
 from __future__ import annotations
@@ -40,6 +41,8 @@ TIERS = ("in-scope", "library", "deferred", "dormant")
 COLLECTORS = ("scm", "changes")
 _REPO_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]*/[A-Za-z0-9._-]+")
 _ENV_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+_DURATION = re.compile(r"[1-9][0-9]*[dmy]")  # days, calendar months, calendar years
+REVIEW_BASE = ("warn", "fail")
 
 
 class ConfigError(GrcError, ValueError):
@@ -88,6 +91,10 @@ class Config:
     github_branches: tuple[str, ...] = ()  # production branches beside each repo's default branch
     github_scanner_jobs: tuple[str, ...] = ()  # CI job names that must run a scanner and fail the build
     github_accepted_bots: tuple[AcceptedBot, ...] = ()  # bot reviewers whose approvals count; none by default
+    review_default: str | None = None  # without a `review:` section, only a concept's own stale_after counts
+    review_by_type: tuple[tuple[str, str], ...] = ()  # (concept type, interval)
+    review_warn_before: str = "30d"
+    review_base: str = "warn"  # an overdue base-bundle copy: warn (adopters) or fail (the engine's own repo)
 
     def bounds(self) -> Bounds:
         """The window as UTC bounds; an error when `grc.yaml` has no window."""
@@ -119,7 +126,37 @@ def _evidence(repo: Path, raw: Any) -> dict[str, Any]:
         fields |= _window(raw.pop("window"))
     if "github" in raw:
         fields |= _github(repo, raw.pop("github"))
+    if "review" in raw:
+        fields |= _review(raw.pop("review"))
     return fields
+
+
+def _review(raw: Any) -> dict[str, Any]:
+    if not isinstance(raw, dict):
+        raise ConfigError("'review' must be a mapping with default, by_type, warn_before and base")
+    if unknown := sorted(raw.keys() - {"default", "by_type", "warn_before", "base"}):
+        raise ConfigError(f"unknown key 'review.{unknown[0]}'")
+    by_type = raw.get("by_type", {})
+    if not isinstance(by_type, dict):
+        raise ConfigError("'review.by_type' must map a concept type to an interval")
+    fields: dict[str, Any] = {
+        "review_by_type": tuple((str(t), _duration(v, f"review.by_type.{t}")) for t, v in by_type.items()),
+    }
+    if "default" in raw:
+        fields["review_default"] = _duration(raw["default"], "review.default")
+    if "warn_before" in raw:
+        fields["review_warn_before"] = _duration(raw["warn_before"], "review.warn_before")
+    if "base" in raw:
+        if raw["base"] not in REVIEW_BASE:
+            raise ConfigError(f"'review.base' must be one of {', '.join(REVIEW_BASE)}")
+        fields["review_base"] = raw["base"]
+    return fields
+
+
+def _duration(value: Any, key: str) -> str:
+    if not isinstance(value, str) or not _DURATION.fullmatch(value):
+        raise ConfigError(f"'{key}' must be a number of days, months or years, such as 90d, 6m or 1y")
+    return value
 
 
 def _window(raw: Any) -> dict[str, Any]:

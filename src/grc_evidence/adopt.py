@@ -7,6 +7,7 @@ import argparse
 import os
 import re
 from collections.abc import Iterable
+from datetime import UTC, date, datetime
 from importlib.metadata import version
 from importlib.resources import as_file
 from pathlib import Path
@@ -15,6 +16,7 @@ from grc_evidence import data
 from grc_evidence.config import CONFIG_FILE, Config, load_config
 from grc_evidence.manifest import recorded_base_version
 from grc_evidence.okf_lib import BundleError, load_bundle
+from grc_evidence.review import review
 
 ROOT_INDEX = """---
 okf_version: "0.2"
@@ -139,15 +141,24 @@ def _ignore(repo: Path, entries: tuple[str, ...]) -> list[Path]:
     return [Path(".gitignore")]
 
 
-def check(repo: Path, config: Config) -> list[str]:
-    """Problems: base copies that drifted or are missing, a stale base_version, and unverified concepts."""
+def check(repo: Path, config: Config, today: date | None = None) -> list[str]:
+    """Problems: base copies that drifted or are missing, a stale base_version, unverified concepts, and concepts
+    past their review date."""
+    return check_report(repo, config, today)[0]
+
+
+def check_report(repo: Path, config: Config, today: date | None = None) -> tuple[list[str], list[str]]:
+    """(problems, warnings) of `grc check`: warnings name concepts due for review soon, or overdue base copies."""
     knowledge, installed, problems = repo / config.knowledge, version("grc-evidence"), []
+    base_paths: set[str] = set()
     if (recorded := recorded_base_version(knowledge)) != installed:
         problems.append(f"{config.knowledge}/index.md: base_version {recorded!r}, installed engine {installed!r}")
     with as_file(data.path("base")) as base, as_file(data.path("policies")) as policies, as_file(data.path("skill")) as skill:
         for source, copy in _copies(repo, config, base, policies, skill):
             if copy.name == "index.md":
                 continue
+            if copy.is_relative_to(knowledge):
+                base_paths.add(copy.relative_to(knowledge).as_posix())
             if not copy.is_file():
                 problems.append(f"{copy.relative_to(repo)}: missing (base {installed})")
             elif copy.read_bytes() != source.read_bytes():
@@ -155,11 +166,12 @@ def check(repo: Path, config: Config) -> list[str]:
     try:
         bundle = load_bundle(knowledge)
     except BundleError as e:
-        return [*problems, f"{config.knowledge}/{e}"]
+        return [*problems, f"{config.knowledge}/{e}"], []
     for concept in sorted(bundle.concepts.values(), key=lambda c: c.id):
         if not any(str(e.get("by", "")).startswith("human:") for e in concept.frontmatter.get("verified") or []):
             problems.append(f"{config.knowledge}/{concept.path}: not verified by a person")
-    return problems
+    due, warnings = review(bundle, config, base_paths, today or datetime.now(UTC).date())
+    return [*problems, *due], warnings
 
 
 def sync_base(repo: Path, config: Config) -> list[str]:
@@ -247,10 +259,13 @@ def check_main(argv: list[str] | None = None) -> None:
     parser.add_argument("--config", type=Path, default=None, help="scan layout (default: grc.yaml if present)")
     args = parser.parse_args(argv)
     repo = Path.cwd()
-    if problems := check(repo, load_config(repo, args.config)):
+    problems, warnings = check_report(repo, load_config(repo, args.config))
+    for warning in warnings:
+        print(f"warning: {warning}")
+    if problems:
         print("\n".join(problems))
         raise SystemExit(1)
-    print(f"ok: copies match base {version('grc-evidence')}; every concept is verified")
+    print(f"ok: copies match base {version('grc-evidence')}; every concept is verified and within its review date")
 
 
 def install_skill_main(argv: list[str] | None = None) -> None:

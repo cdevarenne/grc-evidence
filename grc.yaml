@@ -1,0 +1,16 @@
+# grc-evidence's own layout: the defaults (target app/, knowledge/), plus review intervals (Spec J).
+# How long a person's verification of a concept stays valid; `grc check` warns 30 days before and fails after.
+# base: fail, because this repo is where the base bundle is verified; adopters keep the default, warn.
+review:
+  default: 1y
+  by_type:
+    SOC 2 Control: 1y
+    ISO/IEC 42001 Control: 1y
+    EU AI Act Article: 1y
+    Crosswalk: 6m
+    Rego Policy: 6m
+    Semgrep Rule: 6m
+    Scanner Check: 6m
+    Scanner: 6m
+    Stack Component: 90d
+  base: fail

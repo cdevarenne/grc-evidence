@@ -43,3 +43,28 @@ with its base bundle, updates `base_version`, and lists each change. It writes
 an `index.md` only when missing: one that differs is kept, for you to merge the
 new base entries by hand. New base concepts carry the engine author's review;
 read their diff before you commit, then run `grc check`.
+
+## Review intervals (optional)
+
+A verification does not last forever. To make `grc check` ask for a new review, add a
+`review:` section to `grc.yaml` with how long a person's verification stays valid, per
+concept type (`Nd`, `Nm` or `Ny`; months and years are calendar months):
+
+```yaml
+review:
+  default: 1y
+  by_type:
+    Stack Component: 90d
+    Crosswalk: 6m
+  warn_before: 30d    # the default
+  base: warn          # the default
+```
+
+A concept is due at its latest `human:` verification plus its interval, or at its own
+`stale_after`, whichever is earlier. `grc check` warns from `warn_before` before that
+date and fails after it; a type no concept has is an error. Without a `review:` section,
+only `stale_after` counts. Suppressions keep their own `expires` and are not reviewed here.
+
+Base copies are verified in the engine, and you cannot re-verify one without drift. So
+an overdue base copy is a warning ("overdue in the engine; upgrade when a release
+re-verifies it"), and `grc sync-base` to a release that re-verified it clears it.
