@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "grc-evidence control concept (extension fields)",
+  "description": "SOC 2, ISO/IEC 42001 and EU AI Act controls. Syntax only; okf_lib checks the same at load time.",
+  "type": "object",
+  "required": [
+    "type"
+  ],
+  "properties": {
+    "type": {
+      "enum": [
+        "SOC 2 Control",
+        "ISO/IEC 42001 Control",
+        "EU AI Act Article"
+      ]
+    },
+    "framework": {
+      "enum": [
+        "soc2",
+        "iso42001",
+        "eu-ai-act"
+      ],
+      "description": "soc2 when absent; must match the type"
+    },
+    "applies_when": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array"
+      },
+      "description": "context field -> the values the control applies to (risk tier, component scope)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "not": {
+          "required": [
+            "framework"
+          ]
+        }
+      },
+      "then": {
+        "properties": {
+          "type": {
+            "const": "SOC 2 Control"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "framework"
+        ],
+        "properties": {
+          "framework": {
+            "const": "soc2"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "type": {
+            "const": "SOC 2 Control"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "framework"
+        ],
+        "properties": {
+          "framework": {
+            "const": "iso42001"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "type": {
+            "const": "ISO/IEC 42001 Control"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "framework"
+        ],
+        "properties": {
+          "framework": {
+            "const": "eu-ai-act"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "type": {
+            "const": "EU AI Act Article"
+          }
+        }
+      }
+    }
+  ]
+}

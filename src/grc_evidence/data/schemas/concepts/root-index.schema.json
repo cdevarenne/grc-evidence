@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "grc-evidence bundle root index.md frontmatter",
+  "type": "object",
+  "required": [
+    "okf_version"
+  ],
+  "properties": {
+    "okf_version": {
+      "type": "string"
+    },
+    "base_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "the engine release the base copies came from"
+    }
+  }
+}

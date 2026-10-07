@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "grc-evidence rule-declaring concept (extension fields)",
+  "description": "A concept with rule_ids (a policy, a scanner, a check). Syntax only: exactly one control tag per framework is a load-time check in okf_lib.",
+  "type": "object",
+  "required": [
+    "type",
+    "rule_ids"
+  ],
+  "properties": {
+    "rule_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[^:\\s]+:[^*?\\[\\]]+\\*?$",
+        "description": "<tool>:<literal prefix>, optionally ending in *"
+      }
+    },
+    "sdks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "AI SDKs the rules can read"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

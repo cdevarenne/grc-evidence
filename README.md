@@ -145,6 +145,7 @@ directly and does not use the graph.*
 | [Architecture](docs/architecture.md) | How the parts fit, a diagram, and the order to build the proposed features in |
 | [Outputs](docs/outputs.md) | The output contract, the run manifest, and the OSCAL documents |
 | [OSCAL subset](docs/oscal-subset.md) | Exactly which OSCAL fields are emitted, and the placeholders |
+| [OKF extension fields](docs/okf-extensions.md) | The fields the bundle adds to OKF, their schemas, and what checks them |
 | [Suppressions](docs/suppressions.md) | Reviewed, expiring decisions about single findings |
 | [AI governance](docs/ai-governance.md) | ISO/IEC 42001 and EU AI Act coverage, risk tiers, AI SDKs |
 | [LLM step and cost](docs/llm.md) | Narration and triage: validation, cost, and the triage evaluation |
