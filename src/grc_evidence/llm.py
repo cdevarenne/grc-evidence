@@ -33,6 +33,45 @@ CUSTOM_ID = re.compile(r"^[a-zA-Z0-9_-]{1,64}$")  # Message Batches API rule for
 REQUEST_TIMEOUT_S = 60.0  # per synchronous call; the SDK default is 10 minutes
 
 
+
+# Claude Code passes --json-schema to the model as a tool, whose property names must match ^[a-zA-Z0-9_.-]{1,64}$.
+# Control keys such as soc2:cc8.1 go out with "__" for ":" and come back under their own name; no key has "__".
+CLI_KEY = {":": "__"}
+
+
+def _rename(key: str, mapping: dict[str, str]) -> str:
+    for old, new in mapping.items():
+        key = key.replace(old, new)
+    return key
+
+
+def _cli_keys(value: Any, mapping: dict[str, str], schema: bool = True) -> Any:
+    """`value` with object keys renamed: a schema's `properties` and `required`, or every key of an output."""
+    if isinstance(value, list):
+        return [_cli_keys(v, mapping, schema) for v in value]
+    if not isinstance(value, dict):
+        return value
+    if not schema:
+        return {_rename(k, mapping): _cli_keys(v, mapping, schema) for k, v in value.items()}
+    out = {k: _cli_keys(v, mapping) for k, v in value.items()}
+    if isinstance(value.get("properties"), dict):
+        out["properties"] = {_rename(k, mapping): _cli_keys(v, mapping) for k, v in value["properties"].items()}
+    if isinstance(value.get("required"), list):
+        out["required"] = [_rename(k, mapping) for k in value["required"]]
+    return out
+
+
+def _cli_error(proc: subprocess.CompletedProcess[str]) -> str:
+    """claude's own message: on stdout as JSON with --output-format json, else stderr."""
+    try:
+        doc = json.loads(proc.stdout)
+        if isinstance(doc, dict) and doc.get("result"):
+            return str(doc["result"])[-300:]
+    except json.JSONDecodeError:
+        pass
+    return proc.stderr.strip()[-300:]
+
+
 class LLMError(GrcError, RuntimeError):
     """A call failed, was refused, was truncated, or has no recorded response."""
 
@@ -253,16 +292,17 @@ class LLM:
         """Claude Code headless mode: uses the Claude plan, not API credit. Dev loop only."""
         argv = [
             "claude", "-p", "--output-format", "json", "--model", self.model,
-            "--system-prompt", request.system, "--json-schema", json.dumps(request.schema),
+            "--system-prompt", request.system, "--json-schema", json.dumps(_cli_keys(request.schema, CLI_KEY)),
         ]
         proc = self.runner(argv, input=request.user, capture_output=True, text=True, check=False)
         if proc.returncode != 0:
-            raise LLMError(f"{request.task}: claude exited {proc.returncode}: {proc.stderr.strip()[-300:]}")
+            raise LLMError(f"{request.task}: claude exited {proc.returncode}: {_cli_error(proc)}")
         try:
             doc = json.loads(proc.stdout)
             output = doc.get("structured_output") or json.loads(doc["result"])
         except (json.JSONDecodeError, KeyError, TypeError, AttributeError) as e:
             raise LLMError(f"{request.task}: claude returned no JSON result ({type(e).__name__}); output rejected") from e
+        output = _cli_keys(output, {v: k for k, v in CLI_KEY.items()}, schema=False)
         usage = {k: doc.get("usage", {}).get(k, 0) for k in ("input_tokens", "output_tokens",
                  "cache_creation_input_tokens", "cache_read_input_tokens")}
         usage["cost_usd"] = 0.0  # plan usage, not API credit; the plan's own limits apply

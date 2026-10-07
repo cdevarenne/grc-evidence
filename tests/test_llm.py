@@ -250,3 +250,35 @@ def test_a_stalled_batch_stops_after_the_deadline(tmp_path: Path, monkeypatch: p
     monkeypatch.setattr("grc_evidence.llm.time.sleep", lambda s: None)
     with pytest.raises(LLMError, match="batch batch_1: not ended after 3600 s"):
         _llm(tmp_path, mode="anthropic", client=client).complete_batch({"a": REQ})
+
+
+KEYED = Request(task="narrate", system="s", user="u", max_tokens=100, schema={
+    "type": "object", "required": ["soc2:cc8.1"], "additionalProperties": False,
+    "properties": {"soc2:cc8.1": {"type": "object", "properties": {"summary": {"type": "string"}}}},
+})
+
+
+def test_claude_cli_renames_property_keys_claude_code_rejects(tmp_path: Path) -> None:
+    """Claude Code passes --json-schema as a tool, whose property names must match ^[a-zA-Z0-9_.-]{1,64}$.
+    Control keys such as soc2:cc8.1 go out as soc2__cc8.1 and come back under their own name."""
+    seen: list[dict] = []
+
+    def runner(argv: list[str], **kw: Any) -> subprocess.CompletedProcess[str]:
+        schema = json.loads(argv[argv.index("--json-schema") + 1])
+        seen.append(schema)
+        out = {"structured_output": {"soc2__cc8.1": {"summary": "ok"}}, "usage": {}}
+        return subprocess.CompletedProcess(argv, 0, json.dumps(out), "")
+
+    assert _llm(tmp_path, mode="claude-cli", runner=runner).complete(KEYED) == {"soc2:cc8.1": {"summary": "ok"}}
+    assert list(seen[0]["properties"]) == ["soc2__cc8.1"] and seen[0]["required"] == ["soc2__cc8.1"]
+    assert list(seen[0]["properties"]["soc2__cc8.1"]["properties"]) == ["summary"]
+
+
+def test_claude_cli_error_names_claudes_own_message(tmp_path: Path) -> None:
+    """With --output-format json, claude reports an error on stdout, not stderr."""
+    def runner(argv: list[str], **kw: Any) -> subprocess.CompletedProcess[str]:
+        out = {"is_error": True, "result": "API Error: 400 tools.8.custom.input_schema.properties: bad key"}
+        return subprocess.CompletedProcess(argv, 1, json.dumps(out), "")
+
+    with pytest.raises(LLMError, match="claude exited 1: API Error: 400"):
+        _llm(tmp_path, mode="claude-cli", runner=runner).complete(REQ)
