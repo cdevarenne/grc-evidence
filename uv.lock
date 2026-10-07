@@ -273,6 +273,7 @@ name = "grc-evidence"
 version = "2.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "okflib" },
     { name = "pyyaml" },
 ]
 
@@ -301,6 +302,7 @@ dev = [
 requires-dist = [
     { name = "anthropic", marker = "extra == 'llm'", specifier = ">=1.8" },
     { name = "mcp", marker = "extra == 'mcp'", specifier = ">=2.2,<3" },
+    { name = "okflib", specifier = "==0.5.0" },
     { name = "pyyaml", specifier = ">=6.0.2" },
 ]
 provides-extras = ["llm", "mcp"]
@@ -630,6 +632,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8dac321cda606860fa4548858c0cc45d9d1d4ca2628b/mypy_extensions-1.1.0.tar.gz", hash = "sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558", size = 6343, upload-time = "2025-04-22T14:54:24.164Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
+]
+
+[[package]]
+name = "okflib"
+version = "0.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ba/c3/97c1a4205aba259001852e238fc4d6b313fad70702d09f4812cbe459a82d/okflib-0.5.0.tar.gz", hash = "sha256:1b12df64406ea62142596d3f5120242fda1b3b8ce326b8a7e177378be576d6b1", size = 51866, upload-time = "2026-08-14T08:25:52.526Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d8/f4/561587592c2ac4d58fb38bcdaf6a7717d4454959faeae735eaccf1cb75f5/okflib-0.5.0-py3-none-any.whl", hash = "sha256:7e1170870eb7aeb6b6974a6f48927ff6a9bf0ea5516afe9ac6f252cc87137254", size = 50383, upload-time = "2026-08-14T08:25:51.262Z" },
 ]
 
 [[package]]

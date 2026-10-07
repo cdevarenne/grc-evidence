@@ -175,6 +175,10 @@ dependency, install only from hash-pinned requirements in
 regenerates them after a version change). The OSCAL output is a documented
 subset: see [`docs/oscal-subset.md`](docs/oscal-subset.md).
 
+The engine's runtime dependencies are PyYAML and [okflib](https://pypi.org/project/okflib/)
+(Apache-2.0), which checks each OKF concept. okflib is pinned exactly in `pyproject.toml`,
+because `uv tool install` and `uvx` resolve from it and do not read `uv.lock`.
+
 ## License
 
 MIT
