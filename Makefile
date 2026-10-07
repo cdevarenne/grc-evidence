@@ -6,7 +6,6 @@ PY_LLM := uv run --extra llm python -m
 TOOLBIN := $(CURDIR)/.tools/bin
 export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
-OKF := reference-agent @ git+https://github.com/GoogleCloudPlatform/open-knowledge-format@$(OKF_COMMIT)
 
 .PHONY: bootstrap lock-scanners sync-base audit examples-llm scan narrate triage eval-triage render test test-integration examples examples-h clean
 
@@ -44,9 +43,9 @@ triage:
 eval-triage:
 	$(PY_LLM) grc_evidence.eval_triage --knowledge knowledge --out out $(EVAL_ARGS)
 
-render:
+render:     # out/knowledge-viz.html: the bundle as an interactive graph (okflib, a runtime dependency)
 	mkdir -p out
-	uvx --python 3.14 --from "$(OKF)" reference-agent visualize --bundle knowledge --out out/knowledge-viz.html
+	uv run okflib view -C knowledge -o out/knowledge-viz.html --no-open
 
 test:
 	uv run ruff check

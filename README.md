@@ -131,7 +131,7 @@ population and a sample from Google's `microservices-demo`, pseudonymized.
 
 ![OKF knowledge graph](docs/screenshots/knowledge-graph.png)
 
-*The OKF knowledge bundle (`knowledge/`) rendered by the OKF reference visualizer
+*The OKF knowledge bundle (`knowledge/`) rendered by [okflib](https://pypi.org/project/okflib/)
 (`make render` → `out/knowledge-viz.html`). Each node is one concept file — a SOC 2,
 ISO/IEC 42001, or EU AI Act control, a crosswalk, a guardrail policy, a scanner,
 a stack component, or a suppression — and each edge is a markdown link between
@@ -169,7 +169,7 @@ directly and does not use the graph.*
 ## Pins
 
 All external versions are pinned in [`tools.lock`](src/grc_evidence/data/tools.lock): Semgrep, Checkov,
-Trivy, Conftest, the OKF spec (v0.2, by commit), and OSCAL 1.2.3. Trivy and
+Trivy, Conftest, and OSCAL 1.2.3; the OKF reader, okflib, is pinned in `pyproject.toml`. Trivy and
 Conftest are checked against SHA-256 pins; Semgrep and Checkov, with every
 dependency, install only from hash-pinned requirements in
 [`src/grc_evidence/data/locks/`](src/grc_evidence/data/locks/) (`make lock-scanners`

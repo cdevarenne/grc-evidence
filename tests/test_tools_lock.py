@@ -4,7 +4,7 @@ from pathlib import Path
 LOCK = Path(__file__).parent.parent / "src" / "grc_evidence" / "data" / "tools.lock"
 REQUIRED = {
     "SEMGREP_VERSION", "SEMGREP_PYTHON", "CHECKOV_VERSION", "CHECKOV_PYTHON", "TRIVY_VERSION",
-    "CONFTEST_VERSION", "OKF_COMMIT", "OSCAL_VERSION",
+    "CONFTEST_VERSION", "OSCAL_VERSION",
 }
 SHA256 = {
     "TRIVY_SHA256_DARWIN_ARM64", "TRIVY_SHA256_LINUX_X86_64",
@@ -23,8 +23,7 @@ def test_all_pins_present() -> None:
 
 def test_pins_are_exact() -> None:
     pins = _pins()
-    assert re.fullmatch(r"[0-9a-f]{40}", pins["OKF_COMMIT"])
-    for key in REQUIRED - {"OKF_COMMIT"}:
+    for key in REQUIRED:
         assert re.fullmatch(r"\d+\.\d+(\.\d+)?", pins[key]), key
 
 

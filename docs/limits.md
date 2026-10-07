@@ -34,7 +34,7 @@ What grc-evidence does not do, or does only partly. Read this before relying on 
   candidates were re-run three times, which showed a spread of up to three
   cases per run, so differences of a case or two are not evidence.
 - **The bundle is readable anywhere, reusable in part.** Any OKF tool can read
-  it (`make render` uses the OKF reference visualizer). The control, crosswalk,
+  it (`make render` uses okflib). The control, crosswalk,
   and scanner concepts carry over to another project; the stack, the policies'
   `rule_ids`, the suppressions, and the AI inventory describe this repo's sample
   app. The engine knows only the three frameworks here: adding one means
