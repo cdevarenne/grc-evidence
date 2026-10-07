@@ -1,0 +1,1106 @@
+{
+ "assessment-plan": {
+  "assessment-plan": {
+   "assessment-assets": {
+    "assessment-platforms": [
+     {
+      "title": "`make scan` pipeline, scanners pinned in tools.lock",
+      "uses-components": [
+       {
+        "component-uuid": "9973a0ba-84c3-5aa9-8f98-5682ab4219a7"
+       },
+       {
+        "component-uuid": "ab928d82-e984-5efd-adee-3ea01f477778"
+       },
+       {
+        "component-uuid": "3cf5fb95-a701-51c4-9611-f4b4ad7d14ed"
+       },
+       {
+        "component-uuid": "8d9470c0-e417-50c7-9d8c-2a9b201cf756"
+       }
+      ],
+      "uuid": "430afc62-f8e0-5143-9628-5265957ab4b0"
+     }
+    ],
+    "components": [
+     {
+      "description": "semgrep, pinned to 1.178.0 in tools.lock.",
+      "props": [
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "1.178.0"
+       }
+      ],
+      "status": {
+       "state": "operational"
+      },
+      "title": "semgrep 1.178.0",
+      "type": "software",
+      "uuid": "9973a0ba-84c3-5aa9-8f98-5682ab4219a7"
+     },
+     {
+      "description": "trivy, pinned to 0.74.0 in tools.lock.",
+      "props": [
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.74.0"
+       }
+      ],
+      "status": {
+       "state": "operational"
+      },
+      "title": "trivy 0.74.0",
+      "type": "software",
+      "uuid": "ab928d82-e984-5efd-adee-3ea01f477778"
+     },
+     {
+      "description": "checkov, pinned to 3.3.19 in tools.lock.",
+      "props": [
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "3.3.19"
+       }
+      ],
+      "status": {
+       "state": "operational"
+      },
+      "title": "checkov 3.3.19",
+      "type": "software",
+      "uuid": "3cf5fb95-a701-51c4-9611-f4b4ad7d14ed"
+     },
+     {
+      "description": "conftest, pinned to 0.70.1 in tools.lock.",
+      "props": [
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.70.1"
+       }
+      ],
+      "status": {
+       "state": "operational"
+      },
+      "title": "conftest 0.70.1",
+      "type": "software",
+      "uuid": "8d9470c0-e417-50c7-9d8c-2a9b201cf756"
+     }
+    ]
+   },
+   "assessment-subjects": [
+    {
+     "description": "The stack components described in the knowledge bundle.",
+     "include-subjects": [
+      {
+       "subject-uuid": "92615294-c043-52f4-bdca-278220d40665",
+       "type": "component"
+      }
+     ],
+     "type": "component"
+    }
+   ],
+   "import-ssp": {
+    "href": "#system-security-plan-not-modeled",
+    "remarks": "System security plan not modeled; see docs/oscal-subset.md."
+   },
+   "local-definitions": {
+    "activities": [
+     {
+      "description": "Run semgrep 1.178.0 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "1.178.0"
+       }
+      ],
+      "related-controls": {
+       "control-selections": [
+        {
+         "description": "AICPA Trust Services Criteria (SOC 2)",
+         "include-controls": [
+          {
+           "control-id": "cc6.1"
+          }
+         ]
+        },
+        {
+         "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+         "include-controls": [
+          {
+           "control-id": "a.6"
+          },
+          {
+           "control-id": "a.7"
+          }
+         ]
+        },
+        {
+         "description": "Regulation (EU) 2024/1689 (EU AI Act)",
+         "include-controls": [
+          {
+           "control-id": "art-12"
+          },
+          {
+           "control-id": "art-50"
+          }
+         ]
+        }
+       ]
+      },
+      "steps": [
+       {
+        "description": "`semgrep scan --config policies/semgrep --metrics=off --json --quiet app` (working directory: the repository root)",
+        "title": "Run the scanner",
+        "uuid": "2c1299fd-33ed-521c-add3-5bd8ea5ff5e8"
+       }
+      ],
+      "title": "Semgrep code scan",
+      "uuid": "cbe546dd-4c55-5522-84ea-b55ea7e81677"
+     },
+     {
+      "description": "Run trivy 0.74.0 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.74.0"
+       }
+      ],
+      "steps": [
+       {
+        "description": "`trivy config --quiet --format json app` (working directory: the repository root)",
+        "title": "Run the scanner",
+        "uuid": "567cb254-d95d-5753-b55e-0337281737b5"
+       }
+      ],
+      "title": "Trivy misconfiguration scan",
+      "uuid": "cc9fa0d7-22f7-5a0a-a77e-8152ca7ccee2"
+     },
+     {
+      "description": "Run trivy 0.74.0 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.74.0"
+       }
+      ],
+      "steps": [
+       {
+        "description": "`trivy fs --quiet --scanners vuln --format json app` (working directory: the repository root)",
+        "title": "Run the scanner",
+        "uuid": "e3fd82c6-fafa-5298-927f-7bb0305e0557"
+       }
+      ],
+      "title": "Trivy dependency vulnerability scan",
+      "uuid": "0f11cb85-98de-59c6-90f0-5fde66dc1643"
+     },
+     {
+      "description": "Run checkov 3.3.19 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "3.3.19"
+       }
+      ],
+      "steps": [
+       {
+        "description": "`checkov -d . --framework terraform kubernetes dockerfile -o json --quiet --compact` (working directory: the scan target)",
+        "title": "Run the scanner",
+        "uuid": "60996b1a-9eaf-501a-9bff-8f214889f938"
+       }
+      ],
+      "title": "Checkov infrastructure-as-code scan",
+      "uuid": "2c14e28a-2eb5-5f5d-bb8b-b8c90ea4cbc7"
+     },
+     {
+      "description": "Run conftest 0.70.1 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.70.1"
+       }
+      ],
+      "steps": [
+       {
+        "description": "`conftest test --all-namespaces --no-color -o json -p policies/rego app/ai-inventory.yaml app/infra/main.tf app/k8s/deployment.yaml app/k8s/service.yaml` (working directory: the repository root)",
+        "title": "Run the scanner",
+        "uuid": "1b14dd42-0ebd-5e6a-8f38-abf0bc9cf2a2"
+       }
+      ],
+      "title": "Conftest policy check",
+      "uuid": "32847c13-d3d8-59bb-a21e-4ae9c2c13e15"
+     }
+    ],
+    "components": [
+     {
+      "description": "Fixture AI feature.",
+      "status": {
+       "state": "operational"
+      },
+      "title": "Assistant",
+      "type": "software",
+      "uuid": "92615294-c043-52f4-bdca-278220d40665"
+     }
+    ]
+   },
+   "metadata": {
+    "last-modified": "2026-10-06T12:00:00+00:00",
+    "oscal-version": "1.2.3",
+    "title": "grc-evidence automated assessment plan",
+    "version": "0.1.0"
+   },
+   "reviewed-controls": {
+    "control-selections": [
+     {
+      "description": "AICPA Trust Services Criteria (SOC 2)",
+      "include-controls": [
+       {
+        "control-id": "cc6.1"
+       }
+      ]
+     },
+     {
+      "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+      "include-controls": [
+       {
+        "control-id": "a.6"
+       },
+       {
+        "control-id": "a.7"
+       }
+      ]
+     },
+     {
+      "description": "Regulation (EU) 2024/1689 (EU AI Act)",
+      "include-controls": [
+       {
+        "control-id": "art-12"
+       },
+       {
+        "control-id": "art-50"
+       }
+      ]
+     }
+    ],
+    "description": "Every control applicable at the declared AI risk tier, including controls no scanner evidences."
+   },
+   "tasks": [
+    {
+     "associated-activities": [
+      {
+       "activity-uuid": "cbe546dd-4c55-5522-84ea-b55ea7e81677",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-subjects": [
+          {
+           "subject-uuid": "92615294-c043-52f4-bdca-278220d40665",
+           "type": "component"
+          }
+         ],
+         "type": "component"
+        }
+       ]
+      },
+      {
+       "activity-uuid": "cc9fa0d7-22f7-5a0a-a77e-8152ca7ccee2",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-subjects": [
+          {
+           "subject-uuid": "92615294-c043-52f4-bdca-278220d40665",
+           "type": "component"
+          }
+         ],
+         "type": "component"
+        }
+       ]
+      },
+      {
+       "activity-uuid": "0f11cb85-98de-59c6-90f0-5fde66dc1643",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-subjects": [
+          {
+           "subject-uuid": "92615294-c043-52f4-bdca-278220d40665",
+           "type": "component"
+          }
+         ],
+         "type": "component"
+        }
+       ]
+      },
+      {
+       "activity-uuid": "2c14e28a-2eb5-5f5d-bb8b-b8c90ea4cbc7",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-subjects": [
+          {
+           "subject-uuid": "92615294-c043-52f4-bdca-278220d40665",
+           "type": "component"
+          }
+         ],
+         "type": "component"
+        }
+       ]
+      },
+      {
+       "activity-uuid": "32847c13-d3d8-59bb-a21e-4ae9c2c13e15",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-subjects": [
+          {
+           "subject-uuid": "92615294-c043-52f4-bdca-278220d40665",
+           "type": "component"
+          }
+         ],
+         "type": "component"
+        }
+       ]
+      }
+     ],
+     "description": "Run every scanner activity, then map findings to controls through the knowledge bundle.",
+     "subjects": [
+      {
+       "description": "The stack components described in the knowledge bundle.",
+       "include-subjects": [
+        {
+         "subject-uuid": "92615294-c043-52f4-bdca-278220d40665",
+         "type": "component"
+        }
+       ],
+       "type": "component"
+      }
+     ],
+     "title": "Automated compliance scan",
+     "type": "action",
+     "uuid": "15b366bd-8029-529e-8b1e-8694d9cd05f8"
+    }
+   ],
+   "terms-and-conditions": {
+    "parts": [
+     {
+      "name": "rules-of-engagement",
+      "prose": "A finding may be suppressed only by a suppression concept in the knowledge bundle that matches it exactly (tool, rule id, target, and optionally a message fragment; no wildcards), names a human owner and a reason, carries a human `verified` entry, and expires at most 90 days after approval. A false positive leaves the control's status and is named in the results' remarks; an accepted risk keeps the control not-satisfied and is recorded as a deviation-approved risk. An expired suppression no longer applies.",
+      "title": "Suppression policy"
+     },
+     {
+      "name": "methodology",
+      "prose": "A finding maps to a control only through a `rule_ids` declaration in the knowledge bundle. A finding no declaration covers is a coverage gap, recorded as an open risk, never as a control finding. A clean automated scan evidences a control but never attests it.",
+      "title": "Grounding rule"
+     }
+    ]
+   },
+   "uuid": "7a29b0fe-8610-51da-b51c-35070d32d39b"
+  }
+ },
+ "assessment-results": {
+  "assessment-results": {
+   "import-ap": {
+    "href": "assessment-plan.json"
+   },
+   "metadata": {
+    "last-modified": "2026-10-06T12:00:00+00:00",
+    "oscal-version": "1.2.3",
+    "title": "grc-evidence automated assessment",
+    "version": "0.1.0"
+   },
+   "results": [
+    {
+     "description": "Scanner findings mapped to in-bundle controls through the OKF knowledge bundle.",
+     "findings": [
+      {
+       "description": "1 open finding(s).",
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "high"
+        }
+       ],
+       "related-observations": [
+        {
+         "observation-uuid": "e0ebb290-037b-56d0-b84f-54752ef463ff"
+        }
+       ],
+       "target": {
+        "status": {
+         "state": "not-satisfied"
+        },
+        "target-id": "art-12",
+        "type": "objective-id"
+       },
+       "title": "Art. 12 \u2014 Record-keeping",
+       "uuid": "deb57775-aea3-5275-9823-71e37d4e967b"
+      },
+      {
+       "description": "1 open finding(s).",
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "high"
+        }
+       ],
+       "related-observations": [
+        {
+         "observation-uuid": "fcda38e2-f847-5d7a-ad40-a4dc57bf9207"
+        }
+       ],
+       "target": {
+        "status": {
+         "state": "not-satisfied"
+        },
+        "target-id": "a.6",
+        "type": "objective-id"
+       },
+       "title": "A.6 \u2014 AI system life cycle",
+       "uuid": "a5973fe5-0a98-5955-9a14-d54bc2d3ba0f"
+      },
+      {
+       "description": "1 open finding(s).",
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "high"
+        }
+       ],
+       "related-observations": [
+        {
+         "observation-uuid": "e0ebb290-037b-56d0-b84f-54752ef463ff"
+        }
+       ],
+       "target": {
+        "status": {
+         "state": "not-satisfied"
+        },
+        "target-id": "a.7",
+        "type": "objective-id"
+       },
+       "title": "A.7 \u2014 Data for AI systems",
+       "uuid": "64906881-7e00-5a38-b182-49ac9c7b1537"
+      },
+      {
+       "description": "1 open finding(s).",
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "high"
+        }
+       ],
+       "related-observations": [
+        {
+         "observation-uuid": "fcda38e2-f847-5d7a-ad40-a4dc57bf9207"
+        }
+       ],
+       "target": {
+        "status": {
+         "state": "not-satisfied"
+        },
+        "target-id": "cc6.1",
+        "type": "objective-id"
+       },
+       "title": "CC6.1 \u2014 Logical Access",
+       "uuid": "54ed0d67-2ea5-5eca-a6a2-30bbb298b540"
+      }
+     ],
+     "observations": [
+      {
+       "collected": "2026-10-06T12:00:00+00:00",
+       "description": "hard-coded API key (app/assistant/settings.py, severity high)",
+       "methods": [
+        "TEST"
+       ],
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "high"
+        }
+       ],
+       "title": "semgrep llm-hardcoded-key",
+       "uuid": "fcda38e2-f847-5d7a-ad40-a4dc57bf9207"
+      },
+      {
+       "collected": "2026-10-06T12:00:00+00:00",
+       "description": "prompt written to log (app/assistant/views.py, severity high)",
+       "methods": [
+        "TEST"
+       ],
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "high"
+        }
+       ],
+       "title": "semgrep llm-prompt-logged",
+       "uuid": "e0ebb290-037b-56d0-b84f-54752ef463ff"
+      },
+      {
+       "collected": "2026-10-06T12:00:00+00:00",
+       "description": "no timeout (app/assistant/views.py, severity medium)",
+       "methods": [
+        "TEST"
+       ],
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "medium"
+        }
+       ],
+       "title": "semgrep llm-unbounded-call",
+       "uuid": "2a5e026c-8340-56b0-8ccc-1e3e1105a2b4"
+      }
+     ],
+     "props": [
+      {
+       "name": "run-id",
+       "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+       "value": "00000000-0000-5000-8000-000000000000"
+      }
+     ],
+     "remarks": "No violations detected by automated checks (not a control attestation): eu-ai-act:art-50",
+     "reviewed-controls": {
+      "control-selections": [
+       {
+        "description": "AICPA Trust Services Criteria (SOC 2)",
+        "include-controls": [
+         {
+          "control-id": "cc6.1"
+         }
+        ]
+       },
+       {
+        "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+        "include-controls": [
+         {
+          "control-id": "a.6"
+         },
+         {
+          "control-id": "a.7"
+         }
+        ]
+       },
+       {
+        "description": "Regulation (EU) 2024/1689 (EU AI Act)",
+        "include-controls": [
+         {
+          "control-id": "art-12"
+         },
+         {
+          "control-id": "art-50"
+         }
+        ]
+       }
+      ]
+     },
+     "risks": [
+      {
+       "description": "No in-bundle control covers this finding (no-rule-match).",
+       "related-observations": [
+        {
+         "observation-uuid": "2a5e026c-8340-56b0-8ccc-1e3e1105a2b4"
+        }
+       ],
+       "statement": "no timeout",
+       "status": "open",
+       "title": "Coverage gap: semgrep llm-unbounded-call",
+       "uuid": "459caccb-f019-5d59-a9b4-63c443995409"
+      }
+     ],
+     "start": "2026-10-06T12:00:00+00:00",
+     "title": "Automated compliance scan",
+     "uuid": "a3d2ee76-497d-5228-8d76-6c8d85a84146"
+    }
+   ],
+   "uuid": "28248435-5a07-570b-8e54-b1e605d312cd"
+  }
+ },
+ "component-definition": {
+  "component-definition": {
+   "back-matter": {
+    "resources": [
+     {
+      "title": "AICPA Trust Services Criteria (SOC 2)",
+      "uuid": "dd9916b0-021b-592c-b2a4-b1c2f75d21ec"
+     },
+     {
+      "title": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+      "uuid": "a3812d82-81f6-5c16-a146-17d8525d71cf"
+     },
+     {
+      "rlinks": [
+       {
+        "href": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+       }
+      ],
+      "title": "Regulation (EU) 2024/1689 (EU AI Act)",
+      "uuid": "8c61b511-9aff-59dc-b4d8-c8f12ee13fa6"
+     }
+    ]
+   },
+   "components": [
+    {
+     "control-implementations": [
+      {
+       "description": "SOC 2 criteria that apply to Assistant.",
+       "implemented-requirements": [
+        {
+         "control-id": "cc6.1",
+         "description": "CC6.1 \u2014 Logical Access",
+         "uuid": "8a8b11f7-6faa-5f88-bb39-1edaf6cbc2e5"
+        }
+       ],
+       "source": "#dd9916b0-021b-592c-b2a4-b1c2f75d21ec",
+       "uuid": "bbf797cf-1215-5047-93a7-35adaf677a55"
+      },
+      {
+       "description": "ISO/IEC 42001 Annex A controls that apply to Assistant.",
+       "implemented-requirements": [
+        {
+         "control-id": "a.6",
+         "description": "A.6 \u2014 AI system life cycle",
+         "uuid": "4a5a3655-4fa6-5d07-b5bd-4e2073ca4117"
+        },
+        {
+         "control-id": "a.7",
+         "description": "A.7 \u2014 Data for AI systems",
+         "uuid": "3345f592-08b8-520d-9565-94b604daa6b8"
+        }
+       ],
+       "source": "#a3812d82-81f6-5c16-a146-17d8525d71cf",
+       "uuid": "5c2c476d-315d-582f-862f-d76e74ee88ca"
+      },
+      {
+       "description": "EU AI Act articles that apply to Assistant.",
+       "implemented-requirements": [
+        {
+         "control-id": "art-50",
+         "description": "Art. 50 \u2014 Transparency",
+         "uuid": "83083e48-84b3-5f71-9efa-66548b1e73c3"
+        }
+       ],
+       "source": "#8c61b511-9aff-59dc-b4d8-c8f12ee13fa6",
+       "uuid": "13381400-8350-579b-a213-57a387a6bba0"
+      }
+     ],
+     "description": "Fixture AI feature.",
+     "title": "Assistant",
+     "type": "software",
+     "uuid": "92615294-c043-52f4-bdca-278220d40665"
+    }
+   ],
+   "metadata": {
+    "last-modified": "2026-10-06T12:00:00+00:00",
+    "oscal-version": "1.2.3",
+    "title": "grc-evidence sample app components",
+    "version": "0.1.0"
+   },
+   "uuid": "d0481237-5a87-55cf-a1ba-bc45aacd04b3"
+  }
+ },
+ "concepts": {
+  "controls/cc6.1": {
+   "body": "# Intent\nFixture.\n",
+   "description": "",
+   "frontmatter": {
+    "framework": "soc2",
+    "tags": [
+     "soc2",
+     "cc6.1"
+    ],
+    "title": "CC6.1 \u2014 Logical Access",
+    "type": "SOC 2 Control"
+   },
+   "links": [],
+   "path": "controls/cc6.1.md",
+   "rule_ids": [],
+   "tags": [
+    "soc2",
+    "cc6.1"
+   ],
+   "title": "CC6.1 \u2014 Logical Access",
+   "type": "SOC 2 Control"
+  },
+  "controls/eu-ai-act/art-12": {
+   "body": "# Intent\nFixture.\n",
+   "description": "",
+   "frontmatter": {
+    "applies_when": {
+     "risk_tier": [
+      "high"
+     ]
+    },
+    "framework": "eu-ai-act",
+    "tags": [
+     "eu-ai-act",
+     "eu-ai-act:art-12"
+    ],
+    "title": "Art. 12 \u2014 Record-keeping",
+    "type": "EU AI Act Article"
+   },
+   "links": [],
+   "path": "controls/eu-ai-act/art-12.md",
+   "rule_ids": [],
+   "tags": [
+    "eu-ai-act",
+    "eu-ai-act:art-12"
+   ],
+   "title": "Art. 12 \u2014 Record-keeping",
+   "type": "EU AI Act Article"
+  },
+  "controls/eu-ai-act/art-50": {
+   "body": "# Intent\nFixture.\n",
+   "description": "",
+   "frontmatter": {
+    "framework": "eu-ai-act",
+    "tags": [
+     "eu-ai-act",
+     "eu-ai-act:art-50"
+    ],
+    "title": "Art. 50 \u2014 Transparency",
+    "type": "EU AI Act Article"
+   },
+   "links": [],
+   "path": "controls/eu-ai-act/art-50.md",
+   "rule_ids": [],
+   "tags": [
+    "eu-ai-act",
+    "eu-ai-act:art-50"
+   ],
+   "title": "Art. 50 \u2014 Transparency",
+   "type": "EU AI Act Article"
+  },
+  "controls/iso42001/a.6": {
+   "body": "# Intent\nFixture.\n",
+   "description": "",
+   "frontmatter": {
+    "framework": "iso42001",
+    "tags": [
+     "iso42001",
+     "iso42001:a.6"
+    ],
+    "title": "A.6 \u2014 AI system life cycle",
+    "type": "ISO/IEC 42001 Control"
+   },
+   "links": [],
+   "path": "controls/iso42001/a.6.md",
+   "rule_ids": [],
+   "tags": [
+    "iso42001",
+    "iso42001:a.6"
+   ],
+   "title": "A.6 \u2014 AI system life cycle",
+   "type": "ISO/IEC 42001 Control"
+  },
+  "controls/iso42001/a.7": {
+   "body": "# Intent\nFixture.\n",
+   "description": "",
+   "frontmatter": {
+    "framework": "iso42001",
+    "tags": [
+     "iso42001",
+     "iso42001:a.7"
+    ],
+    "title": "A.7 \u2014 Data for AI systems",
+    "type": "ISO/IEC 42001 Control"
+   },
+   "links": [],
+   "path": "controls/iso42001/a.7.md",
+   "rule_ids": [],
+   "tags": [
+    "iso42001",
+    "iso42001:a.7"
+   ],
+   "title": "A.7 \u2014 Data for AI systems",
+   "type": "ISO/IEC 42001 Control"
+  },
+  "crosswalk/iso42001-ai-act": {
+   "body": "# Links\n\n- [A.7](../controls/iso42001/a.7.md) \u2194 [Art. 12](../controls/eu-ai-act/art-12.md)\n- [A.6](../controls/iso42001/a.6.md) only, no pair on this line\n",
+   "description": "",
+   "frontmatter": {
+    "tags": [
+     "crosswalk"
+    ],
+    "title": "ISO/IEC 42001 \u2194 EU AI Act",
+    "type": "Crosswalk"
+   },
+   "links": [
+    "controls/iso42001/a.7",
+    "controls/eu-ai-act/art-12",
+    "controls/iso42001/a.6"
+   ],
+   "path": "crosswalk/iso42001-ai-act.md",
+   "rule_ids": [],
+   "tags": [
+    "crosswalk"
+   ],
+   "title": "ISO/IEC 42001 \u2194 EU AI Act",
+   "type": "Crosswalk"
+  },
+  "policies/llm-hardcoded-key": {
+   "body": "# Remediation\nRead the key from the environment.\n",
+   "description": "",
+   "frontmatter": {
+    "rule_ids": [
+     "semgrep:llm-hardcoded-key"
+    ],
+    "tags": [
+     "semgrep",
+     "cc6.1",
+     "iso42001:a.6"
+    ],
+    "title": "No hard-coded LLM API keys",
+    "type": "Semgrep Rule"
+   },
+   "links": [],
+   "path": "policies/llm-hardcoded-key.md",
+   "rule_ids": [
+    "semgrep:llm-hardcoded-key"
+   ],
+   "tags": [
+    "semgrep",
+    "cc6.1",
+    "iso42001:a.6"
+   ],
+   "title": "No hard-coded LLM API keys",
+   "type": "Semgrep Rule"
+  },
+  "policies/llm-no-ai-disclosure": {
+   "body": "# Remediation\nAdd an `ai_generated` field to the response.\n",
+   "description": "",
+   "frontmatter": {
+    "rule_ids": [
+     "semgrep:llm-no-ai-disclosure"
+    ],
+    "tags": [
+     "semgrep",
+     "eu-ai-act:art-50"
+    ],
+    "title": "Disclose AI-generated output",
+    "type": "Semgrep Rule"
+   },
+   "links": [],
+   "path": "policies/llm-no-ai-disclosure.md",
+   "rule_ids": [
+    "semgrep:llm-no-ai-disclosure"
+   ],
+   "tags": [
+    "semgrep",
+    "eu-ai-act:art-50"
+   ],
+   "title": "Disclose AI-generated output",
+   "type": "Semgrep Rule"
+  },
+  "policies/llm-prompt-logged": {
+   "body": "# Remediation\nLog a prompt hash, not the prompt.\n",
+   "description": "",
+   "frontmatter": {
+    "rule_ids": [
+     "semgrep:llm-prompt-logged"
+    ],
+    "tags": [
+     "semgrep",
+     "iso42001:a.7",
+     "eu-ai-act:art-12"
+    ],
+    "title": "Do not log prompts",
+    "type": "Semgrep Rule"
+   },
+   "links": [],
+   "path": "policies/llm-prompt-logged.md",
+   "rule_ids": [
+    "semgrep:llm-prompt-logged"
+   ],
+   "tags": [
+    "semgrep",
+    "iso42001:a.7",
+    "eu-ai-act:art-12"
+   ],
+   "title": "Do not log prompts",
+   "type": "Semgrep Rule"
+  },
+  "scanners/semgrep": {
+   "body": "# Covers\nFixture.\n",
+   "description": "",
+   "frontmatter": {
+    "tags": [
+     "sast"
+    ],
+    "title": "Semgrep",
+    "type": "Scanner"
+   },
+   "links": [],
+   "path": "scanners/semgrep.md",
+   "rule_ids": [],
+   "tags": [
+    "sast"
+   ],
+   "title": "Semgrep",
+   "type": "Scanner"
+  },
+  "stack/assistant": {
+   "body": "- [CC6.1](../controls/cc6.1.md)\n- [A.6](../controls/iso42001/a.6.md)\n- [A.7](../controls/iso42001/a.7.md)\n- [Art. 50](../controls/eu-ai-act/art-50.md)\n",
+   "description": "Fixture AI feature.",
+   "frontmatter": {
+    "description": "Fixture AI feature.",
+    "tags": [
+     "ai"
+    ],
+    "title": "Assistant",
+    "type": "Stack Component"
+   },
+   "links": [
+    "controls/cc6.1",
+    "controls/iso42001/a.6",
+    "controls/iso42001/a.7",
+    "controls/eu-ai-act/art-50"
+   ],
+   "path": "stack/assistant.md",
+   "rule_ids": [],
+   "tags": [
+    "ai"
+   ],
+   "title": "Assistant",
+   "type": "Stack Component"
+  }
+ },
+ "mapping": {
+  "controls": {
+   "eu-ai-act:art-12": {
+    "evidenced_by": [
+     "scanners/semgrep"
+    ],
+    "findings": [
+     {
+      "message": "prompt written to log",
+      "rule_id": "llm-prompt-logged",
+      "severity": "high",
+      "tags": [],
+      "target": "app/assistant/views.py",
+      "tool": "semgrep"
+     }
+    ],
+    "satisfied_by": [
+     "policies/llm-prompt-logged"
+    ],
+    "status": "not-satisfied"
+   },
+   "eu-ai-act:art-50": {
+    "evidenced_by": [
+     "scanners/semgrep"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/llm-no-ai-disclosure"
+    ],
+    "status": "no-violations-detected"
+   },
+   "iso42001:a.6": {
+    "evidenced_by": [
+     "scanners/semgrep"
+    ],
+    "findings": [
+     {
+      "message": "hard-coded API key",
+      "rule_id": "llm-hardcoded-key",
+      "severity": "high",
+      "tags": [],
+      "target": "app/assistant/settings.py",
+      "tool": "semgrep"
+     }
+    ],
+    "satisfied_by": [
+     "policies/llm-hardcoded-key"
+    ],
+    "status": "not-satisfied"
+   },
+   "iso42001:a.7": {
+    "evidenced_by": [
+     "scanners/semgrep"
+    ],
+    "findings": [
+     {
+      "message": "prompt written to log",
+      "rule_id": "llm-prompt-logged",
+      "severity": "high",
+      "tags": [],
+      "target": "app/assistant/views.py",
+      "tool": "semgrep"
+     }
+    ],
+    "satisfied_by": [
+     "policies/llm-prompt-logged"
+    ],
+    "status": "not-satisfied"
+   },
+   "soc2:cc6.1": {
+    "evidenced_by": [
+     "scanners/semgrep"
+    ],
+    "findings": [
+     {
+      "message": "hard-coded API key",
+      "rule_id": "llm-hardcoded-key",
+      "severity": "high",
+      "tags": [],
+      "target": "app/assistant/settings.py",
+      "tool": "semgrep"
+     }
+    ],
+    "satisfied_by": [
+     "policies/llm-hardcoded-key"
+    ],
+    "status": "not-satisfied"
+   }
+  },
+  "unmapped": [
+   {
+    "finding": {
+     "message": "no timeout",
+     "rule_id": "llm-unbounded-call",
+     "severity": "medium",
+     "tags": [],
+     "target": "app/assistant/views.py",
+     "tool": "semgrep"
+    },
+    "reason": "no-rule-match"
+   }
+  ]
+ },
+ "report": "# Compliance Scan Report\n\nGenerated 2026-10-06T12:00:00+00:00. Every status below is derived from scanner findings joined to\ncontrols declared in the OKF knowledge bundle; nothing is mapped without a declaration.\n`no-violations-detected` means automated checks found nothing for that control;\nit is evidence, not a control attestation.\n\n## Risk posture\n\n4 open findings across 4 of 5 controls: 4 high.\n1 control shows no violations. 0 not assessed. 1 coverage gap to triage.\n\n## Summary\n\n| Control | Status | Critical | High | Medium | Low | Uncl. | Total |\n|---|---|---|---|---|---|---|---|\n| soc2:cc6.1 | not-satisfied | 0 | 1 | 0 | 0 | 0 | 1 |\n| iso42001:a.6 | not-satisfied | 0 | 1 | 0 | 0 | 0 | 1 |\n| iso42001:a.7 | not-satisfied | 0 | 1 | 0 | 0 | 0 | 1 |\n| eu-ai-act:art-12 | not-satisfied | 0 | 1 | 0 | 0 | 0 | 1 |\n| eu-ai-act:art-50 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n\n## SOC 2\n\n### CC6.1 \u2014 Logical Access\n\n**Status:** not-satisfied\n\n**Findings:** 1 high\n\n**Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [No hard-coded LLM API keys](../knowledge/policies/llm-hardcoded-key.md)\n\n**Open findings:**\n\n- `semgrep` `llm-hardcoded-key` (high) \u2014 hard-coded API key \u2014 `app/assistant/settings.py`\n\n**Remediation:** Read the key from the environment.\n\n## ISO/IEC 42001\n\n### A.6 \u2014 AI system life cycle\n\n**Status:** not-satisfied\n\n**Findings:** 1 high\n\n**Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [No hard-coded LLM API keys](../knowledge/policies/llm-hardcoded-key.md)\n\n**Open findings:**\n\n- `semgrep` `llm-hardcoded-key` (high) \u2014 hard-coded API key \u2014 `app/assistant/settings.py`\n\n**Remediation:** Read the key from the environment.\n\n### A.7 \u2014 Data for AI systems\n\n**Status:** not-satisfied\n\n**Findings:** 1 high\n\n**Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Do not log prompts](../knowledge/policies/llm-prompt-logged.md)\n\n**Open findings:**\n\n- `semgrep` `llm-prompt-logged` (high) \u2014 prompt written to log \u2014 `app/assistant/views.py`\n\n**Remediation:** Log a prompt hash, not the prompt.\n\n## EU AI Act\n\n### Art. 12 \u2014 Record-keeping\n\n**Status:** not-satisfied\n\n**Findings:** 1 high\n\n**Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Do not log prompts](../knowledge/policies/llm-prompt-logged.md)\n\n**Open findings:**\n\n- `semgrep` `llm-prompt-logged` (high) \u2014 prompt written to log \u2014 `app/assistant/views.py`\n\n**Remediation:** Log a prompt hash, not the prompt.\n\n### Art. 50 \u2014 Transparency\n\n**Status:** no-violations-detected\n\n**Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Disclose AI-generated output](../knowledge/policies/llm-no-ai-disclosure.md)\n\n## Crosswalk\n\nLinks between frameworks. A link is navigation, never a mapping: each status\ncomes only from that control's own rule declarations.\n\n| Control | Status | Linked control | Status | Source |\n|---|---|---|---|---|\n| iso42001:a.7 | not-satisfied | eu-ai-act:art-12 | not-satisfied | [ISO/IEC 42001 \u2194 EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |\n\n## Coverage gaps\n\nFindings with no in-bundle control. These are gaps to close, not mappings to invent.\n\n- `semgrep` `llm-unbounded-call` (medium) \u2014 no timeout \u2014 `app/assistant/views.py` \u2014 reason: `no-rule-match`\n\n## Not assessed\n\nNone.\n"
+}

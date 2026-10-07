@@ -1,0 +1,2908 @@
+{
+ "assessment-plan": {
+  "assessment-plan": {
+   "assessment-assets": {
+    "assessment-platforms": [
+     {
+      "title": "`make scan` pipeline, scanners pinned in tools.lock",
+      "uses-components": [
+       {
+        "component-uuid": "9973a0ba-84c3-5aa9-8f98-5682ab4219a7"
+       },
+       {
+        "component-uuid": "ab928d82-e984-5efd-adee-3ea01f477778"
+       },
+       {
+        "component-uuid": "3cf5fb95-a701-51c4-9611-f4b4ad7d14ed"
+       },
+       {
+        "component-uuid": "8d9470c0-e417-50c7-9d8c-2a9b201cf756"
+       }
+      ],
+      "uuid": "430afc62-f8e0-5143-9628-5265957ab4b0"
+     }
+    ],
+    "components": [
+     {
+      "description": "semgrep, pinned to 1.178.0 in tools.lock.",
+      "props": [
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "1.178.0"
+       }
+      ],
+      "status": {
+       "state": "operational"
+      },
+      "title": "semgrep 1.178.0",
+      "type": "software",
+      "uuid": "9973a0ba-84c3-5aa9-8f98-5682ab4219a7"
+     },
+     {
+      "description": "trivy, pinned to 0.74.0 in tools.lock.",
+      "props": [
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.74.0"
+       }
+      ],
+      "status": {
+       "state": "operational"
+      },
+      "title": "trivy 0.74.0",
+      "type": "software",
+      "uuid": "ab928d82-e984-5efd-adee-3ea01f477778"
+     },
+     {
+      "description": "checkov, pinned to 3.3.19 in tools.lock.",
+      "props": [
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "3.3.19"
+       }
+      ],
+      "status": {
+       "state": "operational"
+      },
+      "title": "checkov 3.3.19",
+      "type": "software",
+      "uuid": "3cf5fb95-a701-51c4-9611-f4b4ad7d14ed"
+     },
+     {
+      "description": "conftest, pinned to 0.70.1 in tools.lock.",
+      "props": [
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.70.1"
+       }
+      ],
+      "status": {
+       "state": "operational"
+      },
+      "title": "conftest 0.70.1",
+      "type": "software",
+      "uuid": "8d9470c0-e417-50c7-9d8c-2a9b201cf756"
+     }
+    ]
+   },
+   "assessment-subjects": [
+    {
+     "description": "The stack components described in the knowledge bundle.",
+     "include-all": {},
+     "type": "component"
+    }
+   ],
+   "import-ssp": {
+    "href": "#system-security-plan-not-modeled",
+    "remarks": "System security plan not modeled; see docs/oscal-subset.md."
+   },
+   "local-definitions": {
+    "activities": [
+     {
+      "description": "Run semgrep 1.178.0 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "1.178.0"
+       }
+      ],
+      "related-controls": {
+       "control-selections": [
+        {
+         "description": "AICPA Trust Services Criteria (SOC 2)",
+         "include-controls": [
+          {
+           "control-id": "cc6.1"
+          }
+         ]
+        },
+        {
+         "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+         "include-controls": [
+          {
+           "control-id": "a.6"
+          },
+          {
+           "control-id": "a.7"
+          }
+         ]
+        },
+        {
+         "description": "Regulation (EU) 2024/1689 (EU AI Act)",
+         "include-controls": [
+          {
+           "control-id": "art-12"
+          },
+          {
+           "control-id": "art-50"
+          }
+         ]
+        }
+       ]
+      },
+      "steps": [
+       {
+        "description": "`semgrep scan --config policies/semgrep --metrics=off --json --quiet app` (working directory: the repository root)",
+        "title": "Run the scanner",
+        "uuid": "2c1299fd-33ed-521c-add3-5bd8ea5ff5e8"
+       }
+      ],
+      "title": "Semgrep code scan",
+      "uuid": "cbe546dd-4c55-5522-84ea-b55ea7e81677"
+     },
+     {
+      "description": "Run trivy 0.74.0 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.74.0"
+       }
+      ],
+      "related-controls": {
+       "control-selections": [
+        {
+         "description": "AICPA Trust Services Criteria (SOC 2)",
+         "include-controls": [
+          {
+           "control-id": "a1.1"
+          },
+          {
+           "control-id": "cc6.1"
+          },
+          {
+           "control-id": "cc6.6"
+          },
+          {
+           "control-id": "cc7.1"
+          },
+          {
+           "control-id": "cc8.1"
+          }
+         ]
+        }
+       ]
+      },
+      "steps": [
+       {
+        "description": "`trivy config --quiet --format json app` (working directory: the repository root)",
+        "title": "Run the scanner",
+        "uuid": "567cb254-d95d-5753-b55e-0337281737b5"
+       }
+      ],
+      "title": "Trivy misconfiguration scan",
+      "uuid": "cc9fa0d7-22f7-5a0a-a77e-8152ca7ccee2"
+     },
+     {
+      "description": "Run trivy 0.74.0 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.74.0"
+       }
+      ],
+      "related-controls": {
+       "control-selections": [
+        {
+         "description": "AICPA Trust Services Criteria (SOC 2)",
+         "include-controls": [
+          {
+           "control-id": "a1.1"
+          },
+          {
+           "control-id": "cc6.1"
+          },
+          {
+           "control-id": "cc6.6"
+          },
+          {
+           "control-id": "cc7.1"
+          },
+          {
+           "control-id": "cc8.1"
+          }
+         ]
+        }
+       ]
+      },
+      "steps": [
+       {
+        "description": "`trivy fs --quiet --scanners vuln --format json app` (working directory: the repository root)",
+        "title": "Run the scanner",
+        "uuid": "e3fd82c6-fafa-5298-927f-7bb0305e0557"
+       }
+      ],
+      "title": "Trivy dependency vulnerability scan",
+      "uuid": "0f11cb85-98de-59c6-90f0-5fde66dc1643"
+     },
+     {
+      "description": "Run checkov 3.3.19 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "3.3.19"
+       }
+      ],
+      "related-controls": {
+       "control-selections": [
+        {
+         "description": "AICPA Trust Services Criteria (SOC 2)",
+         "include-controls": [
+          {
+           "control-id": "a1.1"
+          },
+          {
+           "control-id": "cc6.1"
+          },
+          {
+           "control-id": "cc6.6"
+          },
+          {
+           "control-id": "cc7.2"
+          },
+          {
+           "control-id": "cc8.1"
+          }
+         ]
+        }
+       ]
+      },
+      "steps": [
+       {
+        "description": "`checkov -d . --framework terraform kubernetes dockerfile -o json --quiet --compact` (working directory: the scan target)",
+        "title": "Run the scanner",
+        "uuid": "60996b1a-9eaf-501a-9bff-8f214889f938"
+       }
+      ],
+      "title": "Checkov infrastructure-as-code scan",
+      "uuid": "2c14e28a-2eb5-5f5d-bb8b-b8c90ea4cbc7"
+     },
+     {
+      "description": "Run conftest 0.70.1 over `app` and normalize its JSON output to findings.",
+      "props": [
+       {
+        "name": "method",
+        "value": "TEST"
+       },
+       {
+        "name": "tool-version",
+        "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+        "value": "0.70.1"
+       }
+      ],
+      "related-controls": {
+       "control-selections": [
+        {
+         "description": "AICPA Trust Services Criteria (SOC 2)",
+         "include-controls": [
+          {
+           "control-id": "cc6.1"
+          },
+          {
+           "control-id": "cc6.6"
+          },
+          {
+           "control-id": "cc8.1"
+          }
+         ]
+        },
+        {
+         "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+         "include-controls": [
+          {
+           "control-id": "a.4"
+          }
+         ]
+        }
+       ]
+      },
+      "steps": [
+       {
+        "description": "`conftest test --all-namespaces --no-color -o json -p policies/rego app/ai-inventory.yaml app/infra/main.tf app/k8s/deployment.yaml app/k8s/service.yaml` (working directory: the repository root)",
+        "title": "Run the scanner",
+        "uuid": "1b14dd42-0ebd-5e6a-8f38-abf0bc9cf2a2"
+       }
+      ],
+      "title": "Conftest policy check",
+      "uuid": "32847c13-d3d8-59bb-a21e-4ae9c2c13e15"
+     }
+    ]
+   },
+   "metadata": {
+    "last-modified": "2026-10-06T12:00:00+00:00",
+    "oscal-version": "1.2.3",
+    "title": "grc-evidence automated assessment plan",
+    "version": "0.1.0"
+   },
+   "reviewed-controls": {
+    "control-selections": [
+     {
+      "description": "AICPA Trust Services Criteria (SOC 2)",
+      "include-controls": [
+       {
+        "control-id": "a1.1"
+       },
+       {
+        "control-id": "cc6.1"
+       },
+       {
+        "control-id": "cc6.6"
+       },
+       {
+        "control-id": "cc7.1"
+       },
+       {
+        "control-id": "cc7.2"
+       },
+       {
+        "control-id": "cc8.1"
+       }
+      ]
+     },
+     {
+      "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+      "include-controls": [
+       {
+        "control-id": "a.4"
+       },
+       {
+        "control-id": "a.5"
+       },
+       {
+        "control-id": "a.6"
+       },
+       {
+        "control-id": "a.7"
+       },
+       {
+        "control-id": "a.8"
+       },
+       {
+        "control-id": "a.9"
+       }
+      ]
+     },
+     {
+      "description": "Regulation (EU) 2024/1689 (EU AI Act)",
+      "include-controls": [
+       {
+        "control-id": "art-10"
+       },
+       {
+        "control-id": "art-12"
+       },
+       {
+        "control-id": "art-13"
+       },
+       {
+        "control-id": "art-14"
+       },
+       {
+        "control-id": "art-15"
+       },
+       {
+        "control-id": "art-50"
+       },
+       {
+        "control-id": "art-9"
+       }
+      ]
+     }
+    ],
+    "description": "Every control applicable at the declared AI risk tier, including controls no scanner evidences."
+   },
+   "tasks": [
+    {
+     "associated-activities": [
+      {
+       "activity-uuid": "cbe546dd-4c55-5522-84ea-b55ea7e81677",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-all": {},
+         "type": "component"
+        }
+       ]
+      },
+      {
+       "activity-uuid": "cc9fa0d7-22f7-5a0a-a77e-8152ca7ccee2",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-all": {},
+         "type": "component"
+        }
+       ]
+      },
+      {
+       "activity-uuid": "0f11cb85-98de-59c6-90f0-5fde66dc1643",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-all": {},
+         "type": "component"
+        }
+       ]
+      },
+      {
+       "activity-uuid": "2c14e28a-2eb5-5f5d-bb8b-b8c90ea4cbc7",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-all": {},
+         "type": "component"
+        }
+       ]
+      },
+      {
+       "activity-uuid": "32847c13-d3d8-59bb-a21e-4ae9c2c13e15",
+       "subjects": [
+        {
+         "description": "The stack components described in the knowledge bundle.",
+         "include-all": {},
+         "type": "component"
+        }
+       ]
+      }
+     ],
+     "description": "Run every scanner activity, then map findings to controls through the knowledge bundle.",
+     "subjects": [
+      {
+       "description": "The stack components described in the knowledge bundle.",
+       "include-all": {},
+       "type": "component"
+      }
+     ],
+     "title": "Automated compliance scan",
+     "type": "action",
+     "uuid": "15b366bd-8029-529e-8b1e-8694d9cd05f8"
+    }
+   ],
+   "terms-and-conditions": {
+    "parts": [
+     {
+      "name": "rules-of-engagement",
+      "prose": "A finding may be suppressed only by a suppression concept in the knowledge bundle that matches it exactly (tool, rule id, target, and optionally a message fragment; no wildcards), names a human owner and a reason, carries a human `verified` entry, and expires at most 90 days after approval. A false positive leaves the control's status and is named in the results' remarks; an accepted risk keeps the control not-satisfied and is recorded as a deviation-approved risk. An expired suppression no longer applies.",
+      "title": "Suppression policy"
+     },
+     {
+      "name": "methodology",
+      "prose": "A finding maps to a control only through a `rule_ids` declaration in the knowledge bundle. A finding no declaration covers is a coverage gap, recorded as an open risk, never as a control finding. A clean automated scan evidences a control but never attests it.",
+      "title": "Grounding rule"
+     }
+    ]
+   },
+   "uuid": "7a29b0fe-8610-51da-b51c-35070d32d39b"
+  }
+ },
+ "assessment-results": {
+  "assessment-results": {
+   "import-ap": {
+    "href": "assessment-plan.json"
+   },
+   "metadata": {
+    "last-modified": "2026-10-06T12:00:00+00:00",
+    "oscal-version": "1.2.3",
+    "title": "grc-evidence automated assessment",
+    "version": "0.1.0"
+   },
+   "results": [
+    {
+     "description": "Scanner findings mapped to in-bundle controls through the OKF knowledge bundle.",
+     "findings": [
+      {
+       "description": "1 open finding(s).",
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "high"
+        }
+       ],
+       "related-observations": [
+        {
+         "observation-uuid": "d83804a9-015f-5c5e-9860-0f11f7858800"
+        }
+       ],
+       "target": {
+        "status": {
+         "state": "not-satisfied"
+        },
+        "target-id": "cc6.1",
+        "type": "objective-id"
+       },
+       "title": "CC6.1 \u2014 Logical Access",
+       "uuid": "54ed0d67-2ea5-5eca-a6a2-30bbb298b540"
+      },
+      {
+       "description": "1 open finding(s).",
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "critical"
+        }
+       ],
+       "related-observations": [
+        {
+         "observation-uuid": "b819e0c3-4e40-5611-baa0-bae4b76e70dc"
+        }
+       ],
+       "target": {
+        "status": {
+         "state": "not-satisfied"
+        },
+        "target-id": "cc7.1",
+        "type": "objective-id"
+       },
+       "title": "CC7.1 \u2014 Vulnerability Detection",
+       "uuid": "c8702645-7860-58d6-b099-7ddd45ced515"
+      }
+     ],
+     "observations": [
+      {
+       "collected": "2026-10-06T12:00:00+00:00",
+       "description": "container runs as root (app/k8s/deployment.yaml, severity high)",
+       "methods": [
+        "TEST"
+       ],
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "high"
+        }
+       ],
+       "title": "conftest require_non_root",
+       "uuid": "d83804a9-015f-5c5e-9860-0f11f7858800"
+      },
+      {
+       "collected": "2026-10-06T12:00:00+00:00",
+       "description": "example-pkg 1.0 vulnerable (app/requirements.txt, severity critical)",
+       "methods": [
+        "TEST"
+       ],
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "critical"
+        }
+       ],
+       "title": "trivy CVE-2024-0001",
+       "uuid": "b819e0c3-4e40-5611-baa0-bae4b76e70dc"
+      },
+      {
+       "collected": "2026-10-06T12:00:00+00:00",
+       "description": "runAsNonRoot not set (app/k8s/deployment.yaml, severity medium)",
+       "methods": [
+        "TEST"
+       ],
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "medium"
+        }
+       ],
+       "title": "checkov CKV_TEST_1",
+       "uuid": "e8069010-fe47-554b-9c44-0e69b65df069"
+      },
+      {
+       "collected": "2026-10-06T12:00:00+00:00",
+       "description": "no HEALTHCHECK (app/Dockerfile, severity low)",
+       "methods": [
+        "TEST"
+       ],
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "low"
+        }
+       ],
+       "title": "checkov CKV_TEST_99",
+       "uuid": "e257fad7-332f-598b-a3df-3b63f144fc33"
+      },
+      {
+       "collected": "2026-10-06T12:00:00+00:00",
+       "description": "orphan (app/infra/main.tf, severity medium)",
+       "methods": [
+        "TEST"
+       ],
+       "props": [
+        {
+         "name": "severity",
+         "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+         "value": "medium"
+        }
+       ],
+       "title": "conftest orphan_rule",
+       "uuid": "6c475137-3b01-564c-8f41-f5d69ab4ceb5"
+      }
+     ],
+     "props": [
+      {
+       "name": "run-id",
+       "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
+       "value": "00000000-0000-5000-8000-000000000000"
+      }
+     ],
+     "remarks": "No violations detected by automated checks (not a control attestation): eu-ai-act:art-12, eu-ai-act:art-50, iso42001:a.4, iso42001:a.6, iso42001:a.7, soc2:a1.1, soc2:cc6.6, soc2:cc7.2, soc2:cc8.1. Not assessed (no in-bundle scanner or policy): eu-ai-act:art-10, eu-ai-act:art-13, eu-ai-act:art-14, eu-ai-act:art-15, eu-ai-act:art-9, iso42001:a.5, iso42001:a.8, iso42001:a.9",
+     "reviewed-controls": {
+      "control-selections": [
+       {
+        "description": "AICPA Trust Services Criteria (SOC 2)",
+        "include-controls": [
+         {
+          "control-id": "a1.1"
+         },
+         {
+          "control-id": "cc6.1"
+         },
+         {
+          "control-id": "cc6.6"
+         },
+         {
+          "control-id": "cc7.1"
+         },
+         {
+          "control-id": "cc7.2"
+         },
+         {
+          "control-id": "cc8.1"
+         }
+        ]
+       },
+       {
+        "description": "ISO/IEC 42001:2023 Annex A (placeholder: no official OSCAL catalog; control ids only)",
+        "include-controls": [
+         {
+          "control-id": "a.4"
+         },
+         {
+          "control-id": "a.6"
+         },
+         {
+          "control-id": "a.7"
+         }
+        ]
+       },
+       {
+        "description": "Regulation (EU) 2024/1689 (EU AI Act)",
+        "include-controls": [
+         {
+          "control-id": "art-12"
+         },
+         {
+          "control-id": "art-50"
+         }
+        ]
+       }
+      ]
+     },
+     "risks": [
+      {
+       "description": "No in-bundle control covers this finding (no-rule-match).",
+       "related-observations": [
+        {
+         "observation-uuid": "e8069010-fe47-554b-9c44-0e69b65df069"
+        }
+       ],
+       "statement": "runAsNonRoot not set",
+       "status": "open",
+       "title": "Coverage gap: checkov CKV_TEST_1",
+       "uuid": "1693ec92-b0b9-5469-8971-d8e07522e596"
+      },
+      {
+       "description": "No in-bundle control covers this finding (no-rule-match).",
+       "related-observations": [
+        {
+         "observation-uuid": "e257fad7-332f-598b-a3df-3b63f144fc33"
+        }
+       ],
+       "statement": "no HEALTHCHECK",
+       "status": "open",
+       "title": "Coverage gap: checkov CKV_TEST_99",
+       "uuid": "c97400ae-c577-5779-9704-6772991115d0"
+      },
+      {
+       "description": "No in-bundle control covers this finding (no-rule-match).",
+       "related-observations": [
+        {
+         "observation-uuid": "6c475137-3b01-564c-8f41-f5d69ab4ceb5"
+        }
+       ],
+       "statement": "orphan",
+       "status": "open",
+       "title": "Coverage gap: conftest orphan_rule",
+       "uuid": "15b29367-0bf1-5ee9-99d4-bfc32e3d0c60"
+      }
+     ],
+     "start": "2026-10-06T12:00:00+00:00",
+     "title": "Automated compliance scan",
+     "uuid": "a3d2ee76-497d-5228-8d76-6c8d85a84146"
+    }
+   ],
+   "uuid": "28248435-5a07-570b-8e54-b1e605d312cd"
+  }
+ },
+ "component-definition": {
+  "component-definition": {
+   "back-matter": {
+    "resources": [
+     {
+      "title": "AICPA Trust Services Criteria (SOC 2)",
+      "uuid": "dd9916b0-021b-592c-b2a4-b1c2f75d21ec"
+     }
+    ]
+   },
+   "components": [],
+   "metadata": {
+    "last-modified": "2026-10-06T12:00:00+00:00",
+    "oscal-version": "1.2.3",
+    "title": "grc-evidence sample app components",
+    "version": "0.1.0"
+   },
+   "uuid": "d0481237-5a87-55cf-a1ba-bc45aacd04b3"
+  }
+ },
+ "concepts": {
+  "controls/a1.1": {
+   "body": "# Intent\n\nWorkloads declare the capacity they need and how to tell they are healthy,\nso the platform can plan for them and replace a failed instance.\n\n# NIST SP 800-53 mapping\n\n- **CP-2(2)** \u2014 Contingency Plan: Capacity Planning\n- **SC-6** \u2014 Resource Availability\n\n# Satisfied by\n\n- [Set resource requests and limits](../policies/set-resource-limits.md)\n- [Declare health checks](../policies/health-checks.md)\n\n# Evidenced by\n\n- [Checkov](../scanners/checkov.md) \u2014 resource, probe, and HEALTHCHECK checks\n- [Trivy](../scanners/trivy.md) \u2014 resource and HEALTHCHECK checks\n\n# Scope\n\nOnly declared configuration is checked. Capacity monitoring, recovery, and\nbackups (the rest of SOC 2 A1) are not evidenced by any scanner here.\n",
+   "description": "Processing capacity and the use of system components are maintained, monitored, and managed to meet availability objectives.",
+   "frontmatter": {
+    "description": "Processing capacity and the use of system components are maintained, monitored, and managed to meet availability objectives.",
+    "framework": "soc2",
+    "generated": {
+     "at": "2026-10-01T15:48:00-07:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "soc2",
+     "a1.1",
+     "nist-cp-2",
+     "nist-sc-6"
+    ],
+    "title": "A1.1 \u2014 Capacity Management",
+    "type": "SOC 2 Control",
+    "verified": [
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/set-resource-limits",
+    "policies/health-checks",
+    "scanners/checkov",
+    "scanners/trivy"
+   ],
+   "path": "controls/a1.1.md",
+   "rule_ids": [],
+   "tags": [
+    "soc2",
+    "a1.1",
+    "nist-cp-2",
+    "nist-sc-6"
+   ],
+   "title": "A1.1 \u2014 Capacity Management",
+   "type": "SOC 2 Control"
+  },
+  "controls/cc6.1": {
+   "body": "# Intent\n\nOnly authenticated, authorized identities reach protected functions and data,\nand workloads run with the least privilege they need.\n\n# NIST SP 800-53 mapping\n\n- **AC-2** \u2014 Account Management\n- **AC-3** \u2014 Access Enforcement\n- **AC-6** \u2014 Least Privilege\n\n# Satisfied by\n\n- [Require non-root containers](../policies/require-non-root.md)\n- [Harden the container runtime](../policies/harden-container-runtime.md)\n- [Isolate workloads in their own namespace](../policies/isolate-workloads.md)\n- [Least-privilege access to GKE](../policies/gke-access.md)\n\n# Evidenced by\n\n- [Semgrep](../scanners/semgrep.md) \u2014 authorization rules in application code\n- [Checkov](../scanners/checkov.md) \u2014 root-container checks on the Dockerfile and manifests\n- [Conftest](../scanners/conftest.md) \u2014 the require-non-root policy gate\n- [Trivy](../scanners/trivy.md) \u2014 root-user configuration checks\n",
+   "description": "Access to systems and data is restricted to authorized, least-privileged identities.",
+   "frontmatter": {
+    "description": "Access to systems and data is restricted to authorized, least-privileged identities.",
+    "framework": "soc2",
+    "generated": {
+     "at": "2026-09-25T15:28:00-07:00",
+     "by": "human:cdevarenne"
+    },
+    "tags": [
+     "soc2",
+     "cc6.1",
+     "nist-ac-2",
+     "nist-ac-3",
+     "nist-ac-6"
+    ],
+    "title": "CC6.1 \u2014 Logical Access",
+    "type": "SOC 2 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     },
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/require-non-root",
+    "policies/harden-container-runtime",
+    "policies/isolate-workloads",
+    "policies/gke-access",
+    "scanners/semgrep",
+    "scanners/checkov",
+    "scanners/conftest",
+    "scanners/trivy"
+   ],
+   "path": "controls/cc6.1.md",
+   "rule_ids": [],
+   "tags": [
+    "soc2",
+    "cc6.1",
+    "nist-ac-2",
+    "nist-ac-3",
+    "nist-ac-6"
+   ],
+   "title": "CC6.1 \u2014 Logical Access",
+   "type": "SOC 2 Control"
+  },
+  "controls/cc6.6": {
+   "body": "# Intent\n\nNothing inside the system boundary is reachable anonymously from outside it,\nand data crossing the boundary is protected in transit.\n\n# NIST SP 800-53 mapping\n\n- **SC-7** \u2014 Boundary Protection\n- **SC-8** \u2014 Transmission Confidentiality and Integrity\n\n# Satisfied by\n\n- [No public buckets](../policies/no-public-bucket.md)\n- [Keep the GKE cluster private](../policies/private-gke-control-plane.md)\n\n# Evidenced by\n\n- [Checkov](../scanners/checkov.md) \u2014 IaC boundary checks\n- [Conftest](../scanners/conftest.md) \u2014 the no-public-bucket policy gate\n- [Trivy](../scanners/trivy.md) \u2014 public-bucket configuration check\n",
+   "description": "Resources are protected from access originating outside the system boundary.",
+   "frontmatter": {
+    "description": "Resources are protected from access originating outside the system boundary.",
+    "framework": "soc2",
+    "generated": {
+     "at": "2026-09-25T15:29:00-07:00",
+     "by": "human:cdevarenne"
+    },
+    "tags": [
+     "soc2",
+     "cc6.6",
+     "nist-sc-7",
+     "nist-sc-8"
+    ],
+    "title": "CC6.6 \u2014 System Boundary Protection",
+    "type": "SOC 2 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     },
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/no-public-bucket",
+    "policies/private-gke-control-plane",
+    "scanners/checkov",
+    "scanners/conftest",
+    "scanners/trivy"
+   ],
+   "path": "controls/cc6.6.md",
+   "rule_ids": [],
+   "tags": [
+    "soc2",
+    "cc6.6",
+    "nist-sc-7",
+    "nist-sc-8"
+   ],
+   "title": "CC6.6 \u2014 System Boundary Protection",
+   "type": "SOC 2 Control"
+  },
+  "controls/cc7.1": {
+   "body": "# Intent\n\nKnown vulnerabilities across the software supply chain are detected before\nthey can be exploited: source, third-party dependencies, and container images.\n\n# NIST SP 800-53 mapping\n\n- **RA-5** \u2014 Vulnerability Monitoring and Scanning\n- **SI-2** \u2014 Flaw Remediation\n\n# Evidenced by\n\n- [Trivy](../scanners/trivy.md) \u2014 dependency CVEs from `trivy fs`. Built\n  container images are not scanned in v1, so image CVEs are not evidenced.\n",
+   "description": "Vulnerabilities in code, dependencies, images, and configuration are detected.",
+   "frontmatter": {
+    "description": "Vulnerabilities in code, dependencies, images, and configuration are detected.",
+    "framework": "soc2",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "soc2",
+     "cc7.1",
+     "nist-ra-5",
+     "nist-si-2"
+    ],
+    "title": "CC7.1 \u2014 Vulnerability Detection",
+    "type": "SOC 2 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "scanners/trivy"
+   ],
+   "path": "controls/cc7.1.md",
+   "rule_ids": [],
+   "tags": [
+    "soc2",
+    "cc7.1",
+    "nist-ra-5",
+    "nist-si-2"
+   ],
+   "title": "CC7.1 \u2014 Vulnerability Detection",
+   "type": "SOC 2 Control"
+  },
+  "controls/cc7.2": {
+   "body": "# Intent\n\nRunning workloads are monitored so anomalies and attacks are detected and\nacted on.\n\n# NIST SP 800-53 mapping\n\n- **SI-4** \u2014 System Monitoring\n- **AU-6** \u2014 Audit Record Review, Analysis, and Reporting\n\n# Satisfied by\n\n- [Log network flows](../policies/network-flow-logs.md)\n\n# Evidenced by\n\n- [Checkov](../scanners/checkov.md) \u2014 whether flow logging is configured\n\nOnly configuration is checked: that monitoring data is collected, not that\nanyone reviews it. No scanner here evidences runtime detection.\n",
+   "description": "System components are monitored for anomalous and malicious activity.",
+   "frontmatter": {
+    "description": "System components are monitored for anomalous and malicious activity.",
+    "framework": "soc2",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "soc2",
+     "cc7.2",
+     "nist-si-4",
+     "nist-au-6"
+    ],
+    "title": "CC7.2 \u2014 Security Monitoring",
+    "type": "SOC 2 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     },
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/network-flow-logs",
+    "scanners/checkov"
+   ],
+   "path": "controls/cc7.2.md",
+   "rule_ids": [],
+   "tags": [
+    "soc2",
+    "cc7.2",
+    "nist-si-4",
+    "nist-au-6"
+   ],
+   "title": "CC7.2 \u2014 Security Monitoring",
+   "type": "SOC 2 Control"
+  },
+  "controls/cc8.1": {
+   "body": "# Intent\n\nWhat is deployed is exactly what was reviewed: artifacts are pinned and\nchanges pass automated policy gates before release.\n\n# NIST SP 800-53 mapping\n\n- **CM-2** \u2014 Baseline Configuration\n- **CM-3** \u2014 Configuration Change Control\n\n# Satisfied by\n\n- [Deny :latest image tag](../policies/deny-latest-tag.md)\n- [Pin images and modules to reviewed sources](../policies/pin-image-provenance.md)\n\n# Evidenced by\n\n- [Conftest](../scanners/conftest.md) \u2014 policy gate on manifests\n- [Checkov](../scanners/checkov.md) \u2014 IaC policy scan\n- [Trivy](../scanners/trivy.md) \u2014 `:latest` image-tag check\n",
+   "description": "Changes to infrastructure and software are controlled, reproducible, and reviewed.",
+   "frontmatter": {
+    "description": "Changes to infrastructure and software are controlled, reproducible, and reviewed.",
+    "framework": "soc2",
+    "generated": {
+     "at": "2026-09-25T15:30:00-07:00",
+     "by": "human:cdevarenne"
+    },
+    "tags": [
+     "soc2",
+     "cc8.1",
+     "nist-cm-2",
+     "nist-cm-3"
+    ],
+    "title": "CC8.1 \u2014 Change Management",
+    "type": "SOC 2 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     },
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/deny-latest-tag",
+    "policies/pin-image-provenance",
+    "scanners/conftest",
+    "scanners/checkov",
+    "scanners/trivy"
+   ],
+   "path": "controls/cc8.1.md",
+   "rule_ids": [],
+   "tags": [
+    "soc2",
+    "cc8.1",
+    "nist-cm-2",
+    "nist-cm-3"
+   ],
+   "title": "CC8.1 \u2014 Change Management",
+   "type": "SOC 2 Control"
+  },
+  "controls/eu-ai-act/art-10": {
+   "body": "# Intent\n\nThe data used to train, validate, and test a high-risk system is governed:\nrelevant, representative, and examined for bias and gaps.\n\n# Scope\n\nApplies to high-risk AI systems only (Chapter III). The risk tier declared in\nthe AI inventory decides: at any other tier this article reports\n`not-applicable`.\n\n# Source\n\n[Regulation (EU) 2024/1689, Article 10](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) (paraphrased).\n\n# Satisfied by\n\n- None in this bundle yet.\n\n# Crosswalk\n\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "Training, validation, and test data for high-risk AI systems meet quality criteria.",
+   "frontmatter": {
+    "applies_when": {
+     "risk_tier": [
+      "high"
+     ]
+    },
+    "description": "Training, validation, and test data for high-risk AI systems meet quality criteria.",
+    "framework": "eu-ai-act",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "eu-ai-act",
+     "eu-ai-act:art-10"
+    ],
+    "title": "Art. 10 \u2014 Data and data governance",
+    "type": "EU AI Act Article",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/eu-ai-act/art-10.md",
+   "rule_ids": [],
+   "tags": [
+    "eu-ai-act",
+    "eu-ai-act:art-10"
+   ],
+   "title": "Art. 10 \u2014 Data and data governance",
+   "type": "EU AI Act Article"
+  },
+  "controls/eu-ai-act/art-12": {
+   "body": "# Intent\n\nA high-risk system records events automatically, so its operation can be\ntraced after the fact. The records themselves must be protected.\n\n# Scope\n\nApplies to high-risk AI systems only (Chapter III). The risk tier declared in\nthe AI inventory decides: at any other tier this article reports\n`not-applicable`.\n\n# Source\n\n[Regulation (EU) 2024/1689, Article 12](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) (paraphrased).\n\n# Satisfied by\n\n- [Do not log prompts or completions](../../policies/llm-prompt-logged.md)\n\n# Crosswalk\n\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "High-risk AI systems automatically log events over their lifetime.",
+   "frontmatter": {
+    "applies_when": {
+     "risk_tier": [
+      "high"
+     ]
+    },
+    "description": "High-risk AI systems automatically log events over their lifetime.",
+    "framework": "eu-ai-act",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "eu-ai-act",
+     "eu-ai-act:art-12"
+    ],
+    "title": "Art. 12 \u2014 Record-keeping",
+    "type": "EU AI Act Article",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/llm-prompt-logged",
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/eu-ai-act/art-12.md",
+   "rule_ids": [],
+   "tags": [
+    "eu-ai-act",
+    "eu-ai-act:art-12"
+   ],
+   "title": "Art. 12 \u2014 Record-keeping",
+   "type": "EU AI Act Article"
+  },
+  "controls/eu-ai-act/art-13": {
+   "body": "# Intent\n\nA high-risk system ships with clear information on its purpose, accuracy,\nlimits, and the oversight it needs.\n\n# Scope\n\nApplies to high-risk AI systems only (Chapter III). The risk tier declared in\nthe AI inventory decides: at any other tier this article reports\n`not-applicable`.\n\n# Source\n\n[Regulation (EU) 2024/1689, Article 13](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) (paraphrased).\n\n# Satisfied by\n\n- None in this bundle yet.\n\n# Crosswalk\n\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "High-risk AI systems come with instructions that let deployers understand and use them.",
+   "frontmatter": {
+    "applies_when": {
+     "risk_tier": [
+      "high"
+     ]
+    },
+    "description": "High-risk AI systems come with instructions that let deployers understand and use them.",
+    "framework": "eu-ai-act",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "eu-ai-act",
+     "eu-ai-act:art-13"
+    ],
+    "title": "Art. 13 \u2014 Transparency and provision of information to deployers",
+    "type": "EU AI Act Article",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/eu-ai-act/art-13.md",
+   "rule_ids": [],
+   "tags": [
+    "eu-ai-act",
+    "eu-ai-act:art-13"
+   ],
+   "title": "Art. 13 \u2014 Transparency and provision of information to deployers",
+   "type": "EU AI Act Article"
+  },
+  "controls/eu-ai-act/art-14": {
+   "body": "# Intent\n\nPeople assigned to oversee a high-risk system can understand its output,\ndecide not to use it, and stop it.\n\n# Scope\n\nApplies to high-risk AI systems only (Chapter III). The risk tier declared in\nthe AI inventory decides: at any other tier this article reports\n`not-applicable`.\n\n# Source\n\n[Regulation (EU) 2024/1689, Article 14](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) (paraphrased).\n\n# Satisfied by\n\n- None in this bundle yet.\n\n# Crosswalk\n\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "High-risk AI systems are designed so that people can oversee them effectively.",
+   "frontmatter": {
+    "applies_when": {
+     "risk_tier": [
+      "high"
+     ]
+    },
+    "description": "High-risk AI systems are designed so that people can oversee them effectively.",
+    "framework": "eu-ai-act",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "eu-ai-act",
+     "eu-ai-act:art-14"
+    ],
+    "title": "Art. 14 \u2014 Human oversight",
+    "type": "EU AI Act Article",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/eu-ai-act/art-14.md",
+   "rule_ids": [],
+   "tags": [
+    "eu-ai-act",
+    "eu-ai-act:art-14"
+   ],
+   "title": "Art. 14 \u2014 Human oversight",
+   "type": "EU AI Act Article"
+  },
+  "controls/eu-ai-act/art-15": {
+   "body": "# Intent\n\nA high-risk system performs consistently, resists errors and misuse, and\nis protected against attacks on its inputs and dependencies.\n\n# Scope\n\nApplies to high-risk AI systems only (Chapter III). The risk tier declared in\nthe AI inventory decides: at any other tier this article reports\n`not-applicable`.\n\n# Source\n\n[Regulation (EU) 2024/1689, Article 15](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) (paraphrased).\n\n# Satisfied by\n\n- None in this bundle yet.\n\n# Crosswalk\n\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "High-risk AI systems reach and keep appropriate accuracy, robustness, and security.",
+   "frontmatter": {
+    "applies_when": {
+     "risk_tier": [
+      "high"
+     ]
+    },
+    "description": "High-risk AI systems reach and keep appropriate accuracy, robustness, and security.",
+    "framework": "eu-ai-act",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "eu-ai-act",
+     "eu-ai-act:art-15"
+    ],
+    "title": "Art. 15 \u2014 Accuracy, robustness and cybersecurity",
+    "type": "EU AI Act Article",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/eu-ai-act/art-15.md",
+   "rule_ids": [],
+   "tags": [
+    "eu-ai-act",
+    "eu-ai-act:art-15"
+   ],
+   "title": "Art. 15 \u2014 Accuracy, robustness and cybersecurity",
+   "type": "EU AI Act Article"
+  },
+  "controls/eu-ai-act/art-50": {
+   "body": "# Intent\n\nWhen a person interacts with an AI system, or receives content an AI system\ngenerated, they are told so, unless it is obvious from the context.\n\n# Scope\n\nApplies at every risk tier that includes interaction with people, including\n`limited`.\n\n# Source\n\n[Regulation (EU) 2024/1689, Article 50](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) (paraphrased).\n\n# Satisfied by\n\n- [Disclose AI-generated output](../../policies/llm-no-ai-disclosure.md)\n\n# Crosswalk\n\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "People are told when they interact with an AI system or see AI-generated content.",
+   "frontmatter": {
+    "description": "People are told when they interact with an AI system or see AI-generated content.",
+    "framework": "eu-ai-act",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "eu-ai-act",
+     "eu-ai-act:art-50"
+    ],
+    "title": "Art. 50 \u2014 Transparency obligations for certain AI systems",
+    "type": "EU AI Act Article",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/llm-no-ai-disclosure",
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/eu-ai-act/art-50.md",
+   "rule_ids": [],
+   "tags": [
+    "eu-ai-act",
+    "eu-ai-act:art-50"
+   ],
+   "title": "Art. 50 \u2014 Transparency obligations for certain AI systems",
+   "type": "EU AI Act Article"
+  },
+  "controls/eu-ai-act/art-9": {
+   "body": "# Intent\n\nA provider of a high-risk system identifies, evaluates, and mitigates its\nrisks through the whole life cycle, and keeps doing so after release.\n\n# Scope\n\nApplies to high-risk AI systems only (Chapter III). The risk tier declared in\nthe AI inventory decides: at any other tier this article reports\n`not-applicable`.\n\n# Source\n\n[Regulation (EU) 2024/1689, Article 9](https://eur-lex.europa.eu/eli/reg/2024/1689/oj) (paraphrased).\n\n# Satisfied by\n\n- None in this bundle yet.\n\n# Crosswalk\n\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "High-risk AI systems run a documented, continuous risk management process.",
+   "frontmatter": {
+    "applies_when": {
+     "risk_tier": [
+      "high"
+     ]
+    },
+    "description": "High-risk AI systems run a documented, continuous risk management process.",
+    "framework": "eu-ai-act",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "eu-ai-act",
+     "eu-ai-act:art-9"
+    ],
+    "title": "Art. 9 \u2014 Risk management system",
+    "type": "EU AI Act Article",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/eu-ai-act/art-9.md",
+   "rule_ids": [],
+   "tags": [
+    "eu-ai-act",
+    "eu-ai-act:art-9"
+   ],
+   "title": "Art. 9 \u2014 Risk management system",
+   "type": "EU AI Act Article"
+  },
+  "controls/iso42001/a.4": {
+   "body": "# Intent\n\nEach AI system has an owner and a recorded list of what it depends on: models,\nproviders, data, tooling, and people. An AI feature that is not in the inventory\nis a resource the organization cannot govern.\n\n# Clause\n\nISO/IEC 42001:2023 Annex A, control group A.4 (Resources for AI systems). Clause id\nand group name only; the standard's text is not reproduced here.\n\n# Satisfied by\n\n- [AI inventory is complete](../../policies/ai-inventory-complete.md)\n\n# Crosswalk\n\n- [SOC 2 \u2194 ISO/IEC 42001](../../crosswalk/soc2-iso42001.md)\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "The organization knows and records the resources each AI system depends on.",
+   "frontmatter": {
+    "description": "The organization knows and records the resources each AI system depends on.",
+    "framework": "iso42001",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "iso42001",
+     "iso42001:a.4"
+    ],
+    "title": "A.4 \u2014 Resources for AI systems",
+    "type": "ISO/IEC 42001 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/ai-inventory-complete",
+    "crosswalk/soc2-iso42001",
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/iso42001/a.4.md",
+   "rule_ids": [],
+   "tags": [
+    "iso42001",
+    "iso42001:a.4"
+   ],
+   "title": "A.4 \u2014 Resources for AI systems",
+   "type": "ISO/IEC 42001 Control"
+  },
+  "controls/iso42001/a.5": {
+   "body": "# Intent\n\nBefore an AI system goes live, and when it changes, someone assesses how its\noutputs could affect the people who use it or are subject to it, and records\nthe result.\n\n# Clause\n\nISO/IEC 42001:2023 Annex A, control group A.5 (Assessing impacts of AI systems). Clause id\nand group name only; the standard's text is not reproduced here.\n\n# Satisfied by\n\n- None in this bundle yet. The control shows `not-assessed`.\n\n# Crosswalk\n\n- [SOC 2 \u2194 ISO/IEC 42001](../../crosswalk/soc2-iso42001.md)\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "Effects of an AI system on people and groups are assessed before and during use.",
+   "frontmatter": {
+    "description": "Effects of an AI system on people and groups are assessed before and during use.",
+    "framework": "iso42001",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "iso42001",
+     "iso42001:a.5"
+    ],
+    "title": "A.5 \u2014 Assessing impacts of AI systems",
+    "type": "ISO/IEC 42001 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "crosswalk/soc2-iso42001",
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/iso42001/a.5.md",
+   "rule_ids": [],
+   "tags": [
+    "iso42001",
+    "iso42001:a.5"
+   ],
+   "title": "A.5 \u2014 Assessing impacts of AI systems",
+   "type": "ISO/IEC 42001 Control"
+  },
+  "controls/iso42001/a.6": {
+   "body": "# Intent\n\nAn AI system is built and run with the same engineering discipline as other\nproduction software: secrets are managed, calls to models are bounded, and\ndeployment and operation follow documented requirements.\n\n# Clause\n\nISO/IEC 42001:2023 Annex A, control group A.6 (AI system life cycle). Clause id\nand group name only; the standard's text is not reproduced here.\n\n# Satisfied by\n\n- [No hard-coded LLM API keys](../../policies/llm-hardcoded-key.md)\n- [Bound every LLM call](../../policies/llm-unbounded-call.md)\n\n# Crosswalk\n\n- [SOC 2 \u2194 ISO/IEC 42001](../../crosswalk/soc2-iso42001.md)\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "AI systems are designed, built, deployed, and operated under defined controls.",
+   "frontmatter": {
+    "description": "AI systems are designed, built, deployed, and operated under defined controls.",
+    "framework": "iso42001",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "iso42001",
+     "iso42001:a.6"
+    ],
+    "title": "A.6 \u2014 AI system life cycle",
+    "type": "ISO/IEC 42001 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/llm-hardcoded-key",
+    "policies/llm-unbounded-call",
+    "crosswalk/soc2-iso42001",
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/iso42001/a.6.md",
+   "rule_ids": [],
+   "tags": [
+    "iso42001",
+    "iso42001:a.6"
+   ],
+   "title": "A.6 \u2014 AI system life cycle",
+   "type": "ISO/IEC 42001 Control"
+  },
+  "controls/iso42001/a.7": {
+   "body": "# Intent\n\nPrompts, context, and model outputs are data. They are handled with a defined\npurpose, protected like other sensitive data, and not copied into places\n(such as logs) where they escape those controls.\n\n# Clause\n\nISO/IEC 42001:2023 Annex A, control group A.7 (Data for AI systems). Clause id\nand group name only; the standard's text is not reproduced here.\n\n# Satisfied by\n\n- [Do not log prompts or completions](../../policies/llm-prompt-logged.md)\n\n# Crosswalk\n\n- [SOC 2 \u2194 ISO/IEC 42001](../../crosswalk/soc2-iso42001.md)\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "Data that enters or leaves an AI system is governed for quality, provenance, and protection.",
+   "frontmatter": {
+    "description": "Data that enters or leaves an AI system is governed for quality, provenance, and protection.",
+    "framework": "iso42001",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "iso42001",
+     "iso42001:a.7"
+    ],
+    "title": "A.7 \u2014 Data for AI systems",
+    "type": "ISO/IEC 42001 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "policies/llm-prompt-logged",
+    "crosswalk/soc2-iso42001",
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/iso42001/a.7.md",
+   "rule_ids": [],
+   "tags": [
+    "iso42001",
+    "iso42001:a.7"
+   ],
+   "title": "A.7 \u2014 Data for AI systems",
+   "type": "ISO/IEC 42001 Control"
+  },
+  "controls/iso42001/a.8": {
+   "body": "# Intent\n\nUsers and other affected parties can learn that an AI system is involved, what\nit does, and how to raise a concern about it.\n\n# Clause\n\nISO/IEC 42001:2023 Annex A, control group A.8 (Information for interested parties of AI systems). Clause id\nand group name only; the standard's text is not reproduced here.\n\n# Satisfied by\n\n- None in this bundle yet. The control shows `not-assessed`.\n\n# Crosswalk\n\n- [SOC 2 \u2194 ISO/IEC 42001](../../crosswalk/soc2-iso42001.md)\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "People affected by an AI system get the information they need about it.",
+   "frontmatter": {
+    "description": "People affected by an AI system get the information they need about it.",
+    "framework": "iso42001",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "iso42001",
+     "iso42001:a.8"
+    ],
+    "title": "A.8 \u2014 Information for interested parties of AI systems",
+    "type": "ISO/IEC 42001 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "crosswalk/soc2-iso42001",
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/iso42001/a.8.md",
+   "rule_ids": [],
+   "tags": [
+    "iso42001",
+    "iso42001:a.8"
+   ],
+   "title": "A.8 \u2014 Information for interested parties of AI systems",
+   "type": "ISO/IEC 42001 Control"
+  },
+  "controls/iso42001/a.9": {
+   "body": "# Intent\n\nAn AI system is used only for the purpose it was assessed for. Where its\noutput drives an action, a person can review or override that action.\n\n# Clause\n\nISO/IEC 42001:2023 Annex A, control group A.9 (Use of AI systems). Clause id\nand group name only; the standard's text is not reproduced here.\n\n# Satisfied by\n\n- None in this bundle yet. The control shows `not-assessed`.\n\n# Crosswalk\n\n- [SOC 2 \u2194 ISO/IEC 42001](../../crosswalk/soc2-iso42001.md)\n- [ISO/IEC 42001 \u2194 EU AI Act](../../crosswalk/iso42001-ai-act.md)\n",
+   "description": "AI systems are used for their intended purpose, with human oversight where needed.",
+   "frontmatter": {
+    "description": "AI systems are used for their intended purpose, with human oversight where needed.",
+    "framework": "iso42001",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "iso42001",
+     "iso42001:a.9"
+    ],
+    "title": "A.9 \u2014 Use of AI systems",
+    "type": "ISO/IEC 42001 Control",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "crosswalk/soc2-iso42001",
+    "crosswalk/iso42001-ai-act"
+   ],
+   "path": "controls/iso42001/a.9.md",
+   "rule_ids": [],
+   "tags": [
+    "iso42001",
+    "iso42001:a.9"
+   ],
+   "title": "A.9 \u2014 Use of AI systems",
+   "type": "ISO/IEC 42001 Control"
+  },
+  "crosswalk/iso42001-ai-act": {
+   "body": "# Links\n\nEach line links two controls that cover related ground. A link is navigation\nonly: it never moves a finding or a status from one control to the other.\nNIST AI RMF functions are listed for orientation only.\n\n- [A.5 \u2014 Assessing impacts of AI systems](../controls/iso42001/a.5.md) \u2194 [Art. 9 \u2014 Risk management system](../controls/eu-ai-act/art-9.md)\n- [A.7 \u2014 Data for AI systems](../controls/iso42001/a.7.md) \u2194 [Art. 10 \u2014 Data and data governance](../controls/eu-ai-act/art-10.md)\n- [A.7 \u2014 Data for AI systems](../controls/iso42001/a.7.md) \u2194 [Art. 12 \u2014 Record-keeping](../controls/eu-ai-act/art-12.md)\n- [A.8 \u2014 Information for interested parties](../controls/iso42001/a.8.md) \u2194 [Art. 13 \u2014 Transparency to deployers](../controls/eu-ai-act/art-13.md)\n- [A.8 \u2014 Information for interested parties](../controls/iso42001/a.8.md) \u2194 [Art. 50 \u2014 Transparency obligations](../controls/eu-ai-act/art-50.md)\n- [A.9 \u2014 Use of AI systems](../controls/iso42001/a.9.md) \u2194 [Art. 14 \u2014 Human oversight](../controls/eu-ai-act/art-14.md)\n- [A.6 \u2014 AI system life cycle](../controls/iso42001/a.6.md) \u2194 [Art. 15 \u2014 Accuracy, robustness and cybersecurity](../controls/eu-ai-act/art-15.md)\n\n# NIST AI RMF (orientation)\n\nThe [NIST AI RMF 1.0](https://doi.org/10.6028/NIST.AI.100-1) functions Govern, Map, Measure, and Manage span\nall of the links above. It is not a framework in this bundle.\n",
+   "description": "Navigation links between ISO/IEC 42001 Annex A groups and EU AI Act articles.",
+   "frontmatter": {
+    "description": "Navigation links between ISO/IEC 42001 Annex A groups and EU AI Act articles.",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "crosswalk",
+     "iso42001",
+     "eu-ai-act"
+    ],
+    "title": "ISO/IEC 42001 \u2194 EU AI Act",
+    "type": "Crosswalk",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/iso42001/a.5",
+    "controls/eu-ai-act/art-9",
+    "controls/iso42001/a.7",
+    "controls/eu-ai-act/art-10",
+    "controls/eu-ai-act/art-12",
+    "controls/iso42001/a.8",
+    "controls/eu-ai-act/art-13",
+    "controls/eu-ai-act/art-50",
+    "controls/iso42001/a.9",
+    "controls/eu-ai-act/art-14",
+    "controls/iso42001/a.6",
+    "controls/eu-ai-act/art-15"
+   ],
+   "path": "crosswalk/iso42001-ai-act.md",
+   "rule_ids": [],
+   "tags": [
+    "crosswalk",
+    "iso42001",
+    "eu-ai-act"
+   ],
+   "title": "ISO/IEC 42001 \u2194 EU AI Act",
+   "type": "Crosswalk"
+  },
+  "crosswalk/soc2-iso42001": {
+   "body": "# Links\n\nEach line links two controls that cover related ground. A link is navigation\nonly: it never moves a finding or a status from one control to the other.\n\n- [CC6.1 \u2014 Logical Access](../controls/cc6.1.md) \u2194 [A.6 \u2014 AI system life cycle](../controls/iso42001/a.6.md)\n- [CC7.2 \u2014 Security Monitoring](../controls/cc7.2.md) \u2194 [A.6 \u2014 AI system life cycle](../controls/iso42001/a.6.md)\n- [CC8.1 \u2014 Change Management](../controls/cc8.1.md) \u2194 [A.6 \u2014 AI system life cycle](../controls/iso42001/a.6.md)\n",
+   "description": "Navigation links between SOC 2 criteria and ISO/IEC 42001 Annex A groups.",
+   "frontmatter": {
+    "description": "Navigation links between SOC 2 criteria and ISO/IEC 42001 Annex A groups.",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "tags": [
+     "crosswalk",
+     "soc2",
+     "iso42001"
+    ],
+    "title": "SOC 2 \u2194 ISO/IEC 42001",
+    "type": "Crosswalk",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.1",
+    "controls/iso42001/a.6",
+    "controls/cc7.2",
+    "controls/cc8.1"
+   ],
+   "path": "crosswalk/soc2-iso42001.md",
+   "rule_ids": [],
+   "tags": [
+    "crosswalk",
+    "soc2",
+    "iso42001"
+   ],
+   "title": "SOC 2 \u2194 ISO/IEC 42001",
+   "type": "Crosswalk"
+  },
+  "oscal/component-definition": {
+   "body": "# Output\n\n- `out/oscal/component-definition.json` \u2014 each [stack component](../stack/index.md)\n  with the controls that apply to it as implemented requirements.\n- `out/oscal/assessment-results.json` \u2014 one result: findings per assessed\n  control with violations, observations per scanner finding, and coverage gaps\n  as open risks. A clean control gets no finding: automation never attests.\n\n# Subset\n\nv1 emits a documented subset of OSCAL, not full conformance. The fields used,\nand the placeholders for required fields the demo does not model, are listed in\n`docs/oscal-subset.md`.\n",
+   "description": "The OSCAL 1.2.3 component-definition and assessment-results the skill emits.",
+   "frontmatter": {
+    "description": "The OSCAL 1.2.3 component-definition and assessment-results the skill emits.",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "https://pages.nist.gov/OSCAL/",
+    "tags": [
+     "oscal",
+     "nist"
+    ],
+    "title": "OSCAL output",
+    "type": "Reference",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [],
+   "path": "oscal/component-definition.md",
+   "rule_ids": [],
+   "tags": [
+    "oscal",
+    "nist"
+   ],
+   "title": "OSCAL output",
+   "type": "Reference"
+  },
+  "policies/ai-inventory-complete": {
+   "body": "# Rule\n\nThe AI inventory (`ai-inventory.yaml` under the scan target) lists every component with its kind and every\ninventoried AI system. A component of kind `assistant` with no system entry is\nan AI feature the organization does not govern.\n\n# Satisfies\n\n- [A.4 \u2014 Resources for AI systems](../controls/iso42001/a.4.md)\n\n# Enforced at\n\n- Conftest in CI, reading the AI inventory\n\n# Remediation\n\nAdd a `systems` entry for the component with its owner, model provider, and\npurpose, then review its risk tier.\n",
+   "description": "Every AI component of the app has an entry in the AI system inventory.",
+   "frontmatter": {
+    "description": "Every AI component of the app has an entry in the AI system inventory.",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "../../policies/rego/ai_inventory_complete.rego",
+    "rule_ids": [
+     "conftest:ai_inventory_complete"
+    ],
+    "tags": [
+     "opa",
+     "conftest",
+     "ai",
+     "iso42001:a.4"
+    ],
+    "title": "AI inventory is complete",
+    "type": "Rego Policy",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/iso42001/a.4"
+   ],
+   "path": "policies/ai-inventory-complete.md",
+   "rule_ids": [
+    "conftest:ai_inventory_complete"
+   ],
+   "tags": [
+    "opa",
+    "conftest",
+    "ai",
+    "iso42001:a.4"
+   ],
+   "title": "AI inventory is complete",
+   "type": "Rego Policy"
+  },
+  "policies/deny-latest-tag": {
+   "body": "# Rule\n\n`:latest` (or no tag) means the running image can change without a change\nrecord, which breaks reproducibility and change control.\n\n# Satisfies\n\n- [CC8.1 \u2014 Change Management](../controls/cc8.1.md)\n\n# Enforced at\n\n- Deploy gate: Conftest in CI, blocking\n- Also detected by Checkov and Trivy (listed in `rule_ids`), which also check a Dockerfile's `FROM`\n\n# Remediation\n\nPin every container image, including each Dockerfile's `FROM`, to a released version tag or an `@sha256:` digest,\nand update it only through a reviewed change.\n",
+   "description": "Deployments and Dockerfile base images must pin an immutable image tag or digest.",
+   "frontmatter": {
+    "description": "Deployments and Dockerfile base images must pin an immutable image tag or digest.",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "../../policies/rego/deny_latest_tag.rego",
+    "rule_ids": [
+     "conftest:deny_latest_tag",
+     "checkov:CKV_K8S_14",
+     "checkov:CKV_DOCKER_7",
+     "trivy:KSV-0013",
+     "trivy:DS-0001"
+    ],
+    "tags": [
+     "opa",
+     "conftest",
+     "kubernetes",
+     "docker",
+     "cc8.1"
+    ],
+    "title": "Deny :latest image tag",
+    "type": "Rego Policy",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     },
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc8.1"
+   ],
+   "path": "policies/deny-latest-tag.md",
+   "rule_ids": [
+    "conftest:deny_latest_tag",
+    "checkov:CKV_K8S_14",
+    "checkov:CKV_DOCKER_7",
+    "trivy:KSV-0013",
+    "trivy:DS-0001"
+   ],
+   "tags": [
+    "opa",
+    "conftest",
+    "kubernetes",
+    "docker",
+    "cc8.1"
+   ],
+   "title": "Deny :latest image tag",
+   "type": "Rego Policy"
+  },
+  "policies/gke-access": {
+   "body": "# Rule\n\nClient certificates cannot be revoked one by one; the default compute service\naccount and the node metadata endpoint give every pod broad project\ncredentials.\n\n# Satisfies\n\n- [CC6.1 \u2014 Logical Access](../controls/cc6.1.md)\n\n# Enforced at\n\n- Detected by Checkov and Trivy (listed in `rule_ids`); no rule of this bundle enforces it\n\n# Remediation\n\nDisable `client_certificate_config`, manage RBAC through Google Groups\n(`authenticator_groups_config`), give node pools a dedicated least-privilege\nservice account, and set `workload_metadata_config { mode = \"GKE_METADATA\" }`.\n",
+   "description": "Cluster access uses Google identities and groups, not client certificates; nodes use a dedicated service account and the GKE metadata server.",
+   "frontmatter": {
+    "description": "Cluster access uses Google identities and groups, not client certificates; nodes use a dedicated service account and the GKE metadata server.",
+    "generated": {
+     "at": "2026-10-01T15:48:00-07:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "rule_ids": [
+     "checkov:CKV_GCP_13",
+     "checkov:CKV_GCP_65",
+     "checkov:CKV_GCP_69",
+     "trivy:GCP-0050"
+    ],
+    "tags": [
+     "terraform",
+     "gke",
+     "cc6.1"
+    ],
+    "title": "Least-privilege access to GKE",
+    "type": "Scanner Check",
+    "verified": [
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.1"
+   ],
+   "path": "policies/gke-access.md",
+   "rule_ids": [
+    "checkov:CKV_GCP_13",
+    "checkov:CKV_GCP_65",
+    "checkov:CKV_GCP_69",
+    "trivy:GCP-0050"
+   ],
+   "tags": [
+    "terraform",
+    "gke",
+    "cc6.1"
+   ],
+   "title": "Least-privilege access to GKE",
+   "type": "Scanner Check"
+  },
+  "policies/harden-container-runtime": {
+   "body": "# Rule\n\nLeast privilege inside the pod: each setting removes a capability an attacker\nwho gains code execution would otherwise have (system calls, writes to the\nimage, a cluster credential, a UID shared with the host).\n\n# Satisfies\n\n- [CC6.1 \u2014 Logical Access](../controls/cc6.1.md)\n\n# Enforced at\n\n- Detected by Checkov and Trivy (listed in `rule_ids`); no rule of this bundle enforces it\n\n# Remediation\n\nSet a `securityContext` on every pod and container: `seccompProfile:\n{type: RuntimeDefault}`, `readOnlyRootFilesystem: true`, `runAsUser` and\n`runAsGroup` above 10000; set `automountServiceAccountToken: false` unless the\nworkload calls the Kubernetes API.\n",
+   "description": "Containers run with a seccomp profile, a read-only root file system, no mounted service-account token they do not need, and a high non-root UID and GID.",
+   "frontmatter": {
+    "description": "Containers run with a seccomp profile, a read-only root file system, no mounted service-account token they do not need, and a high non-root UID and GID.",
+    "generated": {
+     "at": "2026-10-01T15:48:00-07:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "rule_ids": [
+     "checkov:CKV_K8S_22",
+     "checkov:CKV_K8S_29",
+     "checkov:CKV_K8S_31",
+     "checkov:CKV_K8S_38",
+     "checkov:CKV_K8S_40",
+     "trivy:KSV-0014",
+     "trivy:KSV-0020",
+     "trivy:KSV-0021",
+     "trivy:KSV-0030",
+     "trivy:KSV-0104"
+    ],
+    "tags": [
+     "kubernetes",
+     "cc6.1"
+    ],
+    "title": "Harden the container runtime",
+    "type": "Scanner Check",
+    "verified": [
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.1"
+   ],
+   "path": "policies/harden-container-runtime.md",
+   "rule_ids": [
+    "checkov:CKV_K8S_22",
+    "checkov:CKV_K8S_29",
+    "checkov:CKV_K8S_31",
+    "checkov:CKV_K8S_38",
+    "checkov:CKV_K8S_40",
+    "trivy:KSV-0014",
+    "trivy:KSV-0020",
+    "trivy:KSV-0021",
+    "trivy:KSV-0030",
+    "trivy:KSV-0104"
+   ],
+   "tags": [
+    "kubernetes",
+    "cc6.1"
+   ],
+   "title": "Harden the container runtime",
+   "type": "Scanner Check"
+  },
+  "policies/health-checks": {
+   "body": "# Rule\n\nProbes let the platform route around and restart a failed component, so the\nservice keeps the capacity it was planned with.\n\n# Satisfies\n\n- [A1.1 \u2014 Capacity Management](../controls/a1.1.md)\n\n# Enforced at\n\n- Detected by Checkov and Trivy (listed in `rule_ids`); no rule of this bundle enforces it\n\n# Remediation\n\nAdd `livenessProbe` and `readinessProbe` to every container in the\nDeployment, and a `HEALTHCHECK` to the Dockerfile for runtimes that use it.\n",
+   "description": "Containers declare liveness and readiness probes, and images a HEALTHCHECK.",
+   "frontmatter": {
+    "description": "Containers declare liveness and readiness probes, and images a HEALTHCHECK.",
+    "generated": {
+     "at": "2026-10-01T15:48:00-07:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "rule_ids": [
+     "checkov:CKV_DOCKER_2",
+     "checkov:CKV_K8S_8",
+     "checkov:CKV_K8S_9",
+     "trivy:DS-0026"
+    ],
+    "tags": [
+     "kubernetes",
+     "docker",
+     "a1.1"
+    ],
+    "title": "Declare health checks",
+    "type": "Scanner Check",
+    "verified": [
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/a1.1"
+   ],
+   "path": "policies/health-checks.md",
+   "rule_ids": [
+    "checkov:CKV_DOCKER_2",
+    "checkov:CKV_K8S_8",
+    "checkov:CKV_K8S_9",
+    "trivy:DS-0026"
+   ],
+   "tags": [
+    "kubernetes",
+    "docker",
+    "a1.1"
+   ],
+   "title": "Declare health checks",
+   "type": "Scanner Check"
+  },
+  "policies/isolate-workloads": {
+   "body": "# Rule\n\nThe default namespace is shared by anything deployed without one, so its\nRBAC bindings and network policies cannot be scoped to a single application.\n\n# Satisfies\n\n- [CC6.1 \u2014 Logical Access](../controls/cc6.1.md)\n\n# Enforced at\n\n- Detected by Checkov and Trivy (listed in `rule_ids`); no rule of this bundle enforces it\n\n# Remediation\n\nCreate a namespace for the application and set `metadata.namespace` on every\nmanifest (or deploy with `-n`), then scope RBAC and network policy to it.\n",
+   "description": "Workloads do not run in the default namespace.",
+   "frontmatter": {
+    "description": "Workloads do not run in the default namespace.",
+    "generated": {
+     "at": "2026-10-01T15:48:00-07:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "rule_ids": [
+     "checkov:CKV_K8S_21",
+     "trivy:KSV-0110"
+    ],
+    "tags": [
+     "kubernetes",
+     "cc6.1"
+    ],
+    "title": "Isolate workloads in their own namespace",
+    "type": "Scanner Check",
+    "verified": [
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.1"
+   ],
+   "path": "policies/isolate-workloads.md",
+   "rule_ids": [
+    "checkov:CKV_K8S_21",
+    "trivy:KSV-0110"
+   ],
+   "tags": [
+    "kubernetes",
+    "cc6.1"
+   ],
+   "title": "Isolate workloads in their own namespace",
+   "type": "Scanner Check"
+  },
+  "policies/llm-hardcoded-key": {
+   "body": "# Rule\n\nA string literal assigned to an `*_API_KEY` name, or passed as an `*api_key`\nargument (for example `ChatGoogleGenerativeAI(google_api_key=\"...\")`), puts a\ncredential in source control, where anyone with read access can use it.\n\n# Satisfies\n\n- [CC6.1 \u2014 Logical Access](../controls/cc6.1.md)\n- [A.6 \u2014 AI system life cycle](../controls/iso42001/a.6.md)\n\n# Enforced at\n\n- Semgrep in CI, using the vendored ruleset in `policies/semgrep/`\n\n# Remediation\n\nRead the key from the environment (for example `os.environ[\"ANTHROPIC_API_KEY\"]`)\nor a secret manager, and rotate any key that was committed.\n",
+   "description": "Model-provider API keys must come from the environment or a secret store.",
+   "frontmatter": {
+    "description": "Model-provider API keys must come from the environment or a secret store.",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "../../policies/semgrep/llm-hardcoded-key.yaml",
+    "rule_ids": [
+     "semgrep:llm-hardcoded-key"
+    ],
+    "tags": [
+     "semgrep",
+     "ai",
+     "cc6.1",
+     "iso42001:a.6"
+    ],
+    "title": "No hard-coded LLM API keys",
+    "type": "Semgrep Rule",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     },
+     {
+      "at": "2026-10-01T09:25:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.1",
+    "controls/iso42001/a.6"
+   ],
+   "path": "policies/llm-hardcoded-key.md",
+   "rule_ids": [
+    "semgrep:llm-hardcoded-key"
+   ],
+   "tags": [
+    "semgrep",
+    "ai",
+    "cc6.1",
+    "iso42001:a.6"
+   ],
+   "title": "No hard-coded LLM API keys",
+   "type": "Semgrep Rule"
+  },
+  "policies/llm-no-ai-disclosure": {
+   "body": "# Rule\n\nA view that returns model output without a disclosure field leaves the client\nno way to tell the user that the content was generated by AI.\n\n# Satisfies\n\n- [Art. 50 \u2014 Transparency obligations for certain AI systems](../controls/eu-ai-act/art-50.md)\n\n# Enforced at\n\n- Semgrep in CI, using the vendored ruleset in `policies/semgrep/`\n\n# Remediation\n\nAdd `\"ai_generated\": true` to every response that carries model output, and\nshow it in the client.\n",
+   "description": "Responses that carry model output tell the user it is AI-generated.",
+   "frontmatter": {
+    "description": "Responses that carry model output tell the user it is AI-generated.",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "../../policies/semgrep/llm-no-ai-disclosure.yaml",
+    "rule_ids": [
+     "semgrep:llm-no-ai-disclosure"
+    ],
+    "sdks": [
+     "anthropic"
+    ],
+    "tags": [
+     "semgrep",
+     "ai",
+     "eu-ai-act:art-50"
+    ],
+    "title": "Disclose AI-generated output",
+    "type": "Semgrep Rule",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     },
+     {
+      "at": "2026-10-01T09:25:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/eu-ai-act/art-50"
+   ],
+   "path": "policies/llm-no-ai-disclosure.md",
+   "rule_ids": [
+    "semgrep:llm-no-ai-disclosure"
+   ],
+   "tags": [
+    "semgrep",
+    "ai",
+    "eu-ai-act:art-50"
+   ],
+   "title": "Disclose AI-generated output",
+   "type": "Semgrep Rule"
+  },
+  "policies/llm-prompt-logged": {
+   "body": "# Rule\n\nA logger call whose argument is a prompt or a completion copies user input and\nmodel output into the log pipeline, where retention and access rules for that\ndata no longer hold.\n\n# Satisfies\n\n- [A.7 \u2014 Data for AI systems](../controls/iso42001/a.7.md)\n- [Art. 12 \u2014 Record-keeping](../controls/eu-ai-act/art-12.md): logging is expected, but the records must be protected; high-risk only\n\n# Enforced at\n\n- Semgrep in CI, using the vendored ruleset in `policies/semgrep/`\n\n# Remediation\n\nLog a request id and a hash of the prompt, not the prompt or the completion.\nKeep full transcripts, if needed, in a store with its own access control and retention.\n",
+   "description": "Prompts and model outputs must not be written to application logs in clear text.",
+   "frontmatter": {
+    "description": "Prompts and model outputs must not be written to application logs in clear text.",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "../../policies/semgrep/llm-prompt-logged.yaml",
+    "rule_ids": [
+     "semgrep:llm-prompt-logged"
+    ],
+    "tags": [
+     "semgrep",
+     "ai",
+     "iso42001:a.7",
+     "eu-ai-act:art-12"
+    ],
+    "title": "Do not log prompts or completions",
+    "type": "Semgrep Rule",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/iso42001/a.7",
+    "controls/eu-ai-act/art-12"
+   ],
+   "path": "policies/llm-prompt-logged.md",
+   "rule_ids": [
+    "semgrep:llm-prompt-logged"
+   ],
+   "tags": [
+    "semgrep",
+    "ai",
+    "iso42001:a.7",
+    "eu-ai-act:art-12"
+   ],
+   "title": "Do not log prompts or completions",
+   "type": "Semgrep Rule"
+  },
+  "policies/llm-unbounded-call": {
+   "body": "# Rule\n\nA model call with no timeout can hang a request worker; a call with no\ntoken limit has no cap on cost or output size. The rule reads Anthropic SDK\ncalls (`messages.create`) and LangChain chat models (`Chat*(...)`).\n\n# Satisfies\n\n- [A.6 \u2014 AI system life cycle](../controls/iso42001/a.6.md)\n\nThe EU AI Act robustness article (Art. 15) is a high-risk obligation, so this\nrule is not declared against it; see the crosswalk for the link.\n\n# Enforced at\n\n- Semgrep in CI, using the vendored ruleset in `policies/semgrep/`\n\n# Remediation\n\nPass `timeout=` and `max_tokens=` on every `messages.create` call, or set\n`timeout` and `max_tokens` (`max_output_tokens` for Google) on the LangChain\nchat model, sized to the feature's latency and cost budget.\n",
+   "description": "Every model call sets both a timeout and a token limit.",
+   "frontmatter": {
+    "description": "Every model call sets both a timeout and a token limit.",
+    "generated": {
+     "at": "2026-09-28T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "../../policies/semgrep/llm-unbounded-call.yaml",
+    "rule_ids": [
+     "semgrep:llm-unbounded-call"
+    ],
+    "sdks": [
+     "anthropic",
+     "langchain"
+    ],
+    "tags": [
+     "semgrep",
+     "ai",
+     "iso42001:a.6"
+    ],
+    "title": "Bound every LLM call",
+    "type": "Semgrep Rule",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     },
+     {
+      "at": "2026-10-01T09:25:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/iso42001/a.6"
+   ],
+   "path": "policies/llm-unbounded-call.md",
+   "rule_ids": [
+    "semgrep:llm-unbounded-call"
+   ],
+   "tags": [
+    "semgrep",
+    "ai",
+    "iso42001:a.6"
+   ],
+   "title": "Bound every LLM call",
+   "type": "Semgrep Rule"
+  },
+  "policies/network-flow-logs": {
+   "body": "# Rule\n\nWithout flow logs, traffic between workloads leaves no record to monitor or\ninvestigate.\n\n# Satisfies\n\n- [CC7.2 \u2014 Security Monitoring](../controls/cc7.2.md)\n\n# Enforced at\n\n- Detected by Checkov (listed in `rule_ids`); no rule of this bundle enforces it\n\n# Remediation\n\nSet `enable_intranode_visibility = true` on the cluster and enable flow logs on\nits subnetwork.\n",
+   "description": "The cluster's VPC flow logs and intranode visibility are enabled.",
+   "frontmatter": {
+    "description": "The cluster's VPC flow logs and intranode visibility are enabled.",
+    "generated": {
+     "at": "2026-10-01T15:48:00-07:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "rule_ids": [
+     "checkov:CKV_GCP_61"
+    ],
+    "tags": [
+     "terraform",
+     "gke",
+     "cc7.2"
+    ],
+    "title": "Log network flows",
+    "type": "Scanner Check",
+    "verified": [
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc7.2"
+   ],
+   "path": "policies/network-flow-logs.md",
+   "rule_ids": [
+    "checkov:CKV_GCP_61"
+   ],
+   "tags": [
+    "terraform",
+    "gke",
+    "cc7.2"
+   ],
+   "title": "Log network flows",
+   "type": "Scanner Check"
+  },
+  "policies/no-public-bucket": {
+   "body": "# Rule\n\nAn IAM binding to `allUsers` or `allAuthenticatedUsers` exposes bucket\ncontents to anyone on the internet, outside the system boundary.\n\n# Satisfies\n\n- [CC6.6 \u2014 System Boundary Protection](../controls/cc6.6.md)\n\n# Enforced at\n\n- Deploy gate: Conftest on Terraform, blocking\n- Also detected by Checkov and Trivy (listed in `rule_ids`)\n\n# Remediation\n\nRemove public IAM members from the bucket, grant access to named service\naccounts only, and enforce public access prevention on the bucket.\n",
+   "description": "Storage buckets must not grant access to allUsers or allAuthenticatedUsers.",
+   "frontmatter": {
+    "description": "Storage buckets must not grant access to allUsers or allAuthenticatedUsers.",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "../../policies/rego/no_public_bucket.rego",
+    "rule_ids": [
+     "conftest:no_public_bucket",
+     "checkov:CKV_GCP_28",
+     "checkov:CKV_GCP_114",
+     "trivy:GCP-0001"
+    ],
+    "tags": [
+     "opa",
+     "conftest",
+     "terraform",
+     "cc6.6"
+    ],
+    "title": "No public buckets",
+    "type": "Rego Policy",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.6"
+   ],
+   "path": "policies/no-public-bucket.md",
+   "rule_ids": [
+    "conftest:no_public_bucket",
+    "checkov:CKV_GCP_28",
+    "checkov:CKV_GCP_114",
+    "trivy:GCP-0001"
+   ],
+   "tags": [
+    "opa",
+    "conftest",
+    "terraform",
+    "cc6.6"
+   ],
+   "title": "No public buckets",
+   "type": "Rego Policy"
+  },
+  "policies/pin-image-provenance": {
+   "body": "# Rule\n\nA tag or a branch can move after review. A digest, a commit, and an\nallowlisted registry make what is deployed exactly what was reviewed;\nBinary Authorization enforces it at admission.\n\n# Satisfies\n\n- [CC8.1 \u2014 Change Management](../controls/cc8.1.md)\n\n# Enforced at\n\n- Detected by Checkov and Trivy (listed in `rule_ids`); no rule of this bundle enforces it\n\n# Remediation\n\nReference images as `image@sha256:\u2026` from an allowlisted registry, pin each\nTerraform module `source` to a commit (`?ref=<sha>`), and enable Binary\nAuthorization on the cluster.\n",
+   "description": "Images are pinned by digest from trusted registries, admission requires attested images, and Terraform modules are pinned to a commit.",
+   "frontmatter": {
+    "description": "Images are pinned by digest from trusted registries, admission requires attested images, and Terraform modules are pinned to a commit.",
+    "generated": {
+     "at": "2026-10-01T15:48:00-07:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "rule_ids": [
+     "checkov:CKV_K8S_43",
+     "checkov:CKV_TF_1",
+     "checkov:CKV_GCP_66",
+     "trivy:KSV-0125"
+    ],
+    "tags": [
+     "kubernetes",
+     "terraform",
+     "cc8.1"
+    ],
+    "title": "Pin images and modules to reviewed sources",
+    "type": "Scanner Check",
+    "verified": [
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc8.1"
+   ],
+   "path": "policies/pin-image-provenance.md",
+   "rule_ids": [
+    "checkov:CKV_K8S_43",
+    "checkov:CKV_TF_1",
+    "checkov:CKV_GCP_66",
+    "trivy:KSV-0125"
+   ],
+   "tags": [
+    "kubernetes",
+    "terraform",
+    "cc8.1"
+   ],
+   "title": "Pin images and modules to reviewed sources",
+   "type": "Scanner Check"
+  },
+  "policies/private-gke-control-plane": {
+   "body": "# Rule\n\nPublic nodes and a control plane open to the internet put the cluster\nboundary at the cluster API itself.\n\n# Satisfies\n\n- [CC6.6 \u2014 System Boundary Protection](../controls/cc6.6.md)\n\n# Enforced at\n\n- Detected by Checkov and Trivy (listed in `rule_ids`); no rule of this bundle enforces it\n\n# Remediation\n\nSet `private_cluster_config` (private nodes and endpoint), a\n`master_authorized_networks_config` listing only operator networks, and\n`network_policy { enabled = true }` on the `google_container_cluster`.\n",
+   "description": "The cluster's nodes and control plane are private, the API is reachable only from authorized networks, and network policy is enforced.",
+   "frontmatter": {
+    "description": "The cluster's nodes and control plane are private, the API is reachable only from authorized networks, and network policy is enforced.",
+    "generated": {
+     "at": "2026-10-01T15:48:00-07:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "rule_ids": [
+     "checkov:CKV_GCP_12",
+     "checkov:CKV_GCP_20",
+     "checkov:CKV_GCP_25",
+     "checkov:CKV_GCP_64",
+     "trivy:GCP-0059",
+     "trivy:GCP-0061"
+    ],
+    "tags": [
+     "terraform",
+     "gke",
+     "cc6.6"
+    ],
+    "title": "Keep the GKE cluster private",
+    "type": "Scanner Check",
+    "verified": [
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.6"
+   ],
+   "path": "policies/private-gke-control-plane.md",
+   "rule_ids": [
+    "checkov:CKV_GCP_12",
+    "checkov:CKV_GCP_20",
+    "checkov:CKV_GCP_25",
+    "checkov:CKV_GCP_64",
+    "trivy:GCP-0059",
+    "trivy:GCP-0061"
+   ],
+   "tags": [
+    "terraform",
+    "gke",
+    "cc6.6"
+   ],
+   "title": "Keep the GKE cluster private",
+   "type": "Scanner Check"
+  },
+  "policies/require-non-root": {
+   "body": "# Rule\n\nA process running as root inside a container turns any code-execution bug into\nroot on the container and widens the path to the node. Workloads must set\n`runAsNonRoot: true` and images must switch to a non-root `USER`.\n\n# Satisfies\n\n- [CC6.1 \u2014 Logical Access](../controls/cc6.1.md)\n\n# Enforced at\n\n- Deploy gate: Conftest in CI, blocking\n- Also detected by Checkov and Trivy (listed in `rule_ids`)\n\n# Remediation\n\nAdd a non-root `USER` to the Dockerfile and set `securityContext.runAsNonRoot: true`\n(with a non-zero `runAsUser`) on every container in the Deployment.\n",
+   "description": "Containers and images must not run as root.",
+   "frontmatter": {
+    "description": "Containers and images must not run as root.",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "../../policies/rego/require_non_root.rego",
+    "rule_ids": [
+     "conftest:require_non_root",
+     "checkov:CKV_K8S_23",
+     "checkov:CKV_DOCKER_3",
+     "trivy:KSV-0012",
+     "trivy:KSV-0105",
+     "trivy:DS-0002"
+    ],
+    "tags": [
+     "opa",
+     "conftest",
+     "kubernetes",
+     "cc6.1"
+    ],
+    "title": "Require non-root containers",
+    "type": "Rego Policy",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.1"
+   ],
+   "path": "policies/require-non-root.md",
+   "rule_ids": [
+    "conftest:require_non_root",
+    "checkov:CKV_K8S_23",
+    "checkov:CKV_DOCKER_3",
+    "trivy:KSV-0012",
+    "trivy:KSV-0105",
+    "trivy:DS-0002"
+   ],
+   "tags": [
+    "opa",
+    "conftest",
+    "kubernetes",
+    "cc6.1"
+   ],
+   "title": "Require non-root containers",
+   "type": "Rego Policy"
+  },
+  "policies/set-resource-limits": {
+   "body": "# Rule\n\nRequests let the scheduler plan capacity; limits stop one workload from\nstarving the others on its node.\n\n# Satisfies\n\n- [A1.1 \u2014 Capacity Management](../controls/a1.1.md)\n\n# Enforced at\n\n- Detected by Checkov and Trivy (listed in `rule_ids`); no rule of this bundle enforces it\n\n# Remediation\n\nSet `resources.requests` and `resources.limits` for `cpu` and `memory` on\nevery container, sized from observed use.\n",
+   "description": "Every container declares CPU and memory requests and limits.",
+   "frontmatter": {
+    "description": "Every container declares CPU and memory requests and limits.",
+    "generated": {
+     "at": "2026-10-01T15:48:00-07:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "rule_ids": [
+     "checkov:CKV_K8S_10",
+     "checkov:CKV_K8S_11",
+     "checkov:CKV_K8S_12",
+     "checkov:CKV_K8S_13",
+     "trivy:KSV-0011",
+     "trivy:KSV-0015",
+     "trivy:KSV-0016",
+     "trivy:KSV-0018"
+    ],
+    "tags": [
+     "kubernetes",
+     "a1.1"
+    ],
+    "title": "Set resource requests and limits",
+    "type": "Scanner Check",
+    "verified": [
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/a1.1"
+   ],
+   "path": "policies/set-resource-limits.md",
+   "rule_ids": [
+    "checkov:CKV_K8S_10",
+    "checkov:CKV_K8S_11",
+    "checkov:CKV_K8S_12",
+    "checkov:CKV_K8S_13",
+    "trivy:KSV-0011",
+    "trivy:KSV-0015",
+    "trivy:KSV-0016",
+    "trivy:KSV-0018"
+   ],
+   "tags": [
+    "kubernetes",
+    "a1.1"
+   ],
+   "title": "Set resource requests and limits",
+   "type": "Scanner Check"
+  },
+  "scanners/checkov": {
+   "body": "# Covers\n\nTerraform, Kubernetes, and Dockerfile misconfigurations.\n\n# Evidences\n\n- [CC6.6 \u2014 System Boundary Protection](../controls/cc6.6.md)\n- [CC8.1 \u2014 Change Management](../controls/cc8.1.md)\n\n# Rules\n\nRule-to-control declarations live on guardrail concepts, for example\n[No public buckets](../policies/no-public-bucket.md).\n",
+   "description": "Infrastructure-as-code policy scan.",
+   "frontmatter": {
+    "description": "Infrastructure-as-code policy scan.",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "https://github.com/bridgecrewio/checkov",
+    "tags": [
+     "iac",
+     "cc6.6",
+     "cc8.1"
+    ],
+    "title": "Checkov",
+    "type": "Scanner",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.6",
+    "controls/cc8.1",
+    "policies/no-public-bucket"
+   ],
+   "path": "scanners/checkov.md",
+   "rule_ids": [],
+   "tags": [
+    "iac",
+    "cc6.6",
+    "cc8.1"
+   ],
+   "title": "Checkov",
+   "type": "Scanner"
+  },
+  "scanners/conftest": {
+   "body": "# Covers\n\nEvaluates `policies/rego/` against the Kubernetes manifests and Terraform.\nEach Rego package name is the rule id.\n\n# Evidences\n\n- [CC8.1 \u2014 Change Management](../controls/cc8.1.md)\n\n# Rules\n\n- [Require non-root containers](../policies/require-non-root.md)\n- [Deny :latest image tag](../policies/deny-latest-tag.md)\n- [No public buckets](../policies/no-public-bucket.md)\n",
+   "description": "Runs the Rego guardrails as a deploy gate.",
+   "frontmatter": {
+    "description": "Runs the Rego guardrails as a deploy gate.",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "https://github.com/open-policy-agent/conftest",
+    "tags": [
+     "opa",
+     "policy",
+     "cc8.1"
+    ],
+    "title": "Conftest",
+    "type": "Scanner",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc8.1",
+    "policies/require-non-root",
+    "policies/deny-latest-tag",
+    "policies/no-public-bucket"
+   ],
+   "path": "scanners/conftest.md",
+   "rule_ids": [],
+   "tags": [
+    "opa",
+    "policy",
+    "cc8.1"
+   ],
+   "title": "Conftest",
+   "type": "Scanner"
+  },
+  "scanners/github": {
+   "body": "# Covers\n\nRead-only collectors over the GitHub API (`grc collect`), with no clone of the\ntarget repos:\n\n- **SCM posture** (`scm-*`): on each repo's default branch, the required\n  approving reviews, the required status checks, whether anyone can bypass the\n  rules, and whether each configured scanner job is present and can fail the\n  build. Rules the token cannot read give `scm-rules-unreadable`, never a pass.\n- **Change population** (`change-*`): every change merged in the audit window,\n  with a finding for a change with no independent approval\n  (`change-no-approval`) and for one its author merged with no approval\n  (`change-self-merge-without-review`).\n\nA posture finding states the setting on the day it was read. The window report\nuses only the evidence ledger for history.\n\n# Evidences\n\n- [CC8.1 \u2014 Change Management](../controls/cc8.1.md)\n",
+   "description": "Branch rules, CI scanner jobs and merged changes, read from the GitHub API.",
+   "frontmatter": {
+    "description": "Branch rules, CI scanner jobs and merged changes, read from the GitHub API.",
+    "generated": {
+     "at": "2026-10-06T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "https://docs.github.com/en/rest",
+    "rule_ids": [
+     "github:scm-*",
+     "github:change-*"
+    ],
+    "tags": [
+     "scm",
+     "change-management",
+     "cc8.1"
+    ],
+    "title": "GitHub collectors",
+    "type": "Scanner",
+    "verified": [
+     {
+      "at": "2026-10-06T11:53:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc8.1"
+   ],
+   "path": "scanners/github.md",
+   "rule_ids": [
+    "github:scm-*",
+    "github:change-*"
+   ],
+   "tags": [
+    "scm",
+    "change-management",
+    "cc8.1"
+   ],
+   "title": "GitHub collectors",
+   "type": "Scanner"
+  },
+  "scanners/semgrep": {
+   "body": "# Covers\n\nPattern-based static analysis of the Python source, using the vendored ruleset\nin `policies/semgrep/` so results are offline and reproducible.\n\n# Evidences\n\n- [CC6.1 \u2014 Logical Access](../controls/cc6.1.md)\n\n# Rules\n\nRule-to-control declarations live on guardrail concepts, for example\n[Bound every LLM call](../policies/llm-unbounded-call.md).\n",
+   "description": "Static analysis of application code.",
+   "frontmatter": {
+    "description": "Static analysis of application code.",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "https://github.com/semgrep/semgrep",
+    "tags": [
+     "sast",
+     "cc6.1"
+    ],
+    "title": "Semgrep",
+    "type": "Scanner",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc6.1",
+    "policies/llm-unbounded-call"
+   ],
+   "path": "scanners/semgrep.md",
+   "rule_ids": [],
+   "tags": [
+    "sast",
+    "cc6.1"
+   ],
+   "title": "Semgrep",
+   "type": "Scanner"
+  },
+  "scanners/trivy": {
+   "body": "# Covers\n\nKnown vulnerabilities in dependencies (`trivy fs`) and misconfigurations in the\nDockerfile, Kubernetes manifests, and Terraform (`trivy config`). Built\ncontainer images are not scanned (`trivy image` does not run in v1).\n\n# Evidences\n\n- [CC7.1 \u2014 Vulnerability Detection](../controls/cc7.1.md)\n\n# Rules\n\nEvery vulnerability id (`CVE-*`, `GHSA-*`, and the Go database's `GO-*`) evidences CC7.1. Configuration\nrules are declared on the guardrail they detect, for example\n[Require non-root containers](../policies/require-non-root.md).\n\n# Remediation\n\nUpgrade each vulnerable dependency to a version that fixes the listed\nadvisories, then re-scan.\n",
+   "description": "Dependency CVEs (trivy fs) and configuration checks (trivy config).",
+   "frontmatter": {
+    "description": "Dependency CVEs (trivy fs) and configuration checks (trivy config).",
+    "generated": {
+     "at": "2026-09-25T00:00:00+00:00",
+     "by": "claude-code/claude-opus-5-5"
+    },
+    "resource": "https://github.com/aquasecurity/trivy",
+    "rule_ids": [
+     "trivy:CVE-*",
+     "trivy:GHSA-*",
+     "trivy:GO-*"
+    ],
+    "tags": [
+     "sca",
+     "container",
+     "iac",
+     "cc7.1"
+    ],
+    "title": "Trivy",
+    "type": "Scanner",
+    "verified": [
+     {
+      "at": "2026-09-29T17:21:00-07:00",
+      "by": "human:cdevarenne"
+     },
+     {
+      "at": "2026-10-01T15:58:00-07:00",
+      "by": "human:cdevarenne"
+     }
+    ]
+   },
+   "links": [
+    "controls/cc7.1",
+    "policies/require-non-root"
+   ],
+   "path": "scanners/trivy.md",
+   "rule_ids": [
+    "trivy:CVE-*",
+    "trivy:GHSA-*",
+    "trivy:GO-*"
+   ],
+   "tags": [
+    "sca",
+    "container",
+    "iac",
+    "cc7.1"
+   ],
+   "title": "Trivy",
+   "type": "Scanner"
+  }
+ },
+ "mapping": {
+  "controls": {
+   "eu-ai-act:art-10": {
+    "evidenced_by": [],
+    "findings": [],
+    "satisfied_by": [],
+    "status": "not-assessed"
+   },
+   "eu-ai-act:art-12": {
+    "evidenced_by": [
+     "scanners/semgrep"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/llm-prompt-logged"
+    ],
+    "status": "no-violations-detected"
+   },
+   "eu-ai-act:art-13": {
+    "evidenced_by": [],
+    "findings": [],
+    "satisfied_by": [],
+    "status": "not-assessed"
+   },
+   "eu-ai-act:art-14": {
+    "evidenced_by": [],
+    "findings": [],
+    "satisfied_by": [],
+    "status": "not-assessed"
+   },
+   "eu-ai-act:art-15": {
+    "evidenced_by": [],
+    "findings": [],
+    "satisfied_by": [],
+    "status": "not-assessed"
+   },
+   "eu-ai-act:art-50": {
+    "evidenced_by": [
+     "scanners/semgrep"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/llm-no-ai-disclosure"
+    ],
+    "status": "no-violations-detected"
+   },
+   "eu-ai-act:art-9": {
+    "evidenced_by": [],
+    "findings": [],
+    "satisfied_by": [],
+    "status": "not-assessed"
+   },
+   "iso42001:a.4": {
+    "evidenced_by": [
+     "scanners/conftest"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/ai-inventory-complete"
+    ],
+    "status": "no-violations-detected"
+   },
+   "iso42001:a.5": {
+    "evidenced_by": [],
+    "findings": [],
+    "satisfied_by": [],
+    "status": "not-assessed"
+   },
+   "iso42001:a.6": {
+    "evidenced_by": [
+     "scanners/semgrep"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/llm-hardcoded-key",
+     "policies/llm-unbounded-call"
+    ],
+    "status": "no-violations-detected"
+   },
+   "iso42001:a.7": {
+    "evidenced_by": [
+     "scanners/semgrep"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/llm-prompt-logged"
+    ],
+    "status": "no-violations-detected"
+   },
+   "iso42001:a.8": {
+    "evidenced_by": [],
+    "findings": [],
+    "satisfied_by": [],
+    "status": "not-assessed"
+   },
+   "iso42001:a.9": {
+    "evidenced_by": [],
+    "findings": [],
+    "satisfied_by": [],
+    "status": "not-assessed"
+   },
+   "soc2:a1.1": {
+    "evidenced_by": [
+     "scanners/checkov",
+     "scanners/trivy"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/health-checks",
+     "policies/set-resource-limits"
+    ],
+    "status": "no-violations-detected"
+   },
+   "soc2:cc6.1": {
+    "evidenced_by": [
+     "scanners/checkov",
+     "scanners/conftest",
+     "scanners/semgrep",
+     "scanners/trivy"
+    ],
+    "findings": [
+     {
+      "message": "container runs as root",
+      "rule_id": "require_non_root",
+      "severity": "high",
+      "tags": [],
+      "target": "app/k8s/deployment.yaml",
+      "tool": "conftest"
+     }
+    ],
+    "satisfied_by": [
+     "policies/gke-access",
+     "policies/harden-container-runtime",
+     "policies/isolate-workloads",
+     "policies/llm-hardcoded-key",
+     "policies/require-non-root"
+    ],
+    "status": "not-satisfied"
+   },
+   "soc2:cc6.6": {
+    "evidenced_by": [
+     "scanners/checkov",
+     "scanners/conftest",
+     "scanners/trivy"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/no-public-bucket",
+     "policies/private-gke-control-plane"
+    ],
+    "status": "no-violations-detected"
+   },
+   "soc2:cc7.1": {
+    "evidenced_by": [
+     "scanners/trivy"
+    ],
+    "findings": [
+     {
+      "message": "example-pkg 1.0 vulnerable",
+      "rule_id": "CVE-2024-0001",
+      "severity": "critical",
+      "tags": [],
+      "target": "app/requirements.txt",
+      "tool": "trivy"
+     }
+    ],
+    "satisfied_by": [],
+    "status": "not-satisfied"
+   },
+   "soc2:cc7.2": {
+    "evidenced_by": [
+     "scanners/checkov"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/network-flow-logs"
+    ],
+    "status": "no-violations-detected"
+   },
+   "soc2:cc8.1": {
+    "evidenced_by": [
+     "scanners/checkov",
+     "scanners/conftest",
+     "scanners/github",
+     "scanners/trivy"
+    ],
+    "findings": [],
+    "satisfied_by": [
+     "policies/deny-latest-tag",
+     "policies/pin-image-provenance"
+    ],
+    "status": "no-violations-detected"
+   }
+  },
+  "unmapped": [
+   {
+    "finding": {
+     "message": "runAsNonRoot not set",
+     "rule_id": "CKV_TEST_1",
+     "severity": "medium",
+     "tags": [],
+     "target": "app/k8s/deployment.yaml",
+     "tool": "checkov"
+    },
+    "reason": "no-rule-match"
+   },
+   {
+    "finding": {
+     "message": "no HEALTHCHECK",
+     "rule_id": "CKV_TEST_99",
+     "severity": "low",
+     "tags": [],
+     "target": "app/Dockerfile",
+     "tool": "checkov"
+    },
+    "reason": "no-rule-match"
+   },
+   {
+    "finding": {
+     "message": "orphan",
+     "rule_id": "orphan_rule",
+     "severity": "medium",
+     "tags": [],
+     "target": "app/infra/main.tf",
+     "tool": "conftest"
+    },
+    "reason": "no-rule-match"
+   }
+  ]
+ },
+ "report": "# Compliance Scan Report\n\nGenerated 2026-10-06T12:00:00+00:00. Every status below is derived from scanner findings joined to\ncontrols declared in the OKF knowledge bundle; nothing is mapped without a declaration.\n`no-violations-detected` means automated checks found nothing for that control;\nit is evidence, not a control attestation.\n\n## Risk posture\n\n2 open findings across 2 of 19 controls: 1 critical, 1 high.\n9 controls show no violations. 8 not assessed. 3 coverage gaps to triage.\n\n## Summary\n\n| Control | Status | Critical | High | Medium | Low | Uncl. | Total |\n|---|---|---|---|---|---|---|---|\n| soc2:a1.1 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n| soc2:cc6.1 | not-satisfied | 0 | 1 | 0 | 0 | 0 | 1 |\n| soc2:cc6.6 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n| soc2:cc7.1 | not-satisfied | 1 | 0 | 0 | 0 | 0 | 1 |\n| soc2:cc7.2 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n| soc2:cc8.1 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n| iso42001:a.4 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n| iso42001:a.5 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |\n| iso42001:a.6 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n| iso42001:a.7 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n| iso42001:a.8 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |\n| iso42001:a.9 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |\n| eu-ai-act:art-9 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |\n| eu-ai-act:art-10 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |\n| eu-ai-act:art-12 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n| eu-ai-act:art-13 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |\n| eu-ai-act:art-14 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |\n| eu-ai-act:art-15 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |\n| eu-ai-act:art-50 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |\n\n## SOC 2\n\n### A1.1 \u2014 Capacity Management\n\n**Status:** no-violations-detected\n\n**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Trivy](../knowledge/scanners/trivy.md), [Declare health checks](../knowledge/policies/health-checks.md), [Set resource requests and limits](../knowledge/policies/set-resource-limits.md)\n\n### CC6.1 \u2014 Logical Access\n\n**Status:** not-satisfied\n\n**Findings:** 1 high\n\n**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Semgrep](../knowledge/scanners/semgrep.md), [Trivy](../knowledge/scanners/trivy.md), [Least-privilege access to GKE](../knowledge/policies/gke-access.md), [Harden the container runtime](../knowledge/policies/harden-container-runtime.md), [Isolate workloads in their own namespace](../knowledge/policies/isolate-workloads.md), [No hard-coded LLM API keys](../knowledge/policies/llm-hardcoded-key.md), [Require non-root containers](../knowledge/policies/require-non-root.md)\n\n**Open findings:**\n\n- `conftest` `require_non_root` (high) \u2014 container runs as root \u2014 `app/k8s/deployment.yaml`\n\n**Remediation:** Add a non-root `USER` to the Dockerfile and set `securityContext.runAsNonRoot: true`\n(with a non-zero `runAsUser`) on every container in the Deployment.\n\n### CC6.6 \u2014 System Boundary Protection\n\n**Status:** no-violations-detected\n\n**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Trivy](../knowledge/scanners/trivy.md), [No public buckets](../knowledge/policies/no-public-bucket.md), [Keep the GKE cluster private](../knowledge/policies/private-gke-control-plane.md)\n\n### CC7.1 \u2014 Vulnerability Detection\n\n**Status:** not-satisfied\n\n**Findings:** 1 critical\n\n**Evidence:** [Trivy](../knowledge/scanners/trivy.md)\n\n**Open findings:**\n\n- `trivy` `CVE-2024-0001` (critical) \u2014 example-pkg 1.0 vulnerable \u2014 `app/requirements.txt`\n\n**Remediation:** Upgrade each vulnerable dependency to a version that fixes the listed\nadvisories, then re-scan.\n\n### CC7.2 \u2014 Security Monitoring\n\n**Status:** no-violations-detected\n\n**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Log network flows](../knowledge/policies/network-flow-logs.md)\n\n### CC8.1 \u2014 Change Management\n\n**Status:** no-violations-detected\n\n**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [GitHub collectors](../knowledge/scanners/github.md), [Trivy](../knowledge/scanners/trivy.md), [Deny :latest image tag](../knowledge/policies/deny-latest-tag.md), [Pin images and modules to reviewed sources](../knowledge/policies/pin-image-provenance.md)\n\n## ISO/IEC 42001\n\n### A.4 \u2014 Resources for AI systems\n\n**Status:** no-violations-detected\n\n**Evidence:** [Conftest](../knowledge/scanners/conftest.md), [AI inventory is complete](../knowledge/policies/ai-inventory-complete.md)\n\n### A.6 \u2014 AI system life cycle\n\n**Status:** no-violations-detected\n\n**Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [No hard-coded LLM API keys](../knowledge/policies/llm-hardcoded-key.md), [Bound every LLM call](../knowledge/policies/llm-unbounded-call.md)\n\n### A.7 \u2014 Data for AI systems\n\n**Status:** no-violations-detected\n\n**Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Do not log prompts or completions](../knowledge/policies/llm-prompt-logged.md)\n\n## EU AI Act\n\n### Art. 12 \u2014 Record-keeping\n\n**Status:** no-violations-detected\n\n**Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Do not log prompts or completions](../knowledge/policies/llm-prompt-logged.md)\n\n### Art. 50 \u2014 Transparency obligations for certain AI systems\n\n**Status:** no-violations-detected\n\n**Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Disclose AI-generated output](../knowledge/policies/llm-no-ai-disclosure.md)\n\n## Crosswalk\n\nLinks between frameworks. A link is navigation, never a mapping: each status\ncomes only from that control's own rule declarations.\n\n| Control | Status | Linked control | Status | Source |\n|---|---|---|---|---|\n| iso42001:a.5 | not-assessed | eu-ai-act:art-9 | not-assessed | [ISO/IEC 42001 \u2194 EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |\n| iso42001:a.7 | no-violations-detected | eu-ai-act:art-10 | not-assessed | [ISO/IEC 42001 \u2194 EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |\n| iso42001:a.7 | no-violations-detected | eu-ai-act:art-12 | no-violations-detected | [ISO/IEC 42001 \u2194 EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |\n| iso42001:a.8 | not-assessed | eu-ai-act:art-13 | not-assessed | [ISO/IEC 42001 \u2194 EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |\n| iso42001:a.8 | not-assessed | eu-ai-act:art-50 | no-violations-detected | [ISO/IEC 42001 \u2194 EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |\n| iso42001:a.9 | not-assessed | eu-ai-act:art-14 | not-assessed | [ISO/IEC 42001 \u2194 EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |\n| iso42001:a.6 | no-violations-detected | eu-ai-act:art-15 | not-assessed | [ISO/IEC 42001 \u2194 EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |\n| soc2:cc6.1 | not-satisfied | iso42001:a.6 | no-violations-detected | [SOC 2 \u2194 ISO/IEC 42001](../knowledge/crosswalk/soc2-iso42001.md) |\n| soc2:cc7.2 | no-violations-detected | iso42001:a.6 | no-violations-detected | [SOC 2 \u2194 ISO/IEC 42001](../knowledge/crosswalk/soc2-iso42001.md) |\n| soc2:cc8.1 | no-violations-detected | iso42001:a.6 | no-violations-detected | [SOC 2 \u2194 ISO/IEC 42001](../knowledge/crosswalk/soc2-iso42001.md) |\n\n## Coverage gaps\n\nFindings with no in-bundle control. These are gaps to close, not mappings to invent.\n\n- `checkov` `CKV_TEST_1` (medium) \u2014 runAsNonRoot not set \u2014 `app/k8s/deployment.yaml` \u2014 reason: `no-rule-match`\n- `checkov` `CKV_TEST_99` (low) \u2014 no HEALTHCHECK \u2014 `app/Dockerfile` \u2014 reason: `no-rule-match`\n- `conftest` `orphan_rule` (medium) \u2014 orphan \u2014 `app/infra/main.tf` \u2014 reason: `no-rule-match`\n\n## Not assessed\n\n- A.5 \u2014 Assessing impacts of AI systems: no in-bundle scanner or policy evidences this control.\n- A.8 \u2014 Information for interested parties of AI systems: no in-bundle scanner or policy evidences this control.\n- A.9 \u2014 Use of AI systems: no in-bundle scanner or policy evidences this control.\n- Art. 9 \u2014 Risk management system: no in-bundle scanner or policy evidences this control.\n- Art. 10 \u2014 Data and data governance: no in-bundle scanner or policy evidences this control.\n- Art. 13 \u2014 Transparency and provision of information to deployers: no in-bundle scanner or policy evidences this control.\n- Art. 14 \u2014 Human oversight: no in-bundle scanner or policy evidences this control.\n- Art. 15 \u2014 Accuracy, robustness and cybersecurity: no in-bundle scanner or policy evidences this control.\n"
+}
