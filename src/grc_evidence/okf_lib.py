@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from okflib.concept import Concept as OkfConcept
+from okflib.concept import OKFError
 
 from grc_evidence.errors import GrcError
 
@@ -55,6 +57,7 @@ class Concept:
     frontmatter: Mapping[str, Any]
     body: str
     links: tuple[str, ...]
+    stale_after: date | None = None  # OKF v0.2: past this date, a person verifies it again
 
     @property
     def code(self) -> str:
@@ -311,6 +314,7 @@ def _parse(rel_path: str, text: str) -> Concept:
     _check_control(rel_path, fm, type_)
     if type_ == SUPPRESSION_TYPE:
         _check_suppression(rel_path, fm, body)
+    okf = _okflib_check(rel_path, text, fm)
     return Concept(
         id=stem,
         path=rel_path,
@@ -326,7 +330,21 @@ def _parse(rel_path: str, text: str) -> Concept:
                 link for t in _LINK.findall(body) if (link := _resolve_link(t, rel_path)) is not None
             )
         ),
+        stale_after=okf.stale_after,
     )
+
+
+def _okflib_check(rel_path: str, text: str, fm: Mapping[str, Any]) -> OkfConcept:
+    """okflib's reading of the same text: OKF's core fields and v0.2 signals. Our parse stays the source of the
+    frontmatter, the body and the links; any okflib error fails the load and names the file."""
+    verified = fm.get("verified")
+    entries = verified if isinstance(verified, list) else [verified] if verified is not None else []
+    if not all(isinstance(v, Mapping) for v in entries):
+        raise BundleError(f"{rel_path}: 'verified' must be a list of stamps with 'by' and 'at'")
+    try:
+        return OkfConcept.from_text(text)
+    except (OKFError, ValueError, TypeError) as e:  # okflib raises the last two on a bad date or field shape
+        raise BundleError(f"{rel_path}: {e}") from None
 
 
 def load_bundle(root: Path) -> Bundle:
