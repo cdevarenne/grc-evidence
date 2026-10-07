@@ -7,7 +7,7 @@ TOOLBIN := $(CURDIR)/.tools/bin
 export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
 
-.PHONY: bootstrap lock-scanners sync-base audit examples-llm scan narrate triage eval-triage render test test-integration examples examples-h clean
+.PHONY: bootstrap lock-scanners sync-base audit examples-llm scan narrate triage eval-triage render graph-image test test-integration examples examples-h clean
 
 bootstrap:
 	uv sync
@@ -46,6 +46,9 @@ eval-triage:
 render:     # out/knowledge-viz.html: the bundle as an interactive graph (okflib, a runtime dependency)
 	mkdir -p out
 	uv run okflib view -C knowledge -o out/knowledge-viz.html --no-open
+
+graph-image:  # docs/screenshots/knowledge-graph.png, the README's picture of the bundle (needs Graphviz: sfdp)
+	uv run python scripts/graph_image.py knowledge | sfdp -Tpng -o docs/screenshots/knowledge-graph.png
 
 test:
 	uv run ruff check

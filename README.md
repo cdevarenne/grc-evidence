@@ -63,7 +63,8 @@ Requires [uv](https://docs.astral.sh/uv/); `make bootstrap` installs Python 3.14
 ```
 make bootstrap         # uv sync + install pinned scanners into .tools/
 make scan              # grc run: out/findings.json, mapping.json, oscal/*.json, report.md, run.json
-make render            # out/knowledge-viz.html — the OKF graph
+make render            # out/knowledge-viz.html — the OKF graph, interactive (okflib)
+make graph-image       # docs/screenshots/knowledge-graph.png — the picture below (Graphviz)
 make narrate           # optional: LLM prose per control, validated, then re-render and update run.json (LLM_MODE=anthropic)
 make triage            # optional: LLM proposals for coverage gaps → out/proposals.json (review only)
 make eval-triage       # optional: score triage variants on labeled gaps (tune + holdout) via the Batch API
@@ -131,11 +132,12 @@ population and a sample from Google's `microservices-demo`, pseudonymized.
 
 ![OKF knowledge graph](docs/screenshots/knowledge-graph.png)
 
-*The OKF knowledge bundle (`knowledge/`) rendered by [okflib](https://pypi.org/project/okflib/)
-(`make render` → `out/knowledge-viz.html`). Each node is one concept file — a SOC 2,
-ISO/IEC 42001, or EU AI Act control, a crosswalk, a guardrail policy, a scanner,
-a stack component, or a suppression — and each edge is a markdown link between
-them. It is a browsing aid; the scan pipeline reads the same files
+*The OKF knowledge bundle (`knowledge/`), drawn with Graphviz (`make graph-image`) and
+colored by folder. Each box is one concept file — a SOC 2, ISO/IEC 42001, or EU AI Act
+control, a crosswalk, a guardrail policy, a scanner, a stack component, or a
+suppression — and each arrow is a markdown link between them. To explore it,
+`make render` writes an interactive view with search and a table
+([okflib](https://pypi.org/project/okflib/)) to `out/knowledge-viz.html`. It is a browsing aid; the scan pipeline reads the same files
 directly and does not use the graph.*
 
 ## Further reading
