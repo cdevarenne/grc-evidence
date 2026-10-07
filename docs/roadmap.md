@@ -59,6 +59,15 @@ over the window. The package is renamed `grc-evidence` (module `grc_evidence`;
 `okf_grc` stays as a deprecated alias for one minor release), and the output
 contract is 1.2.
 
+`2.0.1` ignores `change-*` findings in the gate, adds `grc run --no-collect` for pull
+request runs, and applies a suppression only once a person verified it (contract 1.3).
+
+`2.1.0` reads the bundle with [okflib](https://pypi.org/project/okflib/) as well as its
+own parser (Spec J): okflib checks each concept's OKF fields and signals, with no change
+to any scan output. The bundle's extension fields get JSON Schemas
+([docs/okf-extensions.md](okf-extensions.md)), `grc check` asks for a new review when a
+verification passes its interval in `grc.yaml`, and `make render` uses `okflib view`.
+
 Built beyond the engine:
 
 - **Adopter repo** (Spec F Part B):

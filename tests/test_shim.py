@@ -20,7 +20,7 @@ def test_old_import_warns_and_aliases() -> None:
 
 
 def test_version_reads_new_name() -> None:
-    assert version("grc-evidence") == "2.0.1"
+    assert version("grc-evidence") == "2.1.0"
 
 
 def test_prop_ns() -> None:
