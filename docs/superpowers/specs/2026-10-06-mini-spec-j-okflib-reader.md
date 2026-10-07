@@ -37,7 +37,11 @@ One JSON Schema per concept type that uses extension fields, in `src/grc_evidenc
 
 ### 4.3 `stale_after` (Part 3)
 
-`grc check` reports a concept whose `stale_after` has passed as a problem ("stale since <date>: review it and set a new date"), next to the "not verified" problems. The dates are the owner's decision; the plan proposes them for the base controls and crosswalks.
+`grc check` fails on a concept whose `stale_after` has passed ("stale since <date>: review it and set a new date"), next to the "not verified" problems (owner decision, 2026-10-06). The dates are the owner's to set on the base controls and crosswalks.
+
+### 4.4 `make render` with okflib (Part 4)
+
+`make render` runs `okflib view` (owner decision, 2026-10-06) instead of the OKF reference visualizer, which drops the pinned `OKF_COMMIT` git dependency from `tools.lock`. The README's graph screenshot is replaced. `okflib view` loads the bundle permissively; that is acceptable for a picture, because `grc check` and every scan load it strictly.
 
 ## 5. Done when
 
@@ -45,16 +49,16 @@ One JSON Schema per concept type that uses extension fields, in `src/grc_evidenc
 2. The full test suite, the integration tests and `make audit` pass; `make examples` on a clean tree gives the same mapping, OSCAL and report as 2.0.1 (timestamps and run ids aside).
 3. A file with broken frontmatter fails the load with its path in the message.
 4. Every concept in `knowledge/` and the base bundle validates against its schema.
-5. `grc check` reports a concept past its `stale_after`.
-6. 2.1.0 is released; the demo pins it, and its gate passes with no change to `expected/`.
+5. `grc check` fails on a concept past its `stale_after`.
+6. `make render` writes `out/knowledge-viz.html` with `okflib view`, and `tools.lock` has no `OKF_COMMIT`.
+7. 2.1.0 is released; the demo pins it, and its gate passes with no change to `expected/`.
 
 ## 6. Out of scope
 
 - grounded-context and the drone repo adopting okflib (their own issues).
-- `make render` with `okflib view` instead of the OKF reference visualizer: an owner decision (§7).
 - Writing bundles with okflib (`grc init` and `grc sync-base` copy files; they do not serialize concepts).
 
 ## 7. Owner decisions
 
-1. The `stale_after` dates for the base controls and crosswalks, and whether a stale concept fails `grc check` (proposed) or only warns.
-2. Whether `make render` moves to `okflib view` (one less pinned git dependency), in this spec or later.
+1. A stale concept fails `grc check` (decided 2026-10-06). Open: the `stale_after` dates for the base controls and crosswalks.
+2. `make render` moves to `okflib view` in this spec (decided 2026-10-06).

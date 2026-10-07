@@ -1,6 +1,6 @@
 # Mini Spec J Implementation Plan — okflib as the OKF reader
 
-**Goal:** Parse the OKF bundle with okflib, write schemas for our extension fields, and flag stale concepts, with no change to any output. Release 2.1.0.
+**Goal:** Parse the OKF bundle with okflib, write schemas for our extension fields, fail `grc check` on stale concepts, and render the graph with `okflib view`, with no change to any scan output. Release 2.1.0.
 
 **Spec:** `docs/superpowers/specs/2026-10-06-mini-spec-j-okflib-reader.md`. **Issue:** #139.
 
@@ -70,12 +70,21 @@ def test_okflib_does_the_parsing(monkeypatch): ...  # okflib.Concept.from_text i
 
 **Files:** Modify `src/grc_evidence/adopt.py`; tests in `tests/test_adopt.py`.
 
-- [ ] **Step 1: Write the failing test:** a concept with `stale_after` before today gives `"<path>: stale since <date>: review it and set a new date"`; one after today gives nothing.
+- [ ] **Step 1: Write the failing test:** a concept with `stale_after` before today makes `grc check` fail with `"<path>: stale since <date>: review it and set a new date"`; one after today gives nothing.
 - [ ] **Step 2: Implement** with okflib's `Concept.is_stale(on=today)`.
 - [ ] **Step 3: Owner:** set `stale_after` on the base controls and crosswalks (spec §7.1), then `grc sync-base`.
 - [ ] **Step 4:** Commit: "grc check flags a concept past its stale_after".
 
-### Task 6: Release 2.1.0
+### Task 6: `make render` with `okflib view`
+
+**Files:** Modify `Makefile`, `src/grc_evidence/data/tools.lock`, `tests/test_tools_lock.py` (if it lists `OKF_COMMIT`), `README.md`, `docs/limits.md`; replace `docs/screenshots/knowledge-graph.png`.
+
+- [ ] **Step 1:** `render: uv run okflib view --bundle knowledge -o out/knowledge-viz.html --no-open`; remove `OKF` and `OKF_COMMIT`.
+- [ ] **Step 2:** Run it; the page lists every concept.
+- [ ] **Step 3: Owner:** a new screenshot of the graph for the README.
+- [ ] **Step 4:** Commit: "make render uses okflib view; drop the reference visualizer pin".
+
+### Task 7: Release 2.1.0
 
 - [ ] **Step 1:** Version 2.1.0; `docs/limits.md` (the reader), `docs/roadmap.md`; the install pins.
 - [ ] **Step 2:** `make examples` on a clean tree: the mapping, OSCAL and report equal 2.0.1's, timestamps and run ids aside. The narratives are reused, since `mapping.json` does not change.
