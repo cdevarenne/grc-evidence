@@ -66,7 +66,8 @@ request runs, and applies a suppression only once a person verified it (contract
 own parser (Spec J): okflib checks each concept's OKF fields and signals, with no change
 to any scan output. The bundle's extension fields get JSON Schemas
 ([docs/okf-extensions.md](okf-extensions.md)), `grc check` asks for a new review when a
-verification passes its interval in `grc.yaml`, and `make render` uses `okflib view`.
+verification passes its interval in `grc.yaml`, and `make render` uses `okflib view`. The
+`okf_grc` alias is removed: import `grc_evidence`.
 
 Built beyond the engine:
 

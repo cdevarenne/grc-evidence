@@ -16,9 +16,6 @@ grc = "grc_evidence.cli:main"
 requires = ["uv_build>=0.12,<0.13"]
 build-backend = "uv_build"
 
-[tool.uv.build-backend]
-module-name = ["grc_evidence", "okf_grc"]  # okf_grc: the deprecated alias, for one minor release
-
 [dependency-groups]
 dev = [
     "pytest>=8.4",
@@ -47,7 +44,7 @@ ignore = ["E501"]  # long lines are left as they are, not reformatted wholesale
 
 [tool.mypy]
 python_version = "3.14"
-files = ["src/grc_evidence", "src/okf_grc", "tests"]
+files = ["src/grc_evidence", "tests"]
 exclude = ["src/grc_evidence/data/policies/semgrep/"]
 
 [[tool.mypy.overrides]]
