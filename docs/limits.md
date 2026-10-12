@@ -6,8 +6,10 @@ What grc-evidence does not do, or does only partly. Read this before relying on 
   `no-violations-detected`, never `satisfied`. Automated scans evidence a SOC 2
   criterion; they do not attest it.
 - **Suppressions are exact and short-lived by design.** Each one matches a
-  single finding, lasts at most 90 days, and needs a human review; there are no
-  wildcard or bulk suppressions. Scanner-native inline skips (e.g.
+  single finding (or one rule in files it names, each exactly), lasts at most 90
+  days, and needs a human review; there are no wildcard or bulk suppressions.
+  `grc suppress draft` writes one for a person to finish and sign; it never
+  writes the reason or the signature. Scanner-native inline skips (e.g.
   `checkov:skip`) are still honored by the scanners themselves and bypass this
   record.
 - **Static manifests only** Helm or Kustomize output is not rendered before

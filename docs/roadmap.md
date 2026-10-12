@@ -69,6 +69,12 @@ to any scan output. The bundle's extension fields get JSON Schemas
 verification passes its interval in `grc.yaml`, and `make render` uses `okflib view`. The
 `okf_grc` alias is removed: import `grc_evidence`.
 
+`2.2.0` starts Spec I: one suppression may name one rule in several files
+(contract 1.4), `grc suppress draft` writes a pending suppression from the last
+scan for a person to finish and sign, and `grc gate` prints the draft command for
+each new finding it fails on
+([spec](superpowers/specs/2026-10-12-mini-spec-i-part-a-suppression-drafts.md)).
+
 Built beyond the engine:
 
 - **Adopter repo** (Spec F Part B):
@@ -85,8 +91,8 @@ Next:
 
 - **Spec H Part B:** scan N repos with the code scanners (clone, scan,
   aggregate, shard in CI).
-- **Spec I:** signed risk acceptances, an OSCAL POA&M, and an attestation for an
-  empty population.
+- **Spec I, the rest:** signed risk acceptances, an OSCAL POA&M, and an
+  attestation for an empty population.
 
 Deliberately left out, or not started:
 
