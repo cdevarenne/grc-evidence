@@ -7,6 +7,12 @@ same rules when it loads the bundle. A schema covers one concept's fields; rules
 bundle are load-time checks only. okflib checks OKF's own fields and signals (`type`, `generated`, `verified`,
 `stale_after`).
 
+## Every concept
+
+| Field | Rule | Checked by |
+|---|---|---|
+| body, once signed | no `<!-- grc: draft` marker line, which a drafting command leaves in each section a person must write | loader |
+
 ## Controls
 
 `SOC 2 Control`, `ISO/IEC 42001 Control`, `EU AI Act Article` ([schema](../src/grc_evidence/data/schemas/concepts/control.schema.json))
@@ -40,7 +46,6 @@ Any concept with `rule_ids`: guardrail policies, scanners, scanner checks ([sche
 | `approved`, `expires` | `YYYY-MM-DD` | schema and loader |
 | `expires` | after `approved`, at most 90 days later | loader |
 | body | a non-empty `# Reason` section | loader |
-| body, once signed | no `<!-- grc: draft` marker line left by `grc suppress draft` | loader |
 | `kind: accepted-risk` | the finding maps to a control in the bundle | loader |
 | `verified` | applied only once a person (`human:`) verified it | mapping |
 

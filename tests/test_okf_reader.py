@@ -45,3 +45,18 @@ def test_verified_stamps_still_read_as_written(tmp_path: Path) -> None:
     fm = 'type: Reference\nverified:\n  - by: "human:reviewer"\n    at: "2026-10-06T10:00:00-07:00"\n'
     concept = load_bundle(_bundle(tmp_path, fm)).concepts["notes/a"]
     assert concept.frontmatter["verified"] == [{"by": "human:reviewer", "at": "2026-10-06T10:00:00-07:00"}]
+
+
+CHECK = "type: Scanner Check\ntags: [cc7.1]\nrule_ids: [\"semgrep:r1\"]\n"
+SIGNED = 'verified:\n  - by: "human:reviewer"\n    at: "2026-10-12T10:00:00-07:00"\n'
+MARKED = "# Rule\n\n<!-- grc: draft. Write this section, then delete this line. -->\n"
+
+
+def test_signed_concept_with_marker_fails(tmp_path: Path) -> None:
+    """Spec G G4: a person must not sign a drafted Scanner Check before writing it."""
+    with pytest.raises(BundleError, match=r"^notes/a\.md: .*delete every draft marker line"):
+        load_bundle(_bundle(tmp_path, CHECK + SIGNED, MARKED))
+
+
+def test_unsigned_concept_with_marker_loads(tmp_path: Path) -> None:
+    assert "notes/a" in load_bundle(_bundle(tmp_path, CHECK, MARKED)).concepts

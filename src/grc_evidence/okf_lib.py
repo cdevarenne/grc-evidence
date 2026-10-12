@@ -22,7 +22,7 @@ SUPPRESSION_TYPE = "Suppression"
 SUPPRESSION_KINDS = ("false-positive", "accepted-risk")
 MAX_SUPPRESSION_DAYS = 90
 EXPIRY_WARNING_DAYS = 14  # an active suppression this close to expiry is flagged for renewal or removal
-DRAFT_MARKER = "<!-- grc: draft"  # `grc suppress draft` puts it in each section a person must write (Spec I)
+DRAFT_MARKER = "<!-- grc: draft"  # in each drafted section a person must write; signed with one fails (Spec I, G4)
 CONTROL_TYPE = "SOC 2 Control"
 FRAMEWORK_TYPES = {"soc2": CONTROL_TYPE, "iso42001": "ISO/IEC 42001 Control", "eu-ai-act": "EU AI Act Article"}
 FRAMEWORK_TITLES = {"soc2": "SOC 2", "iso42001": "ISO/IEC 42001", "eu-ai-act": "EU AI Act"}
@@ -266,8 +266,6 @@ def _check_suppression(rel_path: str, fm: Mapping[str, Any], body: str) -> None:
         raise BundleError(f"{rel_path}: 'expires' must fall within {MAX_SUPPRESSION_DAYS} days after 'approved'")
     if not re.search(r"^# Reason\s*\n\s*\S", body, re.MULTILINE):
         raise BundleError(f"{rel_path}: a suppression needs a non-empty '# Reason' section")
-    if DRAFT_MARKER in body and _signed(fm):
-        raise BundleError(f"{rel_path}: signed with a draft section; delete every draft marker line after writing each section")
 
 
 def _targets(rel_path: str, finding: Mapping[str, Any]) -> tuple[str, ...]:
@@ -339,6 +337,8 @@ def _parse(rel_path: str, text: str) -> Concept:
     _check_control(rel_path, fm, type_)
     if type_ == SUPPRESSION_TYPE:
         _check_suppression(rel_path, fm, body)
+    if DRAFT_MARKER in body and _signed(fm):
+        raise BundleError(f"{rel_path}: signed with a draft section; delete every draft marker line after writing each section")
     okf = _okflib_check(rel_path, text, fm)
     return Concept(
         id=stem,

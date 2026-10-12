@@ -49,9 +49,9 @@
 
 **Files:** `src/grc_evidence/okf_lib.py`, `tests/test_okf_reader.py`, `docs/okf-extensions.md`.
 
-- [ ] **Step 1: Failing tests:** `test_signed_concept_with_marker_fails` (a `Scanner Check`), `test_unsigned_concept_with_marker_loads`. The suppression tests keep passing.
-- [ ] **Step 2: Implement:** move the check from `_check_suppression` to `_parse`.
-- [ ] **Step 3:** Commit: "Any signed concept with a draft marker fails to load".
+- [x] **Step 1: Failing tests:** `test_signed_concept_with_marker_fails` (a `Scanner Check`), `test_unsigned_concept_with_marker_loads`. The suppression tests keep passing.
+- [x] **Step 2: Implement:** move the check from `_check_suppression` to `_parse`.
+- [x] **Step 3:** Commit: "Any signed concept with a draft marker fails to load".
 
 ### Task 3: `grc propose`
 
