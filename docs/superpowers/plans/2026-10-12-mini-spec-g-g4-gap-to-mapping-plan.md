@@ -11,7 +11,7 @@
 - A concept that declares `rule_ids` needs exactly one control tag per framework; a `Scanner Check` concept (`knowledge/policies/set-resource-limits.md`) has `# Rule`, `# Satisfies`, `# Enforced at`, `# Remediation`.
 - `grc check` fails on any concept without a `human:` verification (Spec I decision 7a).
 
-## Decisions for the owner
+## Decisions (owner, 2026-10-12: all as recommended)
 
 1. **No new model call.** G4 turns triage's already validated proposals into drafts deterministically. Spec G placed G4 among the agent workflows; it needs no agent loop, so it is a `grc` command, not a `grc agent` workflow. Recommendation: yes.
 2. **Where the rule goes.** (a) A new `Scanner Check` concept per gap rule, `knowledge/policies/<tool>-<rule_id>.md`, tagged with the proposed control; the patch never edits a reviewed concept, and the reviewer can merge it into an existing check. (b) Append the rule to an existing concept tagged with that control, which means choosing among several (a judgment the proposals do not carry) and re-verifying that concept. Recommendation: (a).
