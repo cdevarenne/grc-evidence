@@ -93,6 +93,13 @@ Trivy: CVE, GHSA, GO): a new advisory can be published with no change at all,
 so it fails only at or above `--fail-on` (default `high`). A pipeline can gate
 pull requests at `critical` and a nightly scan at `high`, as the demo repo does.
 
+When new findings fail it, the gate also prints one `grc suppress draft` command
+per tool and rule id, with every failing file, in its failure message and under
+**Draft suppressions** in the job summary (2.2.0). Each command writes a pending
+suppression to review; it changes nothing until a person writes the reason and
+signs it ([suppressions](suppressions.md#drafting-one)). The owner is printed as
+`'human:<you>'`, which the command refuses until you put your name.
+
 Identities leave out the message, so a version bump on a package that is still
 vulnerable is not new; accepted risks are left out. A baseline written before
 1.6.0 records each identity once: rewrite it after upgrading, or every repeated

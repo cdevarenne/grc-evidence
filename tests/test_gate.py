@@ -1,13 +1,20 @@
 """grc gate: compliance may not get worse than the committed baseline."""
 
 import json
+import shlex
+import shutil
+from datetime import date
 from pathlib import Path
 
 import pytest
 
 from grc_evidence import cli
+from grc_evidence.adopt import check_report
+from grc_evidence.config import load_config
 from grc_evidence.data import SCHEMA_VERSION
-from grc_evidence.gate import baseline_doc, problems, summary
+from grc_evidence.gate import baseline_doc, control_status, drafts, problems, summary
+from grc_evidence.map_findings import map_findings
+from grc_evidence.okf_lib import load_bundle
 
 BASE = {"soc2:cc6.1": "not-satisfied", "soc2:cc7.1": "no-violations-detected", "soc2:cc8.1": "not-assessed"}
 DOC = {"controls": BASE}  # a 1.2.x baseline: statuses only
@@ -137,3 +144,92 @@ def test_change_findings_never_fail_the_gate() -> None:
     assert problems(_mapping(BASE, findings=[*OLD, change]), WITH_FINDINGS) == []
     assert problems(_mapping(BASE, findings=[*OLD, change, scm]), WITH_FINDINGS) == [
         "new finding: github:scm-no-required-review github:acme/api (0 -> 1)"]
+
+
+# -- draft commands (Spec I Part A) -------------------------------------------------------------------
+
+GO_MODS = [f"upstream/src/{s}/go.mod" for s in ("shippingservice", "frontend", "checkoutservice", "productcatalogservice")]
+
+
+def test_gate_prints_one_command_per_rule() -> None:
+    new = [*OLD, *(_f("CVE-2026-78669", "high", t) for t in GO_MODS)]
+    (command,) = drafts(_mapping(BASE, findings=new), WITH_FINDINGS)
+    assert command == (
+        "grc suppress draft --tool trivy --rule-id CVE-2026-78669"
+        " --target upstream/src/checkoutservice/go.mod --target upstream/src/frontend/go.mod"
+        " --target upstream/src/productcatalogservice/go.mod --target upstream/src/shippingservice/go.mod"
+        " --kind accepted-risk --days 30 --owner 'human:<you>'"
+    )
+
+
+def test_command_kind_follows_mapping() -> None:
+    gap = {"finding": _f("DS-0029", "high", "Dockerfile"), "reason": "no-rule-match"}
+    mapping = _mapping(BASE, findings=[*OLD, _f("KSV-0020", "low")]) | {"unmapped": [gap]}
+    assert [c.split(" --kind ")[1].split()[0] for c in drafts(mapping, WITH_FINDINGS)] == ["false-positive", "accepted-risk"]
+
+
+def test_no_command_for_change_or_below_fail_on_or_status_only() -> None:
+    change = _f("change-no-approval", "high", "github:acme/api#7", tool="github")
+    assert drafts(_mapping(BASE, findings=[*OLD, change, _f("CVE-2026-2", "medium", "go.mod")]), WITH_FINDINGS) == []
+    assert drafts(_mapping(BASE | {"soc2:cc7.1": "not-satisfied"}, findings=OLD), WITH_FINDINGS) == []
+    assert drafts(_mapping(BASE, findings=[*OLD, _f("KSV-0020", "low")]), DOC) == []  # no findings in the baseline
+
+
+def test_draft_command_quotes_scanner_text() -> None:
+    """Rule ids and targets come from scanned files: each stays one shell word."""
+    (command,) = drafts(_mapping(BASE, findings=[*OLD, _f("KSV-0020", "low", "a b; rm -rf x")]), WITH_FINDINGS)
+    words = shlex.split(command)
+    assert words[words.index("--target") + 1] == "a b; rm -rf x" and words[-1] == "human:<you>"
+
+
+def test_commands_are_sorted_and_on_stderr(tmp_path: Path) -> None:
+    out, baseline = tmp_path / "out", tmp_path / "baseline.json"
+    out.mkdir()
+    (out / "mapping.json").write_text(json.dumps(_mapping(BASE, findings=[*OLD, _f("KSV-0030", "low"), _f("KSV-0020", "low")])))
+    baseline.write_text(json.dumps(WITH_FINDINGS))
+    with pytest.raises(SystemExit) as failed:
+        cli.main(["gate", "--out", str(out), "--baseline", str(baseline)])
+    message = str(failed.value.code)
+    failures, commands = message.split("To draft a suppression for review")
+    assert "new finding: trivy:KSV-0020" in failures and "grc suppress draft" not in failures
+    assert commands.index("KSV-0020") < commands.index("KSV-0030")
+
+
+def test_summary_has_the_commands() -> None:
+    mapping = _mapping(BASE, findings=[*OLD, _f("KSV-0020", "low")])
+    table = summary(mapping, WITH_FINDINGS, drafts(mapping, WITH_FINDINGS))
+    assert table.endswith(
+        "\n### Draft suppressions\n\nRun one, write the reason, and sign it; nothing applies until a person signs.\n\n"
+        "```sh\ngrc suppress draft --tool trivy --rule-id KSV-0020 --target k8s/a.yaml --kind accepted-risk --days 30"
+        " --owner 'human:<you>'\n```\n"
+    )
+    assert "Draft suppressions" not in summary(_mapping(BASE, findings=OLD), WITH_FINDINGS, [])
+
+
+def test_printed_command_drafts_one_suppression(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """End to end: the gate's command, owner filled in, writes one suppression for four files; signed, the gate passes."""
+    shutil.copytree(Path(__file__).parent / "fixtures" / "bundle", tmp_path / "knowledge")
+    (tmp_path / "out").mkdir()
+    monkeypatch.chdir(tmp_path)
+    findings = [_f("CVE-2026-78669", "high", t) for t in GO_MODS]
+
+    def scan() -> dict:
+        mapping = map_findings(load_bundle(tmp_path / "knowledge"), findings, today=date(2026, 10, 12))
+        (tmp_path / "out" / "mapping.json").write_text(json.dumps({"schema_version": SCHEMA_VERSION, **mapping}))
+        return mapping
+
+    baseline = tmp_path / "baseline.json"
+    baseline.write_text(json.dumps({"controls": control_status(scan()), "findings": {}}))
+    with pytest.raises(SystemExit) as failed:
+        cli.main(["gate", "--baseline", str(baseline)])
+    command = str(failed.value.code).splitlines()[-1].strip().replace("'human:<you>'", "human:reviewer")
+    words = shlex.split(command)
+    assert words[:3] == ["grc", "suppress", "draft"]
+    cli.main([*words[1:], "--today", "2026-10-12"])
+    (path,) = (tmp_path / "knowledge" / "suppressions").glob("*.md")
+    lines = [line for line in path.read_text().splitlines() if not line.startswith("<!-- grc: draft")]
+    head, body = "\n".join(lines).split("---\n", 2)[1:]
+    path.write_text(f"---\n{head}verified:\n  - by: \"human:reviewer\"\n    at: \"2026-10-12T10:00:00+00:00\"\n---\n{body}\n")
+    assert [p for p in check_report(tmp_path, load_config(tmp_path))[0] if "suppressions/" in p] == []
+    assert len(scan()["suppressed"]) == 4
+    cli.main(["gate", "--baseline", str(baseline)])

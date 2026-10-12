@@ -4,16 +4,20 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 from pathlib import Path
 from typing import Any
 
 from grc_evidence.contract import read_mapping
+from grc_evidence.suppress import DEFAULT_DAYS
 
 Json = dict[str, Any]
 BASELINE = Path("expected/control-status.json")
 FAILING = "not-satisfied"
 RANKED = ("critical", "high", "medium", "low", "info")  # --fail-on levels for vulnerabilities; `unknown` reaches none
 VULNERABILITY = "vulnerability"  # the tag run_scan puts on a dependency advisory (CVE, GHSA, GO, ...)
+DRAFT_NOTE = "Run one, write the reason, and sign it; nothing applies until a person signs."
+OWNER_PLACEHOLDER = "human:<you>"  # printed quoted; `grc suppress draft` refuses it, so a person puts their name
 
 
 def control_status(mapping: Json) -> dict[str, str]:
@@ -75,22 +79,49 @@ def problems(mapping: Json, baseline: Json, fail_on: str = "high") -> list[str]:
         for key, status in control_status(mapping).items()
         if status == FAILING and statuses.get(key) != FAILING
     ]
-    if "findings" in baseline:
-        known, levels = _counts(baseline), RANKED[: RANKED.index(fail_on) + 1]
-        for fid, fs in _new(mapping, baseline).items():
-            if all(f["tool"] == "github" and f["rule_id"].startswith("change-") for f in fs):
-                continue
-            count = f"{known.get(fid, 0)} -> {len(fs)}"
-            if not any(VULNERABILITY in f["tags"] for f in fs):
-                found.append(f"new finding: {fid} ({count})")
-            elif worst := next((level for level in levels if any(f["severity"] == level for f in fs)), None):
-                found.append(f"new {worst} vulnerability: {fid} ({count})")
+    found += [line for line, _ in _failing(mapping, baseline, fail_on)]
     found += [f"suppression {sid} expired" for sid in mapping.get("expired_suppressions", [])]
     return found
 
 
-def summary(mapping: Json, baseline: Json) -> str:
-    """A Markdown table of each control's baseline and current status, changes marked."""
+def _failing(mapping: Json, baseline: Json, fail_on: str) -> list[tuple[str, list[Json]]]:
+    """The new findings that fail the gate (see `problems`), each identity with its failure line."""
+    if "findings" not in baseline:
+        return []
+    known, levels, failing = _counts(baseline), RANKED[: RANKED.index(fail_on) + 1], []
+    for fid, fs in _new(mapping, baseline).items():
+        if all(f["tool"] == "github" and f["rule_id"].startswith("change-") for f in fs):
+            continue
+        count = f"{known.get(fid, 0)} -> {len(fs)}"
+        if not any(VULNERABILITY in f["tags"] for f in fs):
+            failing.append((f"new finding: {fid} ({count})", fs))
+        elif worst := next((level for level in levels if any(f["severity"] == level for f in fs)), None):
+            failing.append((f"new {worst} vulnerability: {fid} ({count})", fs))
+    return failing
+
+
+def drafts(mapping: Json, baseline: Json, fail_on: str = "high") -> list[str]:
+    """One `grc suppress draft` command per tool and rule id among the new findings the gate fails on, every value
+    shell-quoted: rule ids and targets come from scanned files. A rule whose findings are coverage gaps gets
+    `false-positive`, the only kind allowed there; any other, `accepted-risk`. A person reads and edits it."""
+    gaps = {(u["finding"]["tool"], u["finding"]["rule_id"]) for u in mapping["unmapped"]}
+    targets: dict[tuple[str, str], set[str]] = {}
+    for _, fs in _failing(mapping, baseline, fail_on):
+        for f in fs:
+            targets.setdefault((f["tool"], f["rule_id"]), set()).add(f["target"])
+    return [
+        shlex.join([
+            "grc", "suppress", "draft", "--tool", tool, "--rule-id", rule_id,
+            *(word for target in sorted(files) for word in ("--target", target)),
+            "--kind", "false-positive" if (tool, rule_id) in gaps else "accepted-risk",
+            "--days", str(DEFAULT_DAYS), "--owner", OWNER_PLACEHOLDER,
+        ])
+        for (tool, rule_id), files in sorted(targets.items())
+    ]
+
+
+def summary(mapping: Json, baseline: Json, commands: list[str] | None = None) -> str:
+    """A Markdown table of each control's baseline and current status, changes marked, then the draft commands."""
     statuses = baseline["controls"]
     lines = ["## Compliance gate", "", "| Control | Baseline | Now | |", "|---|---|---|---|"]
     for key, status in control_status(mapping).items():
@@ -101,6 +132,8 @@ def summary(mapping: Json, baseline: Json) -> str:
         known = _counts(baseline)
         new = sum(len(fs) - known.get(fid, 0) for fid, fs in _new(mapping, baseline).items())
         lines += ["", f"Findings not in the baseline (any kind and severity): {new}"]
+    if commands:
+        lines += ["", "### Draft suppressions", "", DRAFT_NOTE, "", "```sh", *commands, "```"]
     return "\n".join(lines) + "\n"
 
 
@@ -123,11 +156,15 @@ def main(argv: list[str] | None = None) -> None:
     baseline = json.loads(args.baseline.read_text(encoding="utf-8"))
     if "findings" not in baseline:
         print(f"gate: {args.baseline} records no findings, so new findings are not checked; rewrite it with --write-baseline")
+    commands = drafts(mapping, baseline, args.fail_on)
     if args.summary:
         with args.summary.open("a", encoding="utf-8") as f:
-            f.write(summary(mapping, baseline))
+            f.write(summary(mapping, baseline, commands))
     if found := problems(mapping, baseline, args.fail_on):
-        raise SystemExit("grc gate: failed\n" + "\n".join(f"  {p}" for p in found))
+        lines = ["grc gate: failed", *(f"  {p}" for p in found)]
+        if commands:
+            lines += ["To draft a suppression for review (a person writes the reason and signs it):", *(f"  {c}" for c in commands)]
+        raise SystemExit("\n".join(lines))
     print("gate: passed")
 
 
