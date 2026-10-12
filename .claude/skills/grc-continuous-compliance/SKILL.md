@@ -57,7 +57,8 @@ the engine version), as `uv run grc …` in the engine's own repository, or as
    move a finding between a control and the coverage-gap list.
 5. **Propose, don't patch the bundle.** Run `grc triage` and read
    `out/proposals.json`: one proposed in-bundle control, or `none`, per
-   coverage-gap rule. Present the proposals for human review as `rule_ids`
+   coverage-gap rule, under `proposals`, with the mapping hash, model, and
+   settings it was made with. Present the proposals for human review as `rule_ids`
    additions to the relevant guardrail concept. Never apply them, and do not
    edit `knowledge/` unasked.
 6. **Suppressions are a person's decision.** If a finding looks like a false

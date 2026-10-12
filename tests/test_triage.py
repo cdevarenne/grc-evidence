@@ -9,7 +9,7 @@ from grc_evidence.data import SCHEMA_VERSION
 from grc_evidence.digest import bundle_digest, scan_digest
 from grc_evidence.map_findings import map_findings
 from grc_evidence.okf_lib import FRAMEWORK_SCOPES, load_bundle
-from grc_evidence.triage import SCOPE_RULE, SYSTEM, request, triage
+from grc_evidence.triage import SCOPE_RULE, SYSTEM, request, rule_name, triage
 
 FIXTURES = Path(__file__).parent / "fixtures"
 BUNDLE = load_bundle(FIXTURES / "bundle")
@@ -136,4 +136,26 @@ def test_main_batch_flag_sends_one_message_batch(tmp_path, monkeypatch) -> None:
         monkeypatch.setattr(sys, "argv", ["triage", "--knowledge", str(FIXTURES / "bundle"), "--out", str(tmp_path), *flag])
         triage_module.main()
         assert calls[0] == expected
-    assert len(json.loads((tmp_path / "proposals.json").read_text())) == 2
+    assert len(json.loads((tmp_path / "proposals.json").read_text())["proposals"]) == 2
+
+
+def test_proposals_file_names_its_inputs(tmp_path, monkeypatch) -> None:
+    from grc_evidence import triage as triage_module
+    from grc_evidence.narrate import mapping_sha256
+
+    (tmp_path / "mapping.json").write_text(json.dumps({"schema_version": SCHEMA_VERSION, **MAPPING}))
+    stub = StubLLM({rule_name(g): {"rule": rule_name(g), "proposal": "none", "rationale": "r", "confidence": "high"}
+                    for g in _gaps()})
+    stub.model = "stub-model"
+    monkeypatch.setattr(triage_module.LLM, "from_env", staticmethod(lambda out, default_model: stub))
+    triage_module.main(["--knowledge", str(FIXTURES / "bundle"), "--out", str(tmp_path), "--variant", "baseline",
+                        "--abstain-on", "low"])
+    doc = json.loads((tmp_path / "proposals.json").read_text())
+    assert doc == {
+        "mapping_sha256": mapping_sha256(tmp_path / "mapping.json"),
+        "model": "stub-model",
+        "variant": "baseline",
+        "abstain_on": "low",
+        "proposals": doc["proposals"],
+    }
+    assert [p["rule"] for p in doc["proposals"]] == [rule_name(g) for g in _gaps()]

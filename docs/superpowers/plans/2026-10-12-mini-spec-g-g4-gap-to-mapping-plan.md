@@ -41,9 +41,9 @@
 
 **Files:** `src/grc_evidence/triage.py`, `tests/test_triage.py`, `src/grc_evidence/data/skill/SKILL.md`, `docs/llm.md`.
 
-- [ ] **Step 1: Failing tests:** `test_proposals_file_names_its_inputs` (keys `mapping_sha256` = `narrate.mapping_sha256(out/mapping.json)`, `model`, `variant`, `abstain_on`, `proposals`).
-- [ ] **Step 2: Implement;** docs.
-- [ ] **Step 3:** Commit: "grc triage: proposals.json names its mapping, model and settings".
+- [x] **Step 1: Failing tests:** `test_proposals_file_names_its_inputs` (keys `mapping_sha256` = `narrate.mapping_sha256(out/mapping.json)`, `model`, `variant`, `abstain_on`, `proposals`).
+- [x] **Step 2: Implement;** docs.
+- [x] **Step 3:** Commit: "grc triage: proposals.json names its mapping, model and settings".
 
 ### Task 2: A signed concept must not keep a draft marker
 

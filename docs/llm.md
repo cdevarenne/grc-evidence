@@ -10,7 +10,9 @@ An optional Claude API step adds words and proposals on top, never statuses:
   it names a status other than the control's own, calls anything satisfied,
   compliant, or passed, or uses a number that is not in the input.
 - **`make triage`** proposes an in-bundle control, or `none`, for each coverage
-  gap, in `out/proposals.json`. Nothing is applied: a person adds `rule_ids`.
+  gap, in `out/proposals.json`, which also names the `mapping.json` it was made
+  from (`mapping_sha256`), the model, `variant`, and `abstain_on`. Nothing is
+  applied: a person adds `rule_ids`.
   Default: Haiku 4.5, each control's framework scope and each gap's files in the
   input, and `low` and `medium` confidence proposals turned into `none` (the
   model's guess is kept in `cutoff_from`), chosen by the measurements below.

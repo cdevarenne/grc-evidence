@@ -10,6 +10,7 @@ from typing import Any
 from grc_evidence.contract import read_mapping
 from grc_evidence.digest import bundle_digest, dumps, scan_digest
 from grc_evidence.llm import LLM, LLMError, Request
+from grc_evidence.narrate import mapping_sha256
 from grc_evidence.okf_lib import load_bundle
 
 Json = dict[str, Any]
@@ -182,7 +183,14 @@ def main(argv: list[str] | None = None) -> None:
     proposals = apply_cutoff(
         triage(llm, bundle_doc, gaps, batch=args.batch, variant=args.variant), ABSTAIN[args.abstain_on]
     )
-    (args.out / "proposals.json").write_text(json.dumps(proposals, indent=2) + "\n", encoding="utf-8")
+    doc = {
+        "mapping_sha256": mapping_sha256(args.out / "mapping.json"),
+        "model": llm.model,
+        "variant": args.variant,
+        "abstain_on": args.abstain_on,
+        "proposals": proposals,
+    }
+    (args.out / "proposals.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
     mode = "batch" if args.batch else "live"
     print(f"triage ({llm.model}, {args.variant}, abstain on {args.abstain_on}, {mode}): {len(proposals)} proposal(s) in "
           f"{args.out / 'proposals.json'}; nothing applied to knowledge/")
