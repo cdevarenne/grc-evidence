@@ -47,7 +47,7 @@ checks it. Each line records the collector, the repo, the window, what was
 read, the hash of each output, the summary and the rate-limit cost. `grc run`
 appends only when its inputs are exactly the commit (`dirty: false` in
 `run.json`); otherwise it says so and appends nothing, since its statuses would
-not be evidence of a commit (2.2.1). Samples:
+not be evidence of a commit (2.3.0). Samples:
 [`examples/collect/`](../examples/collect/).
 
 ## OSCAL output

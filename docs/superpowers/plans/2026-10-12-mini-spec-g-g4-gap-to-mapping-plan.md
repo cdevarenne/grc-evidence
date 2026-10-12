@@ -127,7 +127,7 @@ def test_no_gaps_writes_nothing(tmp_path): ...
 
 ### Task 4: Release 2.3.0
 
-- [ ] **Step 1:** Version 2.3.0 (G4 and #141); `docs/roadmap.md`, `docs/limits.md`, install pins; `docs/outputs.md` says #141 ships in 2.3.0.
+- [x] **Step 1:** Version 2.3.0 (G4 and #141); `docs/roadmap.md`, `docs/limits.md`, install pins; `docs/outputs.md` says #141 ships in 2.3.0.
 - [ ] **Step 2:** `make examples` unchanged apart from versions; owner runs `LLM_MODE=claude-cli make examples-llm`.
 - [ ] **Step 3: Owner:** tags `v2.3.0`; release notes.
 - [ ] **Step 4: Demo (optional):** `make triage` and `grc propose` on the demo's gaps; the owner decides whether any draft is worth applying.

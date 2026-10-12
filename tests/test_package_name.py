@@ -11,7 +11,7 @@ def test_the_old_module_name_is_gone() -> None:
 
 
 def test_version_reads_new_name() -> None:
-    assert version("grc-evidence") == "2.2.0"
+    assert version("grc-evidence") == "2.3.0"
 
 
 def test_prop_ns() -> None:

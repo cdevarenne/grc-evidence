@@ -75,6 +75,13 @@ scan for a person to finish and sign, and `grc gate` prints the draft command fo
 each new finding it fails on
 ([spec](superpowers/specs/2026-10-12-mini-spec-i-part-a-suppression-drafts.md)).
 
+`2.3.0` adds `grc propose` (Spec G, G4): each coverage gap `grc triage` mapped to
+a control with high confidence becomes a draft `Scanner Check` concept in a patch
+for a person to apply, write and sign, and the other gaps an issue body
+([docs/llm.md](llm.md)). `out/proposals.json` now names the mapping, model and
+settings it was made with; any signed concept with a draft marker fails to load;
+and `grc run` appends to the evidence ledger only from a clean run.
+
 Built beyond the engine:
 
 - **Adopter repo** (Spec F Part B):
@@ -84,8 +91,9 @@ Built beyond the engine:
   for it produced 1.2.0 and 1.2.1. See its
   [case study](https://github.com/cdevarenne/grc-evidence-boutique/blob/main/docs/case-study.md)
   and [Spec F](superpowers/specs/2026-09-29-mini-spec-f-engine-and-adopter-repo.md).
-- **Agentic workflows, first part** (Spec G, G1 and G2): `grc mcp`
-  ([docs/mcp.md](mcp.md)) and `grc agent posture` ([docs/agents.md](agents.md)).
+- **Agentic workflows, first part** (Spec G, G1, G2 and G4): `grc mcp`
+  ([docs/mcp.md](mcp.md)), `grc agent posture` ([docs/agents.md](agents.md)),
+  and `grc propose` ([docs/llm.md](llm.md)).
 
 Next:
 
@@ -109,7 +117,7 @@ Deliberately left out, or not started:
   [Spec E](superpowers/specs/2026-09-29-mini-spec-e-compliance-data-layer.md).
 - **Agentic workflows, remaining stories** The MCP server (G1, 1.6.0) and the
   workflow runner with its first workflow, `posture` (G2, 1.7.0 to 1.8.1), are
-  built. Still specified but not started: gap-to-mapping proposals (G4), their
-  evaluation (G6), change review on pull requests (G3), then G5 and G7, in that
-  order. Each drafts; a person approves:
+  built, and so are gap-to-mapping drafts (G4, 2.3.0), without an MCP tool yet.
+  Still specified but not started: their evaluation (G6), change review on pull
+  requests (G3), then G5 and G7, in that order. Each drafts; a person approves:
   [Spec G](superpowers/specs/2026-10-01-mini-spec-g-agentic-workflows.md).

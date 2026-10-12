@@ -35,6 +35,10 @@ What grc-evidence does not do, or does only partly. Read this before relying on 
   independent second labeler. Most configurations were run once; the two final
   candidates were re-run three times, which showed a spread of up to three
   cases per run, so differences of a case or two are not evidence.
+- **Mapping drafts are only as good as triage.** `grc propose` drafts a concept
+  only for a `high` confidence proposal, with the one control triage named. It
+  never edits an existing concept, so merging a draft into an existing check, or
+  tagging a second framework's control, is a person's edit.
 - **The bundle is readable anywhere, reusable in part.** Any OKF tool can read
   it (`make render` uses okflib). The control, crosswalk,
   and scanner concepts carry over to another project; the stack, the policies'
