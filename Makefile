@@ -7,7 +7,7 @@ TOOLBIN := $(CURDIR)/.tools/bin
 export PATH := $(TOOLBIN):$(PATH)
 export TRIVY_CACHE_DIR := $(CURDIR)/.tools/trivy-cache
 
-.PHONY: bootstrap lock-scanners sync-base audit examples-llm scan narrate triage eval-triage render graph-image test test-integration examples examples-h clean
+.PHONY: bootstrap lock-scanners sync-base audit examples-llm scan narrate triage propose eval-triage render graph-image test test-integration examples examples-h clean
 
 bootstrap:
 	uv sync
@@ -39,6 +39,9 @@ narrate:
 
 triage:
 	$(GRC_LLM) triage --knowledge knowledge --out out $(TRIAGE_ARGS)
+
+propose:    # no model call: triage's proposals as out/agent/mapping.patch and out/agent/gaps.md
+	$(GRC) propose --knowledge knowledge --out out
 
 eval-triage:
 	$(PY_LLM) grc_evidence.eval_triage --knowledge knowledge --out out $(EVAL_ARGS)

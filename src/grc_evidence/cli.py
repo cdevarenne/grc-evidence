@@ -24,6 +24,7 @@ from grc_evidence import (
     manifest,
     map_findings,
     narrate,
+    propose,
     render_report,
     run_scan,
     sample,
@@ -39,7 +40,7 @@ from grc_evidence.errors import GrcError
 # Each step's own options pass through unchanged: `grc scan --target app` is `run_scan.py --target app`.
 STEPS: dict[str, ModuleType] = {
     "scan": run_scan, "map": map_findings, "oscal": to_oscal, "report": render_report, "manifest": manifest,
-    "triage": triage, "gate": gate, "ledger": ledger, "sample": sample,
+    "triage": triage, "propose": propose, "gate": gate, "ledger": ledger, "sample": sample,
     "window": window_report,
 }
 COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "mcp", "agent", "run", "narrate", "collect", "suppress", *STEPS)

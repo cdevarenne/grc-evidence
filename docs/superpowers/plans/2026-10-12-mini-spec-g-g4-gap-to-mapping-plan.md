@@ -57,7 +57,7 @@
 
 **Files:** create `src/grc_evidence/propose.py`, `tests/test_propose.py`; `src/grc_evidence/cli.py`, `docs/llm.md`, `README.md` (the command list).
 
-- [ ] **Step 1: Failing tests** (fixture: the test bundle, a mapping with three gap rules, proposals: one `high` to `soc2:cc7.1`, one `none` with `cutoff_from`, one `invalid`)
+- [x] **Step 1: Failing tests** (fixture: the test bundle, a mapping with three gap rules, proposals: one `high` to `soc2:cc7.1`, one `none` with `cutoff_from`, one `invalid`)
 
 ```python
 def test_patch_applies_and_the_gap_moves_to_the_control(tmp_path): ...  # git apply --check; load_bundle; map_findings: rule on cc7.1
@@ -77,7 +77,7 @@ def test_no_gaps_writes_nothing(tmp_path): ...
 # The patch test runs `git init` in tmp_path and checks with `git apply --check`, then applies it.
 ```
 
-- [ ] **Step 2: Implement.** `drafts(bundle, mapping, proposals_doc, knowledge) -> (patch_text, issue_text, skipped)` is pure; `main` takes `--config`, `--knowledge`, `--out`, reads `out/mapping.json` and `out/proposals.json`, writes `out/agent/`, prints what it wrote and what it skipped. Each new file in the patch is a `git`-style new-file diff (`--- /dev/null`, `+++ b/<path>`).
+- [x] **Step 2: Implement.** `drafts(bundle, mapping, proposals_doc, knowledge) -> (patch_text, issue_text, skipped)` is pure; `main` takes `--config`, `--knowledge`, `--out`, reads `out/mapping.json` and `out/proposals.json`, writes `out/agent/`, prints what it wrote and what it skipped. Each new file in the patch is a `git`-style new-file diff (`--- /dev/null`, `+++ b/<path>`).
 
   The concept (`MARKER` is `<!-- grc: draft. Write this section, then delete this line. -->`):
 
@@ -123,7 +123,7 @@ def test_no_gaps_writes_nothing(tmp_path): ...
   ```
 
   The patch notes (a comment block at the top of `mapping.patch`, ignored by `git apply`) name the same triage configuration, the mapping hash, the `docs/llm.md` link, and each drafted rule with its control.
-- [ ] **Step 3:** Commit: "grc propose: coverage gaps as a mapping patch and an issue body".
+- [x] **Step 3:** Commit: "grc propose: coverage gaps as a mapping patch and an issue body".
 
 ### Task 4: Release 2.3.0
 
