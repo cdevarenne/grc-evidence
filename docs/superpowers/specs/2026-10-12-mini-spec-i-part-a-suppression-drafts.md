@@ -1,7 +1,7 @@
 # Mini Spec I, Part A — suppression drafts, and one acceptance across several files
 
 - **Date:** 2026-10-12
-- **Status:** draft, for the owner's plan review. Plan: [plan](../plans/2026-10-12-mini-spec-i-part-a-plan.md).
+- **Status:** approved by the owner on 2026-10-12, with all six decisions of §6 as recommended. Plan: [plan](../plans/2026-10-12-mini-spec-i-part-a-plan.md).
 - **Issue:** #143. **Release:** 2.2.0. **LLM cost:** none (§6, decision 3).
 - **Depends on:** v2.1.0.
 
@@ -95,7 +95,7 @@ To draft a suppression for review (a person writes the reason and signs it):
 - Every value is shell-quoted (`shlex.quote`): targets and rule ids come from scanned files.
 - `--summary` writes the same commands to the CI job summary, in a code block.
 
-## 6. Decisions for the owner
+## 6. Decisions (owner, 2026-10-12: all as recommended)
 
 1. **Separate flags, not `--finding tool:rule@target`.** #143 sketched `--finding trivy:CVE-…@<target>`. None of the demo's 445 scan findings has `:` or `@` in a rule id or target today, but neither field is constrained: a scoped npm path such as `node_modules/@scope/pkg` would hold `@`, and one string could then not be split reliably. Recommendation: `--tool`, `--rule-id`, `--target` (repeatable).
 2. **Owner.** (a) `--owner` is required; the gate prints `--owner human:<you>`, so the command needs one edit. (b) An optional `suppress.owner` in `grc.yaml` fills it, so the printed command runs as is. Recommendation: (a): less code, and the person reads the command before running it.
