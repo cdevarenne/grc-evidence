@@ -144,6 +144,21 @@ def test_an_unverified_suppression_is_pending_and_not_applied(tmp_path: Path, ve
     assert "CKV_TEST_99" in [u["finding"]["rule_id"] for u in m["unmapped"]]
 
 
+DRAFT = "Reviewed: does not apply here.\n\n# Compensating control\n\n<!-- grc: draft. Write this section, then delete this line. -->"
+
+
+def test_signed_draft_marker_fails_the_load(tmp_path: Path) -> None:
+    """Spec I: a person must not sign the facts list of a draft as the reason."""
+    signed = _suppression("false-positive", "checkov", "CKV_TEST_99", "app/Dockerfile", reason=DRAFT)
+    with pytest.raises(BundleError, match=r"^suppressions/fp\.md: .*delete every draft marker line"):
+        _bundle(tmp_path, fp=signed)
+
+
+def test_unsigned_draft_marker_is_pending(tmp_path: Path) -> None:
+    draft = _suppression("false-positive", "checkov", "CKV_TEST_99", "app/Dockerfile", reason=DRAFT, verified_by=None)
+    assert _mapping(tmp_path, fp=draft)["pending_suppressions"][0]["reason"] == "not verified by a person"
+
+
 def test_expired_suppression_puts_the_finding_back(tmp_path: Path) -> None:
     m = _mapping(tmp_path, today=date(2026, 12, 28), fp=FALSE_POSITIVE)
     assert "CKV_TEST_99" in [u["finding"]["rule_id"] for u in m["unmapped"]]

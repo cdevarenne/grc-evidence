@@ -40,6 +40,7 @@ Any concept with `rule_ids`: guardrail policies, scanners, scanner checks ([sche
 | `approved`, `expires` | `YYYY-MM-DD` | schema and loader |
 | `expires` | after `approved`, at most 90 days later | loader |
 | body | a non-empty `# Reason` section | loader |
+| body, once signed | no `<!-- grc: draft` marker line left by `grc suppress draft` | loader |
 | `kind: accepted-risk` | the finding maps to a control in the bundle | loader |
 | `verified` | applied only once a person (`human:`) verified it | mapping |
 
