@@ -31,6 +31,7 @@ def test_enrich_and_propose_use_the_validated_llm_step() -> None:
     text = SKILL.read_text()
     assert "grc narrate" in text and "out/narratives.json" in text
     assert "grc triage" in text and "out/proposals.json" in text
+    assert "grc propose" in text and "out/agent/mapping.patch" in text and "out/agent/gaps.md" in text
     assert "never apply" in text.lower()
 
 

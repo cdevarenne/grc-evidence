@@ -58,9 +58,12 @@ the engine version), as `uv run grc …` in the engine's own repository, or as
 5. **Propose, don't patch the bundle.** Run `grc triage` and read
    `out/proposals.json`: one proposed in-bundle control, or `none`, per
    coverage-gap rule, under `proposals`, with the mapping hash, model, and
-   settings it was made with. Present the proposals for human review as `rule_ids`
-   additions to the relevant guardrail concept. Never apply them, and do not
-   edit `knowledge/` unasked.
+   settings it was made with. Then run `grc propose`: it writes
+   `out/agent/mapping.patch` (a draft `Scanner Check` concept for each
+   high-confidence proposal) and `out/agent/gaps.md` (an issue body for every
+   other gap). Present both for human review. Never apply the patch, never
+   delete its draft markers or sign a concept, never file the issue unasked,
+   and do not edit `knowledge/` unasked.
 6. **Suppressions are a person's decision.** If a finding looks like a false
    positive or a risk to accept, say so and draft the suppression for review
    (one exact finding, owner, reason, expiry within 90 days). Never add, renew,
