@@ -1,7 +1,7 @@
 # Mini Spec I, Part A — suppression drafts, and one acceptance across several files
 
 - **Date:** 2026-10-12
-- **Status:** approved by the owner on 2026-10-12, with all six decisions of §6 as recommended. Plan: [plan](../plans/2026-10-12-mini-spec-i-part-a-plan.md).
+- **Status:** approved by the owner on 2026-10-12, with all six decisions of §6 as recommended. Revised the same day after the Gemini 3.8 Flash plan review (assessment: `reviews/grc-evidence/claude-assessment-of-adversarial-review-gemini-3.8-flash-high12Oct261132.md`): §4, §4.1, §5, §6 decision 7, §8. Plan: [plan](../plans/2026-10-12-mini-spec-i-part-a-plan.md).
 - **Issue:** #143. **Release:** 2.2.0. **LLM cost:** none (§6, decision 3).
 - **Depends on:** v2.1.0.
 
@@ -52,31 +52,39 @@ grc suppress draft --tool trivy --rule-id CVE-2026-78669 \
   --kind accepted-risk --days 30 --owner human:cdevarenne
 ```
 
-- **Reads** `out/mapping.json` (from the last `grc run`) and the bundle named by `grc.yaml`.
+- **Reads** `out/mapping.json` (from the last `grc run`) and the bundle named by `grc.yaml`. Flags `--config`, `--knowledge`, `--out` and `--today` work as for `map_findings`.
 - **Checks, and refuses with a message:**
   - each target matches a finding in `mapping.json` with that tool and rule id (on a control or in the gap list);
   - `accepted-risk` only when the findings map to a control (the load-time rule, checked early);
   - no existing suppression, in any state, names the same tool, rule id and target ("edit or remove `<path>` first"; renewing stays a person's edit);
-  - `--days` from 1 to 90; `--owner` starts with `human:`;
-  - the file does not exist yet.
-- **Writes** `<knowledge>/suppressions/<id>.md`. The id is `--id` when given, otherwise a slug of the tool, the rule id and, for one target, the target (`trivy-cve-2026-78669-upstream-src-frontend-go-mod`). The frontmatter: `type`, `title` (`<rule_id> in <target>` or `<rule_id> in <n> files`), `kind`, `finding`, `owner`, `approved` (today, UTC: the date `grc run` uses, so the draft is never "approved after this scan's date"), `expires`, `tags: [suppression]`, and `generated: {by: grc-evidence/<version>, at: <now>}`. No `verified`.
-- **The body:** a `# Reason` section that holds the draft marker and the facts a reviewer needs, then, for `accepted-risk`, a `# Compensating control` section with the marker:
+  - `--days` from 1 to 90;
+  - `--owner` is `human:` followed by characters other than whitespace, `<` and `>` (so the gate's `human:<you>` placeholder is refused: "replace <you> with your name");
+  - `--id`, when given, matches `^[a-z0-9][a-z0-9-]*$`, has at most 100 characters, is not `index` or `log`, and resolves inside `<knowledge>/suppressions/`;
+  - the file does not exist yet ("pass --id").
+- **Writes** `<knowledge>/suppressions/<id>.md`. The id is `--id` when given. Otherwise it is a slug of the tool and the rule id, plus the target when there is one target: `trivy-cve-2026-78669-upstream-src-frontend-go-mod` for one, `trivy-cve-2026-78669` for several. The slug is lowercase; each run of characters outside `[a-z0-9]` becomes one `-`; it is cut to 100 characters. The frontmatter: `type`, `title` (`<rule_id> in <target>` or `<rule_id> in <n> files`), `kind`, `finding`, `owner`, `approved` (today, UTC: the date `grc run` uses, so the draft is never "approved after this scan's date"), `expires`, `tags: [suppression]`, and `generated: {by: grc-evidence/<version>, at: <now>}`. No `verified`.
+- **The body:** a `# Reason` section that holds the draft marker and the facts a reviewer needs, then, for `accepted-risk`, a `# Compensating control` section with the same marker:
 
   ```markdown
   # Reason
 
-  <!-- grc: draft. Write why this is accepted, then delete this line. -->
+  <!-- grc: draft. Write this section, then delete this line. -->
 
   From the scan of 2026-10-12 (scanner text, quoted as reported):
 
   - `upstream/src/frontend/go.mod`: high, "golang.org/x/net: HTTP/2 ..." (controls: soc2:cc7.1)
+
+  # Compensating control
+
+  <!-- grc: draft. Write this section, then delete this line. -->
   ```
 
-- **Prints** the path, and the next steps: write the reason, delete the marker lines, add `verified`, run `grc check` and `make scan gate`.
+  Scanner text is collapsed to one line.
+- **Prints** the path, and the next steps: write each section, delete the marker lines, add `verified`, then run `grc check` and `make scan gate`.
+- **`grc check` fails on the draft until it is signed** ("not verified by a person"), as for any concept; `grc run` loads it and lists it as pending. So an unsigned draft cannot pass CI (decision 7).
 
 ### 4.1 A signed draft that was not edited fails the load
 
-A suppression with a `human:` `verified` entry whose body still contains `<!-- grc: draft` is a `BundleError` ("delete the draft marker after writing the reason"). An unverified draft loads and is pending, as any unverified suppression. This keeps a person from signing the facts list as the reason.
+A suppression with a `human:` `verified` entry whose body still contains `<!-- grc: draft` is a `BundleError` naming the file ("delete every draft marker line after writing each section"). An unverified draft loads and is pending, as any unverified suppression. This keeps a person from signing the facts list as the reason.
 
 ## 5. The gate names each new finding
 
@@ -87,15 +95,17 @@ grc gate: failed
   new high vulnerability: trivy:CVE-2026-78669 upstream/src/frontend/go.mod (0 -> 1)
   ...
 To draft a suppression for review (a person writes the reason and signs it):
-  grc suppress draft --tool trivy --rule-id CVE-2026-78669 --target upstream/src/checkoutservice/go.mod ... --kind accepted-risk --days 30 --owner human:<you>
+  grc suppress draft --tool trivy --rule-id CVE-2026-78669 --target upstream/src/checkoutservice/go.mod ... --kind accepted-risk --days 30 --owner 'human:<you>'
 ```
 
 - Only for the findings that failed the gate: not for `change-*` findings, not for vulnerabilities below `--fail-on`, not for a control regression without a new finding, not for an expired suppression.
-- `--kind accepted-risk` when the findings map to a control, `--kind false-positive` when they are a coverage gap (the only kind allowed there). The person can change it before running the command; the draft records whatever kind it was given.
-- Every value is shell-quoted (`shlex.quote`): targets and rule ids come from scanned files.
-- `--summary` writes the same commands to the CI job summary, in a code block.
+- `--kind accepted-risk` when the findings map to a control, `--kind false-positive` when they are a coverage gap (the only kind allowed there). The mapping is by tool and rule id, so all of a rule's findings are on controls or all are gaps; the gate reads it from `mapping.json` (`unmapped`). The person can change it before running the command; the draft records whatever kind it was given.
+- Every value is shell-quoted (`shlex.quote`): targets and rule ids come from scanned files. The owner placeholder is printed quoted, `'human:<you>'`: unquoted, `<` and `>` are a shell syntax error.
+- Commands are sorted by tool and rule id, targets in sorted order.
+- The commands are part of the failure message (stderr), after the failure list.
+- `--summary` appends `### Draft suppressions`, one line ("Run one, write the reason, and sign it; nothing applies until a person signs."), and the commands in a `sh` code block.
 
-## 6. Decisions (owner, 2026-10-12: all as recommended)
+## 6. Decisions (owner, 2026-10-12: 1 to 6 as recommended; 7 open)
 
 1. **Separate flags, not `--finding tool:rule@target`.** #143 sketched `--finding trivy:CVE-…@<target>`. None of the demo's 445 scan findings has `:` or `@` in a rule id or target today, but neither field is constrained: a scoped npm path such as `node_modules/@scope/pkg` would hold `@`, and one string could then not be split reliably. Recommendation: `--tool`, `--rule-id`, `--target` (repeatable).
 2. **Owner.** (a) `--owner` is required; the gate prints `--owner human:<you>`, so the command needs one edit. (b) An optional `suppress.owner` in `grc.yaml` fills it, so the printed command runs as is. Recommendation: (a): less code, and the person reads the command before running it.
@@ -103,6 +113,7 @@ To draft a suppression for review (a person writes the reason and signs it):
 4. **The draft marker is a load error once signed** (§4.1). Recommendation: yes.
 5. **Default `--days`:** 30, as both demo acceptances. The gate prints `--days 30`.
 6. **The demo's four `x/net` files.** After 2.2.0, merge them into one `targets` suppression? It needs a new `verified` entry. Recommendation: yes, as the first real use; the owner reviews and signs it.
+7. **`grc check` stays strict on unsigned drafts** (plan review F-01). (a) An unsigned draft fails `grc check`, as any unverified concept, so it cannot pass CI; it lives in the working tree until signed. (b) Exempt suppressions from the check, so an unsigned draft can be merged and sits on `main` as pending. Recommendation: (a): no code change, one rule for every concept. **Awaiting the owner.**
 
 ## 7. Out of scope
 
@@ -114,7 +125,7 @@ To draft a suppression for review (a person writes the reason and signs it):
 ## 8. Done when
 
 - A suppression with `targets` loads, applies per target, and reports unmatched targets in `unused_targets`; the schema and the loader reject `target` with `targets`, a one-item `targets`, duplicates and wildcards.
-- `grc suppress draft` writes a file that `grc check` loads and the scan lists as pending; each refusal in §4 has a test.
+- `grc suppress draft` writes a file that the scan lists as pending and `grc check` rejects as not verified until a person signs it; each refusal in §4 has a test.
 - A verified suppression with the draft marker fails the load.
-- On the CVE-2026-78669 case (a fixture with four `go.mod` findings), `grc gate` prints one command that, run as printed (owner filled in), writes one suppression covering the four files.
+- On the CVE-2026-78669 case (a fixture with four `go.mod` findings), `grc gate` prints one command that, run with the owner filled in, writes one suppression covering the four files; signed, it passes `grc check` and the gate.
 - `uv run pytest -q`, `ruff`, `mypy` and `make test-integration` pass; scan outputs for bundles without `targets` are unchanged apart from the contract version.

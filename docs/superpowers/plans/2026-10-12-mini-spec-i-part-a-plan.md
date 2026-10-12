@@ -2,7 +2,7 @@
 
 **Goal:** a suppression can name one advisory in several listed files; `grc suppress draft` writes a pending suppression from the last scan; the gate prints the draft command for each new finding it fails on. Release 2.2.0.
 
-**Spec:** `docs/superpowers/specs/2026-10-12-mini-spec-i-part-a-suppression-drafts.md`. **Issue:** #143.
+**Spec:** `docs/superpowers/specs/2026-10-12-mini-spec-i-part-a-suppression-drafts.md`. **Issue:** #143. **Review:** revised on 2026-10-12 after the Gemini 3.8 Flash plan review (`reviews/grc-evidence/claude-assessment-of-adversarial-review-gemini-3.8-flash-high12Oct261132.md`).
 
 ## Global constraints
 
@@ -17,12 +17,13 @@
 2. **Shell injection through the printed command.** Rule ids and targets come from scanned files. Test: Task 4 `test_draft_command_quotes_scanner_text`.
 3. **A draft that hides a finding it should not cover.** Draft refuses targets with no finding, a kind the finding cannot take, and a finding another suppression already names. Tests: Task 3, one per refusal.
 4. **A changed output for adopters who change nothing.** Test: Task 1 `test_single_target_outputs_unchanged`.
+5. **A file written outside `suppressions/`.** Test: Task 3 `test_draft_refuses_bad_id`.
 
 ---
 
 ### Task 1: `targets` — one acceptance across several named files
 
-**Files:** `src/grc_evidence/okf_lib.py`, `src/grc_evidence/map_findings.py`, `src/grc_evidence/render_report.py`, `src/grc_evidence/data/__init__.py` (`SCHEMA_VERSION = "1.4"`), `src/grc_evidence/data/schemas/concepts/suppression.schema.json`, `src/grc_evidence/data/schemas/mapping.schema.json`, `tests/test_suppressions.py`, `tests/test_concept_schemas.py`, `docs/suppressions.md`, `docs/outputs.md`, `docs/okf-extensions.md`.
+**Files:** `src/grc_evidence/okf_lib.py`, `src/grc_evidence/map_findings.py`, `src/grc_evidence/render_report.py`, `src/grc_evidence/data/__init__.py` (`SCHEMA_VERSION = "1.4"`), `src/grc_evidence/data/schemas/concepts/suppression.schema.json`, `src/grc_evidence/data/schemas/mapping.schema.json`, `tests/test_suppressions.py`, `tests/test_concept_schemas.py`, `tests/test_contract.py` and `tests/test_render_report.py` (`s.target` becomes `s.targets[0]`), `docs/suppressions.md`, `docs/outputs.md`, `docs/okf-extensions.md`.
 
 - [ ] **Step 1: Failing tests**
 
@@ -46,7 +47,7 @@ Plus schema cases in `test_schemas_reject_the_syntax_cases` (both keys, one item
 
 **Files:** `src/grc_evidence/okf_lib.py`, `tests/test_suppressions.py`.
 
-- [ ] **Step 1: Failing tests:** `test_signed_draft_marker_fails_the_load` (verified + `<!-- grc: draft` → `BundleError` naming the file); `test_unsigned_draft_marker_is_pending`.
+- [ ] **Step 1: Failing tests:** `test_signed_draft_marker_fails_the_load` (verified + `<!-- grc: draft` in either section → `BundleError` naming the file); `test_unsigned_draft_marker_is_pending`.
 - [ ] **Step 2: Implement** `DRAFT_MARKER = "<!-- grc: draft"` in `okf_lib`; checked in `_suppression` construction, or a bundle-level check beside `_check_accepted_risks`.
 - [ ] **Step 3:** Commit: "A signed suppression must not keep the draft marker".
 
@@ -57,8 +58,9 @@ Plus schema cases in `test_schemas_reject_the_syntax_cases` (both keys, one item
 - [ ] **Step 1: Failing tests** (fixture: a bundle with a CC7.1 control declaring `trivy:CVE-`, a `mapping.json` with four `go.mod` findings and one gap finding)
 
 ```python
-def test_draft_writes_one_file_for_several_targets(tmp_path): ...  # targets: 4, title "<rule> in 4 files"
-def test_draft_single_target_uses_target(tmp_path): ...
+def test_draft_writes_one_file_for_several_targets(tmp_path): ...  # suppressions/trivy-cve-2026-78669.md, 4 targets, "<rule> in 4 files"
+def test_draft_single_target_uses_target(tmp_path): ...           # suppressions/trivy-cve-2026-78669-upstream-src-frontend-go-mod.md
+def test_draft_slug_is_cut_to_100(tmp_path): ...
 def test_draft_is_pending_until_verified(tmp_path): ...            # loads; map lists it in pending_suppressions
 def test_draft_has_no_verified_and_has_marker(tmp_path): ...
 def test_draft_refuses_target_without_finding(tmp_path): ...
@@ -66,11 +68,15 @@ def test_draft_refuses_accepted_risk_on_gap(tmp_path): ...
 def test_draft_refuses_finding_already_named(tmp_path): ...       # pending, active and expired alike
 def test_draft_refuses_existing_file(tmp_path): ...
 def test_draft_refuses_days_and_owner(tmp_path): ...              # 0, 91; owner without human:
+def test_draft_refuses_placeholder_owner(tmp_path): ...            # human:<you>
+def test_draft_refuses_bad_id(tmp_path): ...                       # ../x, a/b, Index, index, log, 101 chars
+def test_draft_accepted_risk_has_compensating_control_section(tmp_path): ...
+def test_check_rejects_draft_until_signed(tmp_path): ...           # grc check: not verified; signed + markers gone: passes
 def test_draft_approved_is_utc_today(tmp_path): ...               # injectable --today
 ```
 
-- [ ] **Step 2: Implement.** `draft(bundle, mapping, request, today, now) -> (rel_path, text)` is pure; `main` reads `grc.yaml`, `out/mapping.json`, writes the file, prints next steps. Frontmatter by `yaml.safe_dump`; scanner text in the facts list is collapsed to one line and quoted.
-- [ ] **Step 3:** `grc check` on the fixture with the draft passes.
+- [ ] **Step 2: Implement.** `draft(bundle, mapping, request, today, now) -> (rel_path, text)` is pure; `main` takes `--config`, `--knowledge`, `--out`, `--today`, reads `grc.yaml` and `out/mapping.json`, writes the file, prints next steps. Frontmatter by `yaml.safe_dump`; scanner text in the facts list is collapsed to one line and quoted.
+- [ ] **Step 3:** `grc check` on the fixture fails on the draft ("not verified by a person") and passes once it is signed and the markers are gone. No change to `adopt.py` (spec decision 7a).
 - [ ] **Step 4:** Commit: "grc suppress draft: a pending suppression from the last scan".
 
 ### Task 4: The gate prints a draft command for each failing finding
@@ -81,14 +87,15 @@ def test_draft_approved_is_utc_today(tmp_path): ...               # injectable -
 
 ```python
 def test_gate_prints_one_command_per_rule(tmp_path): ...       # 4 go.mod targets -> one command, 4 --target
-def test_command_kind_follows_mapping(): ...                    # control -> accepted-risk; gap -> false-positive
+def test_command_kind_follows_mapping(): ...                    # control -> accepted-risk; gap (in unmapped) -> false-positive
 def test_no_command_for_change_or_below_fail_on(): ...
-def test_draft_command_quotes_scanner_text(): ...                # target "a b; rm -rf x" stays one quoted word
-def test_summary_has_the_commands(tmp_path): ...
-def test_printed_command_drafts_one_suppression(tmp_path): ...   # end to end: run it (owner filled), grc check passes
+def test_draft_command_quotes_scanner_text(): ...                # target "a b; rm -rf x" stays one quoted word; owner printed 'human:<you>'
+def test_commands_are_sorted_and_on_stderr(): ...                # in the SystemExit message, after the failure list
+def test_summary_has_the_commands(tmp_path): ...                # ### Draft suppressions, a ```sh block
+def test_printed_command_drafts_one_suppression(tmp_path): ...   # end to end: run it (owner filled), sign it: grc check and the gate pass
 ```
 
-- [ ] **Step 2: Implement.** `drafts(mapping, baseline, fail_on) -> list[str]` from the same new findings `problems` fails on; `main` prints them before exiting, and `--summary` appends them in a code block.
+- [ ] **Step 2: Implement.** `drafts(mapping, baseline, fail_on) -> list[str]` from the same new findings `problems` fails on, grouped by tool and rule id; the kind from whether the rule's findings are in `mapping["unmapped"]`. `main` adds them to the `SystemExit` message; `--summary` appends them. `findings()` is unchanged.
 - [ ] **Step 3:** Commit: "grc gate: print a suppression draft command for each new finding".
 
 ### Task 5: Release 2.2.0
