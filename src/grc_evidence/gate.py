@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shlex
 from pathlib import Path
 from typing import Any
@@ -132,8 +133,9 @@ def summary(mapping: Json, baseline: Json, commands: list[str] | None = None) ->
         known = _counts(baseline)
         new = sum(len(fs) - known.get(fid, 0) for fid, fs in _new(mapping, baseline).items())
         lines += ["", f"Findings not in the baseline (any kind and severity): {new}"]
-    if commands:
-        lines += ["", "### Draft suppressions", "", DRAFT_NOTE, "", "```sh", *commands, "```"]
+    if commands:  # the fence outruns any backticks in scanner text, so a target cannot close it
+        fence = "`" * max(3, 1 + max((len(run) for c in commands for run in re.findall("`+", c)), default=0))
+        lines += ["", "### Draft suppressions", "", DRAFT_NOTE, "", f"{fence}sh", *commands, fence]
     return "\n".join(lines) + "\n"
 
 

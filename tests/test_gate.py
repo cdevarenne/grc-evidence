@@ -206,6 +206,14 @@ def test_summary_has_the_commands() -> None:
     assert "Draft suppressions" not in summary(_mapping(BASE, findings=OLD), WITH_FINDINGS, [])
 
 
+def test_scanner_text_cannot_close_the_summary_fence() -> None:
+    """A target with a newline and backticks stays inside the code block of the job summary."""
+    mapping = _mapping(BASE, findings=[*OLD, _f("KSV-0020", "low", "a\n````\n# Injected [link](https://x)")])
+    section = summary(mapping, WITH_FINDINGS, drafts(mapping, WITH_FINDINGS)).split("### Draft suppressions")[1]
+    assert section.count("\n`````sh\n") == 1 and section.endswith("\n`````\n")
+    assert "\n`````" not in section.split("`````sh\n")[1][:-7]
+
+
 def test_printed_command_drafts_one_suppression(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """End to end: the gate's command, owner filled in, writes one suppression for four files; signed, the gate passes."""
     shutil.copytree(Path(__file__).parent / "fixtures" / "bundle", tmp_path / "knowledge")
