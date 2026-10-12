@@ -20,7 +20,7 @@
 5. **The draft marker for every concept.** The new concept carries `<!-- grc: draft` lines in `# Rule` and `# Remediation`. Spec I made a signed suppression with a marker a load error; extend that to every concept type. Recommendation: yes.
 6. **The evaluation figures** are referenced, not copied: the patch notes name the triage configuration and link `docs/llm.md`, so they never go stale. Recommendation: yes.
 7. **MCP `draft_mapping`** (Spec G G1 said it would come with G4): left out until an agent needs it. Recommendation: defer.
-8. **File names without a run id** (plan review F-02). (a) Fixed names, replaced on each run. (b) `-<run_id>` names, refusing when `run.json` is missing. Recommendation: (a). **Awaiting the owner.**
+8. **File names without a run id** (plan review F-02). (a) Fixed names, replaced on each run. (b) `-<run_id>` names, refusing when `run.json` is missing. Recommendation: (a). **Owner: (a).**
 
 ## Rules
 
