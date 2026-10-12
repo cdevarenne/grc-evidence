@@ -77,6 +77,10 @@ CONTROL = {"type": "ISO/IEC 42001 Control", "framework": "iso42001", "tags": ["i
     ("suppression", SUPPRESSION | {"approved": "Oct 1"}),
     ("suppression", SUPPRESSION | {"finding": {"tool": "trivy", "rule_id": "CVE-*", "target": "app/x"}}),
     ("suppression", SUPPRESSION | {"finding": {"tool": "trivy", "target": "app/x"}}),
+    ("suppression", SUPPRESSION | {"finding": {"tool": "trivy", "rule_id": "CVE-1", "targets": ["app/x"]}}),
+    ("suppression", SUPPRESSION | {"finding": {"tool": "trivy", "rule_id": "CVE-1", "targets": ["app/x", "app/x"]}}),
+    ("suppression", SUPPRESSION | {"finding": {"tool": "trivy", "rule_id": "CVE-1", "targets": ["app/x", "app/*"]}}),
+    ("suppression", SUPPRESSION | {"finding": {"tool": "trivy", "rule_id": "CVE-1", "target": "app/x", "targets": ["app/x", "app/y"]}}),
     ("control", CONTROL | {"framework": "soc2"}),
     ("control", CONTROL | {"applies_when": ["high"]}),
 ])
@@ -91,6 +95,9 @@ def test_schemas_reject_the_syntax_cases(tmp_path: Path, schema: str, frontmatte
         load_bundle(root)
 
 
-@pytest.mark.parametrize(("schema", "frontmatter"), [("suppression", SUPPRESSION), ("rule-declaring", POLICY), ("control", CONTROL)])
+MULTI = SUPPRESSION | {"finding": {"tool": "trivy", "rule_id": "CVE-1", "targets": ["app/x", "app/y"]}}
+
+
+@pytest.mark.parametrize(("schema", "frontmatter"), [("suppression", SUPPRESSION), ("suppression", MULTI), ("rule-declaring", POLICY), ("control", CONTROL)])
 def test_schemas_accept_the_valid_cases(schema: str, frontmatter: dict) -> None:
     assert _validator(schema).is_valid(frontmatter)

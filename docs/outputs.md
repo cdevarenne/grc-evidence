@@ -18,6 +18,8 @@ or a directory outside git; CI should use it. JSON Schemas for
 the three files ship with the engine in `src/grc_evidence/data/schemas/`; additive
 changes bump the minor version, anything else the major. A sample is in
 [`examples/run.json`](../examples/run.json).
+Contract 1.4 (2.2.0) adds `unused_targets` to `mapping.json`: the files of a
+suppression naming several files that match no finding ([suppressions](suppressions.md)).
 
 ## Type 2 evidence (Spec H)
 

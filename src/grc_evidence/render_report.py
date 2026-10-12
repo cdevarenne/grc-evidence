@@ -176,9 +176,11 @@ def _suppression_sections(mapping: Json) -> list[str]:
     if pending := mapping.get("pending_suppressions"):
         lines += ["", "## Pending suppressions", "", "Not applied yet, so their findings count.", ""]
         lines += [f"- `{p['id']}` approved {p['approved']}: {p['reason']}" for p in pending]
-    if unused := mapping.get("unused_suppressions"):
+    unused, unused_targets = mapping.get("unused_suppressions", []), mapping.get("unused_targets", [])
+    if unused or unused_targets:
         lines += ["", "## Unused suppressions", "", "Match no finding in this scan. Remove them.", ""]
         lines += [f"- `{sid}`" for sid in unused]
+        lines += [f"- `{u['id']}`: `{u['target']}` matches no finding; remove the target" for u in unused_targets]
     return lines
 
 

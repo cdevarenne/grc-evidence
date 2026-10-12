@@ -19,7 +19,14 @@ lists it under **Expired suppressions**); one within 14 days of expiry is listed
 under **Expiring soon**; one that matches no finding is listed under **Unused
 suppressions**. Suppressions match on tool, rule id, target, and
 optionally a message substring; there are no wildcards, and an accepted risk on
-a coverage gap is rejected when the bundle loads. `map_findings.py --today`
+a coverage gap is rejected when the bundle loads.
+
+One suppression may cover one rule in several named files: `finding.targets`
+lists two or more files in place of `target`, and one owner, reason, expiry and
+signature cover them all (2.2.0). Every file is named; a new file with the same
+advisory is a new finding until a person adds it. A listed file that matches no
+finding, while others do, is listed under **Unused suppressions** with its
+target (`unused_targets` in `mapping.json`). `map_findings.py --today`
 sets the date used for expiry; a suppression approved after that date (a
 reviewer's date east of UTC, or a typo) is **pending**: not applied, and listed
 under **Pending suppressions** so it is never silently ignored. A suppression with no `verified` entry by a person (`human:...`) is pending

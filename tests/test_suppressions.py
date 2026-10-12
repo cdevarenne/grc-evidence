@@ -6,8 +6,10 @@ from datetime import date
 from pathlib import Path
 
 import pytest
+from jsonschema import Draft202012Validator
 from oscal_schema import validate
 
+from grc_evidence import data
 from grc_evidence.digest import scan_digest
 from grc_evidence.map_findings import map_findings
 from grc_evidence.okf_lib import BundleError, load_bundle
@@ -20,13 +22,15 @@ IN_FORCE = date(2026, 10, 1)
 NOW = "2026-10-01T12:00:00+00:00"
 
 
-def _suppression(kind: str, tool: str, rule_id: str, target: str, *, approved: str = "2026-09-28",
+def _suppression(kind: str, tool: str, rule_id: str, target: str | list[str], *, approved: str = "2026-09-28",
                  expires: str = "2026-12-27", owner: str = "human:reviewer", extra: str = "",
                  reason: str = "Reviewed: does not apply here.", verified_by: str | None = "human:reviewer") -> str:
+    """A suppression concept; a list `target` is written as `targets`."""
     verified = f"verified:\n  - by: \"{verified_by}\"\n    at: \"2026-09-28T10:00:00+00:00\"\n" if verified_by else ""
+    targets = f"  targets: {json.dumps(target)}\n" if isinstance(target, list) else f"  target: {target}\n"
     return (
         f"---\ntype: Suppression\ntitle: t\nkind: {kind}\n"
-        f"finding:\n  tool: {tool}\n  rule_id: {rule_id}\n  target: {target}\n{extra}"
+        f"finding:\n  tool: {tool}\n  rule_id: {rule_id}\n{targets}{extra}"
         f"owner: {owner}\napproved: \"{approved}\"\nexpires: \"{expires}\"\ntags: [suppression]\n{verified}---\n"
         f"# Reason\n\n{reason}\n"
     )
@@ -60,6 +64,12 @@ def _bundle(tmp_path: Path, **suppressions: str):
         (_suppression("false-positive", "checkov", "CKV_TEST_99", "app/Dockerfile", approved="soon"), "ISO date"),
         (_suppression("false-positive", "checkov", "CKV_TEST_99", "app/Dockerfile", reason=""), "Reason"),
         (_suppression("accepted-risk", "checkov", "CKV_TEST_99", "app/Dockerfile"), "is a gap"),
+        (_suppression("false-positive", "checkov", "CKV_TEST_99", ["app/Dockerfile"]), "two or more distinct"),
+        (_suppression("false-positive", "checkov", "CKV_TEST_99", ["app/Dockerfile", "app/Dockerfile"]), "two or more distinct"),
+        (_suppression("false-positive", "checkov", "CKV_TEST_99", ["app/Dockerfile", "app/*"]), "wildcards"),
+        (_suppression("false-positive", "checkov", "CKV_TEST_99", ["app/Dockerfile", ""]), "tool, rule_id, and target"),
+        (_suppression("false-positive", "checkov", "CKV_TEST_99", ["app/Dockerfile", "app/x"],
+                      extra="  target: app/Dockerfile\n"), "not both"),
     ],
 )
 def test_malformed_suppressions_are_rejected(tmp_path: Path, text: str, error: str) -> None:
@@ -143,6 +153,45 @@ def test_expired_suppression_puts_the_finding_back(tmp_path: Path) -> None:
 def test_unused_suppression_is_reported(tmp_path: Path) -> None:
     stale = _suppression("false-positive", "checkov", "CKV_GONE", "app/Dockerfile")
     assert _mapping(tmp_path, stale=stale)["unused_suppressions"] == ["suppressions/stale"]
+
+
+# One acceptance across several named files (Spec I Part A)
+SAME_CVE = [FINDINGS[2] | {"target": t} for t in ("a/requirements.txt", "b/requirements.txt", "c/requirements.txt")]
+TWO_OF_THREE = _suppression("accepted-risk", "trivy", "CVE-2024-0001", ["a/requirements.txt", "b/requirements.txt"])
+
+
+def test_targets_match_only_listed_files(tmp_path: Path) -> None:
+    m = map_findings(_bundle(tmp_path, cve=TWO_OF_THREE), SAME_CVE, today=IN_FORCE)
+    assert [e["finding"]["target"] for e in m["suppressed"]] == ["a/requirements.txt", "b/requirements.txt"]
+    findings = m["controls"]["soc2:cc7.1"]["findings"]
+    assert [(f["target"], f.get("accepted")) for f in findings] == [
+        ("a/requirements.txt", "suppressions/cve"), ("b/requirements.txt", "suppressions/cve"), ("c/requirements.txt", None)
+    ]
+    assert "unused_targets" not in m and m["unused_suppressions"] == []
+
+
+def test_unused_target_is_reported(tmp_path: Path) -> None:
+    three = _suppression("accepted-risk", "trivy", "CVE-2024-0001", ["a/requirements.txt", "b/requirements.txt", "gone.txt"])
+    bundle = _bundle(tmp_path, cve=three)
+    m = map_findings(bundle, SAME_CVE, today=IN_FORCE)
+    assert m["unused_targets"] == [{"id": "suppressions/cve", "target": "gone.txt"}]
+    assert m["unused_suppressions"] == []
+    schema = json.loads(data.path("schemas/mapping.schema.json").read_text())
+    Draft202012Validator(schema).validate({"schema_version": data.SCHEMA_VERSION, **m})
+    assert "- `suppressions/cve`: `gone.txt` matches no finding; remove the target" in render_report(bundle, m, NOW)
+
+
+def test_fully_unused_multi_target_is_an_unused_suppression(tmp_path: Path) -> None:
+    gone = _suppression("accepted-risk", "trivy", "CVE-2024-0001", ["gone/a.txt", "gone/b.txt"])
+    m = map_findings(_bundle(tmp_path, cve=gone), SAME_CVE, today=IN_FORCE)
+    assert m["unused_suppressions"] == ["suppressions/cve"] and "unused_targets" not in m
+
+
+def test_single_target_suppressions_add_no_new_key(tmp_path: Path) -> None:
+    """Bundles without `targets` give the same mapping keys as contract 1.3."""
+    m = _mapping(tmp_path, accepted=ACCEPTED, fp=FALSE_POSITIVE)
+    assert set(m) == {"controls", "unmapped", "suppressed", "expired_suppressions", "pending_suppressions",
+                      "unused_suppressions", "expiring_suppressions"}
 
 
 def test_message_contains_narrows_the_match(tmp_path: Path) -> None:

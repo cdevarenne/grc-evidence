@@ -123,7 +123,7 @@ def map_findings(
     today = today or datetime.now(UTC).date()
     suppressions = bundle.suppressions()
     active = [s for s in suppressions if s.verified and s.active(today)]
-    used: set[str] = set()
+    used: set[tuple[str, str]] = set()  # (suppression id, target) pairs that matched a finding
     controls: dict[str, dict[str, Any]] = {}
     for c in bundle.controls():
         evidenced_by, satisfied_by = _evidence(bundle, c.key)
@@ -141,7 +141,7 @@ def map_findings(
         keys, reason = _controls_for(bundle, finding)
         match = next((s for s in active if s.matches(finding)), None)
         if match:
-            used.add(match.id)
+            used.add((match.id, finding["target"]))
             suppressed.append(_suppression_entry(finding, match, keys))
             if match.kind == "false-positive":
                 continue
@@ -165,6 +165,7 @@ def map_findings(
             entry["status"] = "not-assessed"
     mapping: dict[str, Any] = {"controls": controls, "unmapped": unmapped}
     if suppressions:
+        used_ids = {sid for sid, _ in used}
         mapping |= {
             "suppressed": suppressed,
             "expired_suppressions": [s.id for s in suppressions if today > s.expires],
@@ -173,13 +174,17 @@ def map_findings(
                 for s in suppressions
                 if (reason := _pending(s, today))
             ],
-            "unused_suppressions": [s.id for s in active if s.id not in used],
+            "unused_suppressions": [s.id for s in active if s.id not in used_ids],
             "expiring_suppressions": [
                 {"id": s.id, "expires": s.expires.isoformat()}
                 for s in active
                 if (s.expires - today).days <= EXPIRY_WARNING_DAYS
             ],
         }
+        if unused_targets := [
+            {"id": s.id, "target": t} for s in active if s.id in used_ids for t in s.targets if (s.id, t) not in used
+        ]:
+            mapping["unused_targets"] = unused_targets  # since 1.4
     return mapping
 
 

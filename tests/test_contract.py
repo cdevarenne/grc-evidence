@@ -29,7 +29,7 @@ FINDINGS = json.loads((FIXTURES / "findings.json").read_text())
 BUNDLE = load_bundle(ROOT / "knowledge")
 # One finding per suppression in the bundle, so the mapping's optional suppression keys are exercised too.
 SUPPRESSED = [
-    {"tool": s.tool, "rule_id": s.rule_id, "severity": "high", "target": s.target, "message": s.message_contains or "m", "tags": []}
+    {"tool": s.tool, "rule_id": s.rule_id, "severity": "high", "target": s.targets[0], "message": s.message_contains or "m", "tags": []}
     for s in BUNDLE.suppressions()
 ]
 

@@ -99,6 +99,25 @@
         "type": "string"
       }
     },
+    "unused_targets": {
+      "type": "array",
+      "description": "Targets of a suppression naming several files that match no finding, when others do (since 1.4)",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "target"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "expiring_suppressions": {
       "type": "array",
       "items": {

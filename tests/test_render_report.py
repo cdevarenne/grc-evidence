@@ -95,7 +95,7 @@ def test_posture_counts_a_control_whose_only_findings_are_accepted_risks() -> No
     """#65: every applicable control appears once in the summary, accepted-only ones included."""
     bundle = load_bundle(Path(__file__).parent.parent / "knowledge")
     s = next(s for s in bundle.suppressions() if s.kind == "accepted-risk")
-    finding = {"tool": s.tool, "rule_id": s.rule_id, "severity": "high", "target": s.target,
+    finding = {"tool": s.tool, "rule_id": s.rule_id, "severity": "high", "target": s.targets[0],
                "message": s.message_contains or "m", "tags": []}
     mapping = map_findings(bundle, [finding], {"risk_tier": "limited"}, today=date(2026, 10, 1))
     report = render_report(bundle, mapping, "2026-10-01T12:00:00+00:00")

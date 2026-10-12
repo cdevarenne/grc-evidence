@@ -87,13 +87,13 @@ class Concept:
 
 @dataclass(frozen=True)
 class Suppression:
-    """A reviewed, expiring decision about one exact finding (Spec C)."""
+    """A reviewed, expiring decision about one exact finding (Spec C), or one rule in several named files (Spec I)."""
 
     id: str
     kind: str
     tool: str
     rule_id: str
-    target: str
+    targets: tuple[str, ...]
     message_contains: str
     owner: str
     approved: date
@@ -102,9 +102,10 @@ class Suppression:
     verified: bool = False  # a person (`human:`) verified it; until then it is pending, never applied
 
     def matches(self, finding: Mapping[str, Any]) -> bool:
-        """Exact tool, rule id, and target; `message_contains` narrows it when set. No wildcards."""
+        """Exact tool and rule id, and one of the named targets; `message_contains` narrows it when set. No wildcards."""
         return (
-            (finding["tool"], finding["rule_id"], finding["target"]) == (self.tool, self.rule_id, self.target)
+            (finding["tool"], finding["rule_id"]) == (self.tool, self.rule_id)
+            and finding["target"] in self.targets
             and self.message_contains in finding["message"]
         )
 
@@ -245,13 +246,17 @@ def _date(rel_path: str, value: Any, key: str) -> date:
 
 
 def _check_suppression(rel_path: str, fm: Mapping[str, Any], body: str) -> None:
-    """A suppression names one exact finding, a kind, a human owner, and a window of at most 90 days."""
+    """A suppression names one exact finding (or one rule in several named files), a kind, a human owner, and a
+    window of at most 90 days."""
     if fm.get("kind") not in SUPPRESSION_KINDS:
         raise BundleError(f"{rel_path}: 'kind' must be one of {SUPPRESSION_KINDS}")
     finding = fm.get("finding")
-    if not isinstance(finding, dict) or not all(str(finding.get(k) or "").strip() for k in ("tool", "rule_id", "target")):
+    if not isinstance(finding, dict):
         raise BundleError(f"{rel_path}: 'finding' needs tool, rule_id, and target")
-    if any(ch in str(finding[k]) for k in ("tool", "rule_id", "target") for ch in "*?["):
+    values = [str(finding.get("tool") or ""), str(finding.get("rule_id") or ""), *_targets(rel_path, finding)]
+    if not all(v.strip() for v in values):
+        raise BundleError(f"{rel_path}: 'finding' needs tool, rule_id, and target")
+    if any(ch in v for v in values for ch in "*?["):
         raise BundleError(f"{rel_path}: suppressions match one exact finding; no wildcards")
     if not str(fm.get("owner") or "").startswith("human:"):
         raise BundleError(f"{rel_path}: 'owner' must be a person (human:<name>)")
@@ -262,6 +267,18 @@ def _check_suppression(rel_path: str, fm: Mapping[str, Any], body: str) -> None:
         raise BundleError(f"{rel_path}: a suppression needs a non-empty '# Reason' section")
 
 
+def _targets(rel_path: str, finding: Mapping[str, Any]) -> tuple[str, ...]:
+    """`target`, or `targets`: two or more distinct files, each matched exactly (Spec I)."""
+    if "targets" not in finding:
+        return (str(finding.get("target") or ""),)
+    if "target" in finding:
+        raise BundleError(f"{rel_path}: 'finding' has 'target' or 'targets', not both")
+    targets = finding["targets"]
+    if not isinstance(targets, list) or len(targets) < 2 or len(set(map(str, targets))) != len(targets):
+        raise BundleError(f"{rel_path}: 'targets' must list two or more distinct files")
+    return tuple(str(t or "") for t in targets)
+
+
 def _suppression(concept: Concept, reason: str) -> Suppression:
     fm, finding = concept.frontmatter, concept.frontmatter["finding"]
     return Suppression(
@@ -269,7 +286,7 @@ def _suppression(concept: Concept, reason: str) -> Suppression:
         kind=fm["kind"],
         tool=str(finding["tool"]),
         rule_id=str(finding["rule_id"]),
-        target=str(finding["target"]),
+        targets=_targets(concept.path, finding),
         message_contains=str(finding.get("message_contains") or ""),
         owner=str(fm["owner"]),
         approved=_date(concept.path, fm["approved"], "approved"),

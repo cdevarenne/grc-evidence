@@ -35,6 +35,7 @@ Any concept with `rule_ids`: guardrail policies, scanners, scanner checks ([sche
 |---|---|---|
 | `kind` | `false-positive` or `accepted-risk` | schema and loader |
 | `finding` | `tool`, `rule_id` and `target`, exact (no wildcards); optional `message_contains` | schema and loader |
+| `finding.targets` | instead of `target`: two or more distinct files, each exact; not both | schema and loader |
 | `owner` | a person: `human:<name>` | schema and loader |
 | `approved`, `expires` | `YYYY-MM-DD` | schema and loader |
 | `expires` | after `approved`, at most 90 days later | loader |
