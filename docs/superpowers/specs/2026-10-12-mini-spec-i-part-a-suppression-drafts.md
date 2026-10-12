@@ -105,7 +105,7 @@ To draft a suppression for review (a person writes the reason and signs it):
 - The commands are part of the failure message (stderr), after the failure list.
 - `--summary` appends `### Draft suppressions`, one line ("Run one, write the reason, and sign it; nothing applies until a person signs."), and the commands in a `sh` code block.
 
-## 6. Decisions (owner, 2026-10-12: 1 to 6 as recommended; 7 open)
+## 6. Decisions (owner, 2026-10-12: all as recommended)
 
 1. **Separate flags, not `--finding tool:rule@target`.** #143 sketched `--finding trivy:CVE-…@<target>`. None of the demo's 445 scan findings has `:` or `@` in a rule id or target today, but neither field is constrained: a scoped npm path such as `node_modules/@scope/pkg` would hold `@`, and one string could then not be split reliably. Recommendation: `--tool`, `--rule-id`, `--target` (repeatable).
 2. **Owner.** (a) `--owner` is required; the gate prints `--owner human:<you>`, so the command needs one edit. (b) An optional `suppress.owner` in `grc.yaml` fills it, so the printed command runs as is. Recommendation: (a): less code, and the person reads the command before running it.
@@ -113,7 +113,7 @@ To draft a suppression for review (a person writes the reason and signs it):
 4. **The draft marker is a load error once signed** (§4.1). Recommendation: yes.
 5. **Default `--days`:** 30, as both demo acceptances. The gate prints `--days 30`.
 6. **The demo's four `x/net` files.** After 2.2.0, merge them into one `targets` suppression? It needs a new `verified` entry. Recommendation: yes, as the first real use; the owner reviews and signs it.
-7. **`grc check` stays strict on unsigned drafts** (plan review F-01). (a) An unsigned draft fails `grc check`, as any unverified concept, so it cannot pass CI; it lives in the working tree until signed. (b) Exempt suppressions from the check, so an unsigned draft can be merged and sits on `main` as pending. Recommendation: (a): no code change, one rule for every concept. **Awaiting the owner.**
+7. **`grc check` stays strict on unsigned drafts** (plan review F-01). (a) An unsigned draft fails `grc check`, as any unverified concept, so it cannot pass CI; it lives in the working tree until signed. (b) Exempt suppressions from the check, so an unsigned draft can be merged and sits on `main` as pending. Recommendation: (a): no code change, one rule for every concept. **Owner: (a).**
 
 ## 7. Out of scope
 
