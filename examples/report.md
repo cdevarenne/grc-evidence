@@ -1,6 +1,6 @@
 # Compliance Scan Report
 
-Generated 2026-10-07T03:03:51+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-10-12T19:03:33+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
@@ -389,4 +389,4 @@ Out of scope at the declared AI risk tier. Findings stay listed; they do not cha
 
 ---
 
-LLM step: 1 call(s), 1 billed, model claude-haiku-4-5, mode claude-cli. Tokens: 10 in, 4271 out, 0 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.
+LLM step: 1 call(s), 0 billed, model claude-haiku-4-5, mode claude-cli. Tokens: 10 in, 4271 out, 0 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.

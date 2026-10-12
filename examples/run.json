@@ -1,17 +1,17 @@
 {
-  "schema_version": "1.3",
-  "run_id": "7ca1346d-0f9c-5483-ba06-06f88bff62a2",
-  "generated": "2026-10-07T03:03:51+00:00",
+  "schema_version": "1.4",
+  "run_id": "19119dc3-d4d1-5aa3-a4fe-025650353d4f",
+  "generated": "2026-10-12T19:03:33+00:00",
   "repository": {
-    "commit": "b27fcec1a193b2314388d797c33d427349c3f929",
+    "commit": "6128d409753b75b49c9b9ac3e65451d2c2fb1f8e",
     "dirty": false,
     "untracked": []
   },
   "engine": {
     "package": "grc-evidence",
-    "version": "2.1.0"
+    "version": "2.2.0"
   },
-  "base_version": "2.1.0",
+  "base_version": "2.2.0",
   "scanners": {
     "semgrep": "1.178.0",
     "trivy": "0.74.0",
@@ -100,11 +100,11 @@
     "sha256": "f9e656b9ace010aba6148f4d05ad2e559c382643b1368d8d484b93e1a40f4887"
   },
   "outputs": {
-    "findings.json": "bc2cc9bdb2a2762a592e08b7e70743ed0497b5bdc0a5f03eab32d7bebb132ed4",
-    "mapping.json": "b6c14bc01a96227d878791ce6cc0cefef7532a9503d6c6ee855a9381868a4e01",
-    "oscal/component-definition.json": "cbe92cc75791daf4687cb0ad3daf6a910f6dcea82ef905555b41c1e9ae2be9fb",
-    "oscal/assessment-plan.json": "056aa6838436a5ea09dd90390da7d6c78fe0f62ce88e62b3abbee8e9b8c2ac32",
-    "oscal/assessment-results.json": "a3dd711d329b71b9db2f0812ab974ec6afc7925c7e0dfb86b8c4ffbdc230fa0d",
-    "report.md": "9970d48d8ab877d63d330cf724f0dc7d3cc58d5c0786bd4954339eb6a3279b4e"
+    "findings.json": "76d38796c674fc48f34d83dc1a2157d38005138520a6ba1ca08ad6976c930a5f",
+    "mapping.json": "f2dab86b50c04e4d3b74ac914a5fbfbc8ffb512d1f9131cd951222fea054fbf7",
+    "oscal/component-definition.json": "32739bf247e56156ab8f1c4d37b261bb7115a6e37801e70fc73555e8ceadcbba",
+    "oscal/assessment-plan.json": "2e77a81de1088a92e25588a56c1583581a56e46d02d12f93c8395e75072f66f0",
+    "oscal/assessment-results.json": "1370d74d07a450389f176c44057ceec0f0c334a9a411b85abadba518e2726507",
+    "report.md": "f2934fa0a25f509768ea5f485d11c85c00c1698f61178312dd260eaab4e956db"
   }
 }
