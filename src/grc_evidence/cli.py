@@ -27,6 +27,7 @@ from grc_evidence import (
     render_report,
     run_scan,
     sample,
+    suppress,
     to_oscal,
     triage,
     window_report,
@@ -41,7 +42,7 @@ STEPS: dict[str, ModuleType] = {
     "triage": triage, "gate": gate, "ledger": ledger, "sample": sample,
     "window": window_report,
 }
-COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "mcp", "agent", "run", "narrate", "collect", *STEPS)
+COMMANDS = ("bootstrap", "init", "check", "sync-base", "install-skill", "mcp", "agent", "run", "narrate", "collect", "suppress", *STEPS)
 
 
 def bootstrap() -> None:
@@ -184,6 +185,8 @@ def main(argv: list[str] | None = None) -> None:
             agent.main(args.args)
         elif args.command == "collect":
             collect_step.main(args.args)
+        elif args.command == "suppress":
+            suppress.main(args.args)
         elif args.command == "narrate":
             narrate_run(args.args)
         elif args.command == "run":

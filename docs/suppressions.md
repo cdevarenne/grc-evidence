@@ -33,6 +33,27 @@ under **Pending suppressions** so it is never silently ignored. A suppression wi
 too, whatever its dates: a drafted acceptance never hides a finding before
 someone signs it (2.0.1).
 
+## Drafting one
+
+`grc suppress draft` writes a pending suppression from the last scan
+(`out/mapping.json`), with every field except the reason and `verified` (2.2.0):
+
+```sh
+grc suppress draft --tool trivy --rule-id CVE-2026-78669 \
+  --target upstream/src/frontend/go.mod --target upstream/src/shippingservice/go.mod \
+  --kind accepted-risk --days 30 --owner human:jdoe
+```
+
+It refuses a target with no such finding in the last scan, an accepted risk on
+a coverage gap, a finding another suppression already names (renewing or
+widening one is a person's edit), `--days` outside 1 to 90, and an owner that
+is not `human:<name>`. The `# Reason` section lists what the scanner reported
+for each target, under a draft marker line; an accepted risk also gets a
+`# Compensating control` section with the marker. Write each section, delete
+the marker lines, and add `verified`. Until then `grc check` fails on the draft
+(not verified by a person) and the scan lists it as pending; a signed file that
+still has a marker line fails to load.
+
 The two sample suppressions were approved on 2026-09-28 and expire on
 2026-12-27, deliberately: from 2026-12-13 a scan lists them under **Expiring
 soon**, and from 2026-12-28 under **Expired suppressions**, with their findings
