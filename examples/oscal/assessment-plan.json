@@ -1,9 +1,9 @@
 {
   "assessment-plan": {
-    "uuid": "267fd4ec-ff8f-5b1e-816d-acd741764f97",
+    "uuid": "9e3d7424-4cb8-5e81-ba6c-a296b90add4d",
     "metadata": {
       "title": "grc-evidence automated assessment plan",
-      "last-modified": "2026-10-12T22:09:03+00:00",
+      "last-modified": "2026-10-12T23:49:41+00:00",
       "version": "0.1.0",
       "oscal-version": "1.2.3"
     },
