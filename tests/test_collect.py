@@ -3,6 +3,7 @@
 import hashlib
 import json
 import shutil
+import subprocess
 from datetime import date
 from pathlib import Path
 
@@ -126,11 +127,15 @@ def test_collect_failure_writes_nothing(tmp_path: Path, monkeypatch: pytest.Monk
 
 
 def _repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, prs: dict[str, list[dict]], github: str) -> Path:
-    """A repo with the base bundle, a grc.yaml naming `acme/api`, scanners stubbed and GitHub faked."""
+    """A committed repo with the base bundle, a grc.yaml naming `acme/api`, scanners stubbed and GitHub faked."""
     monkeypatch.chdir(tmp_path)
     shutil.copytree(Path(str(data.path("base"))), tmp_path / "knowledge")
     (tmp_path / "app").mkdir()
+    (tmp_path / "app" / "main.py").write_text("x = 1\n")
     (tmp_path / "grc.yaml").write_text(github)
+    (tmp_path / ".gitignore").write_text("out/\nevidence/\n")
+    for argv in (["init", "-q"], ["add", "-A"], ["-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "c"]):
+        subprocess.run(["git", *argv], cwd=tmp_path, check=True)
 
     def scan(argv: list[str]) -> None:
         out = Path(argv[argv.index("--out") + 1])
@@ -164,6 +169,20 @@ def test_run_appends_run_entry_last(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert run["summary"] == {key: c["status"] for key, c in mapping["controls"].items()}
     assert run["repo"] is None and run["outputs"]["run.json"] == hashlib.sha256((repo / "out" / "run.json").read_bytes()).hexdigest()
     assert ledger.verify(repo / "evidence" / "ledger.jsonl") is None
+
+
+@pytest.mark.parametrize("change", ["tracked", "untracked"])
+def test_a_dirty_run_leaves_the_ledger_unchanged(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                 capsys: pytest.CaptureFixture[str], change: str) -> None:
+    """#141: a run's statuses are evidence of a commit only when its inputs are that commit."""
+    repo = _repo(tmp_path, monkeypatch, {"acme/api": []}, GITHUB)
+    cli.main(["run"])
+    before = (repo / "evidence" / "ledger.jsonl").read_bytes()
+    (repo / "app" / ("main.py" if change == "tracked" else "new.py")).write_text("x = 2\n")
+    cli.main(["run"])
+    assert (repo / "evidence" / "ledger.jsonl").read_bytes() == before
+    assert "ledger: nothing appended" in capsys.readouterr().out
+    assert json.loads((repo / "out" / "run.json").read_text())["repository"]["dirty"] is True
 
 
 def test_no_window_means_no_ledger(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

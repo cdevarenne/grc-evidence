@@ -100,7 +100,7 @@ github:
   author, merger and independent approvers, and the count of all merged changes
   beside it. A change with no approval, or merged by its author with none, is a
   finding on CC8.1.
-- **Evidence ledger:** every collection and run appends a line to
+- **Evidence ledger:** every collection and every clean run appends a line to
   `evidence/ledger.jsonl`, hash-chained; `grc ledger verify` checks it.
 - `grc sample --list sample.csv` gives the evidence for the changes an auditor
   sampled, and `grc window` the history of each control over the window, with

@@ -75,6 +75,18 @@ def repo_state(repo: Path, inputs: Iterable[str], exclude: Iterable[Path] = ()) 
     return {"commit": commit, "dirty": modified or bool(untracked), "untracked": untracked}
 
 
+def unclean(state: Json) -> str | None:
+    """Why the scan inputs are not exactly a commit, or None when they are."""
+    if state["commit"] is None:
+        return "not a git repository"
+    if not state["dirty"]:
+        return None
+    if untracked := state["untracked"]:
+        more = f" and {len(untracked) - 5} more" if len(untracked) > 5 else ""
+        return f"untracked scan inputs: {', '.join(untracked[:5])}{more}"
+    return "tracked files differ from the commit"
+
+
 def build_manifest(
     repo: Path, out: Path, config: Config, run: str, now: str, exclude: Iterable[Path] = (), repository: Json | None = None
 ) -> Json:

@@ -154,14 +154,19 @@ def run_step(config: Config, out: Path, now: str) -> list[dict[str, Any]]:
     return run_collect(config, out, transport_from_env(), now)
 
 
-def append_run(config: Config, entries: list[dict[str, Any]], out: Path, now: str) -> None:
-    """After `grc run` replaced its outputs: the collect entries, then one `run` entry with every control's status."""
+def append_run(config: Config, entries: list[dict[str, Any]], out: Path, now: str, unclean: str | None = None) -> None:
+    """After `grc run` replaced its outputs: the collect entries, then one `run` entry with every control's status.
+    Only a clean run appends (#141): its statuses are evidence of a commit only when its inputs are that commit;
+    `unclean` says why this run is not (`manifest.unclean`)."""
     if config.window_start is None or config.window_end is None:
         return
+    if unclean:
+        print(f"ledger: nothing appended ({unclean}); only a run of a clean commit is evidence")
+        return
+    run_json = (out / "run.json").read_bytes()
     path = Path(config.ledger)
     for entry in entries:
         ledger.append(path, entry)
-    run_json = (out / "run.json").read_bytes()
     statuses = {key: c["status"] for key, c in read_mapping(out / "mapping.json")["controls"].items()}
     window = {"start": config.window_start.isoformat(), "end": config.window_end.isoformat()}
     ledger.append(path, ledger.make_entry(

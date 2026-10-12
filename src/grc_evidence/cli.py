@@ -71,7 +71,7 @@ def run(argv: list[str], on_step: Callable[[str], None] | None = None, collect: 
     repo, out = Path.cwd(), Path(args.out)
     now = datetime.now(UTC).isoformat(timespec="seconds")
     config = load_config(repo, Path(args.config) if args.config else None, target=args.target, knowledge=args.knowledge)
-    if args.require_clean and (problem := _unclean(manifest.repo_state(repo, manifest.scan_inputs(config), (out,)))):
+    if args.require_clean and (problem := manifest.unclean(manifest.repo_state(repo, manifest.scan_inputs(config), (out,)))):
         raise SystemExit(f"grc run --require-clean: {problem}")
     stamp = ["--now", now, "--run-id", manifest.run_id(repo, config, now)]
     # Steps write into a staging directory; out/ changes only once the manifest exists, so a failed run
@@ -107,20 +107,9 @@ def run(argv: list[str], on_step: Callable[[str], None] | None = None, collect: 
             os.replace(staging / "collect", out / "collect")
     finally:
         shutil.rmtree(staging, ignore_errors=True)
-    if collect:
-        collect_step.append_run(config, entries, out, now)
-
-
-def _unclean(state: dict) -> str | None:
-    """Why the scan inputs are not exactly a commit, or None when they are."""
-    if state["commit"] is None:
-        return "not a git repository"
-    if not state["dirty"]:
-        return None
-    if untracked := state["untracked"]:
-        more = f" and {len(untracked) - 5} more" if len(untracked) > 5 else ""
-        return f"untracked scan inputs: {', '.join(untracked[:5])}{more}"
-    return "tracked files differ from the commit"
+    if collect and config.window_start is not None:  # a ledger to append to
+        state = json.loads((out / "run.json").read_text(encoding="utf-8"))["repository"]
+        collect_step.append_run(config, entries, out, now, manifest.unclean(state))
 
 
 def narrate_run(argv: list[str]) -> None:
