@@ -24,7 +24,8 @@ An optional Claude API step adds words and proposals on top, never statuses:
   in `out/agent/mapping.patch`, for `git apply`. The draft is tagged with the
   control and declares the rule, with draft marker lines in `# Rule` and
   `# Remediation`. Every other gap is a table row in `out/agent/gaps.md`, for
-  `gh issue create -F`, with the model's leaning when it had one. Both files
+  `gh issue create -F`, with the model's leaning when it had one, or why a
+  high-confidence proposal could not be drafted. Both files
   are replaced on each run. Scanner and model text is quoted on one line.
   `grc propose` refuses proposals made from another `mapping.json`. It writes
   nothing outside `out/agent/`. Once the patch is applied, `grc check` fails

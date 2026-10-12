@@ -128,36 +128,59 @@ def test_refuses_list_shaped_proposals(tmp_path: Path, monkeypatch: pytest.Monke
         main([])
 
 
-def test_skips_rule_no_longer_a_gap_and_unknown_control(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
-                                                         capsys: pytest.CaptureFixture[str]) -> None:
+def _gap_rows(repo: Path) -> list[str]:
+    return [line for line in (repo / "out/agent/gaps.md").read_text().splitlines() if line.startswith("| `")]
+
+
+def test_undraftable_gaps_go_to_the_issue_body(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                               capsys: pytest.CaptureFixture[str]) -> None:
+    """Review F-03: a high-confidence proposal that cannot be drafted is still a gap to file, not only a printed line."""
     repo = _repo(tmp_path, monkeypatch, proposals=[
         _proposal("gap.one", "soc2:cc9.9"),
         _proposal("not.a.gap", "soc2:cc7.1"),
         _proposal("gap.two", "soc2:cc7.1"),
     ])
     main([])
-    out = capsys.readouterr().out
-    assert "semgrep:gap.one: control soc2:cc9.9 is not in the bundle" in out
-    assert "semgrep:not.a.gap: not a coverage gap in out/mapping.json" in out
+    assert _gap_rows(repo) == ["| `semgrep:gap.one` | 2 | soc2:cc9.9 (high): control not in the bundle |"]
+    assert "skipped semgrep:not.a.gap: not a coverage gap in out/mapping.json" in capsys.readouterr().out
     assert (repo / "out/agent/mapping.patch").read_text().count("\ndiff --git ") == 1  # gap.two only
 
 
-def test_skips_rule_id_with_wildcard_characters(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
-                                                capsys: pytest.CaptureFixture[str]) -> None:
+def test_rule_id_with_wildcard_characters_is_not_drafted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     repo = _repo(tmp_path, monkeypatch, findings=[_finding("gap[1]")], proposals=[_proposal("gap[1]", "soc2:cc7.1")])
     main([])
-    assert "semgrep:gap[1]: not a literal rule id" in capsys.readouterr().out
+    assert _gap_rows(repo) == [
+        "| `semgrep:gap[1]` | 1 | soc2:cc7.1 (high): not a literal rule id (no whitespace in the tool, no * ? [ ]) |"]
     assert not (repo / "out/agent/mapping.patch").exists()
 
 
-def test_skips_existing_concept_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
-                                     capsys: pytest.CaptureFixture[str]) -> None:
+def test_existing_concept_path_is_not_drafted(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     repo = _repo(tmp_path, monkeypatch, proposals=[_proposal("gap.one", "soc2:cc7.1"), _proposal("gap.two", "soc2:cc7.1")])
     (repo / f"knowledge/policies/{SLUG}.md").write_text("---\ntype: Reference\n---\n")
     main([])
-    assert f"semgrep:gap.one: knowledge/policies/{SLUG}.md exists" in capsys.readouterr().out
+    assert _gap_rows(repo) == [f"| `semgrep:gap.one` | 2 | soc2:cc7.1 (high): knowledge/policies/{SLUG}.md exists |"]
     patch = (repo / "out/agent/mapping.patch").read_text()
     assert "+++ b/knowledge/policies/semgrep-gap-two.md" in patch and SLUG + ".md" not in patch
+
+
+def test_slug_collision_lists_the_second_rule(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Review F-05: two rules with one slug: the first is drafted, the second is filed, neither is lost."""
+    repo = _repo(tmp_path, monkeypatch, findings=[_finding("gap.one"), _finding("gap-one")],
+                 proposals=[_proposal("gap.one", "soc2:cc7.1"), _proposal("gap-one", "soc2:cc7.1")])
+    main([])
+    assert _gap_rows(repo) == [
+        f"| `semgrep:gap-one` | 1 | soc2:cc7.1 (high): knowledge/policies/{SLUG}.md is drafted for semgrep:gap.one |"]
+
+
+def test_control_without_its_own_tag_is_still_tagged(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Review F-02: the loader accepts a control that does not carry its own key as a tag; the tag comes from the key."""
+    repo = _repo(tmp_path, monkeypatch, proposals=[_proposal("gap.one", "soc2:cc7.1")])
+    control = repo / "knowledge/controls/cc7.1.md"
+    control.write_text(control.read_text().replace(", cc7.1]", "]").replace(" cc7.1,", ""))
+    assert load_bundle(repo / "knowledge").control("soc2:cc7.1").control_tags == ()
+    main([])
+    _apply(repo)
+    assert _frontmatter(repo / f"knowledge/policies/{SLUG}.md")["tags"] == ["cc7.1"]
 
 
 @pytest.mark.parametrize(("key", "tag"), [("soc2:cc7.1", "cc7.1"), ("iso42001:a.6", "iso42001:a.6")])

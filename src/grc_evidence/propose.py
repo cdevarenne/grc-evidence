@@ -24,7 +24,7 @@ from grc_evidence.contract import read_mapping
 from grc_evidence.digest import scan_digest
 from grc_evidence.errors import GrcError
 from grc_evidence.narrate import mapping_sha256
-from grc_evidence.okf_lib import Bundle, Concept, control_key, load_bundle
+from grc_evidence.okf_lib import DEFAULT_FRAMEWORK, Bundle, Concept, load_bundle
 from grc_evidence.suppress import MARKER_LINE, slug
 
 Json = dict[str, Any]
@@ -66,7 +66,7 @@ def _concept(control: Concept, gap: Json, proposal: Json, doc: Json, now: str) -
     fm = {
         "type": "Scanner Check",
         "title": f"{gap['tool']} {gap['rule_id']}",
-        "tags": [next(t for t in control.control_tags if control_key(t) == control.key)],
+        "tags": [control.code if control.framework == DEFAULT_FRAMEWORK else control.key],  # its key as a tag: cc7.1
         "rule_ids": [rule],
         "generated": {"by": f"{doc['model']} via grc triage", "at": now},
     }
@@ -99,9 +99,12 @@ def _why_not(proposal: Json) -> str:
 
 
 def drafts(bundle: Bundle, mapping: Json, doc: Json, knowledge: str, now: str) -> tuple[str, str, list[str]]:
-    """(patch text, issue body, skipped `rule: reason` lines); a text is empty when there is nothing to put in it."""
+    """(patch text, issue body, skipped `rule: reason` lines); a text is empty when there is nothing to put in it.
+
+    Every gap is drafted or is a row of the issue body; only a proposal for a rule that is not a gap is skipped.
+    """
     gaps = {f"{g['tool']}:{g['rule_id']}": g for g in scan_digest(mapping, targets=True)["gaps"]}
-    files: dict[str, tuple[str, str]] = {}  # path in the repo: (rule, control key), text
+    files: dict[str, tuple[str, str, str]] = {}  # path in the repo: rule, control key, text
     rows, skipped = [], []
     for p in doc["proposals"]:
         rule, key = p["rule"], p["proposal"]
@@ -114,20 +117,24 @@ def drafts(bundle: Bundle, mapping: Json, doc: Json, knowledge: str, now: str) -
         concept_id = f"policies/{slug(gap['tool'], gap['rule_id'])}"
         path = f"{knowledge}/{concept_id}.md"
         if (control := bundle.control(key)) is None:
-            skipped.append(f"{quote(rule)}: control {quote(key)} is not in the bundle")
+            why = "control not in the bundle"
         elif not _LITERAL_RULE.fullmatch(rule):
-            skipped.append(f"{quote(rule)}: not a literal rule id (no whitespace in the tool, no * ? [ ])")
-        elif concept_id in bundle.concepts or path in files:
-            skipped.append(f"{quote(rule)}: {path} exists")
+            why = "not a literal rule id (no whitespace in the tool, no * ? [ ])"
+        elif concept_id in bundle.concepts:
+            why = f"{path} exists"
+        elif path in files:
+            why = f"{path} is drafted for {files[path][0]}"
         else:
-            files[path] = (f"{quote(rule)} -> {key}", _concept(control, gap, p, doc, now))
+            files[path] = (quote(rule), key, _concept(control, gap, p, doc, now))
+            continue
+        rows.append(f"| `{quote(rule)}` | {gap['count']} | {quote(f'{key} (high): {why}')} |")
     patch = ""
     if files:
         notes = [f"# grc propose: draft Scanner Check concepts from {_configuration(doc)}.",
                  f"# How often triage is right: {_accuracy_link()}",
                  "# Apply with `git apply`; write each draft section, delete the marker lines, and sign each concept.",
-                 *(f"# - {label}: {path}" for path, (label, _) in files.items())]
-        patch = "\n".join(notes) + "\n\n" + "".join(_new_file(path, text) for path, (_, text) in files.items())
+                 *(f"# - {rule} -> {key}: {path}" for path, (rule, key, _) in files.items())]
+        patch = "\n".join(notes) + "\n\n" + "".join(_new_file(path, text) for path, (_, _, text) in files.items())
     issue = ""
     if rows:
         issue = "\n".join(["# Coverage gaps no control covers", "", f"From {_configuration(doc)}.",
