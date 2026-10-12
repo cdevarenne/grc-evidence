@@ -71,6 +71,8 @@ shell access.
   comparison with the committed baseline). Resources: `report.md`, `run.json`,
   and the OSCAL documents. Decided 2026-10-02 (G1 plan): `draft_mapping` and
   `draft_suppression` arrive with G4 and G5, and a run-to-run `diff` with G3.
+  Amended 2026-10-12 (G4 plan, decision 7): `draft_mapping` is deferred until
+  an agent needs it.
 - No tool writes to `knowledge/`; drafts are returned as text.
 - Scanner-derived strings are returned inside a field marked untrusted.
 - Tests: each tool against fixture outputs; drafts load as valid concepts; no
@@ -106,6 +108,14 @@ arrives as a reviewable `rule_ids` change, not a list.
   issue listing gaps no control covers.
 - On trunk-based repos the draft is a patch file; on repos that use pull
   requests, a branch and a draft pull request.
+- **Amended 2026-10-12** ([G4 plan](../plans/2026-10-12-mini-spec-g-g4-gap-to-mapping-plan.md),
+  owner decisions 1, 2, 3, 6, 7): G4 makes no model call of its own, so it is a
+  deterministic command, `grc propose`, not a `grc agent` workflow. Each draft is
+  a new `Scanner Check` concept (no reviewed concept is edited). It writes
+  `out/agent/mapping.patch` and `out/agent/gaps.md` (an issue body) and nothing
+  else: no branch, pull request or issue, on any repo. The evaluation figures
+  are linked from `docs/llm.md`, not copied. The MCP `draft_mapping` tool is
+  deferred.
 
 **G5. Suppression drafts.** As a reviewer, a likely false positive arrives as a
 drafted suppression I can accept or reject.
