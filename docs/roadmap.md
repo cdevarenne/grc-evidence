@@ -82,6 +82,12 @@ for a person to apply, write and sign, and the other gaps an issue body
 settings it was made with; any signed concept with a draft marker fails to load;
 and `grc run` appends to the evidence ledger only from a clean run.
 
+`2.3.1` maps seven coverage gaps in the base bundle, from the first `grc propose`
+run on the sample app, each reviewed and signed by a person: Trivy's capability and
+security-context checks join *Harden the container runtime* (CC6.1), and two new
+checks cover pods with no NetworkPolicy (CC6.6) and bucket access logging (CC7.2).
+Rules that are triage evaluation cases stay gaps until G6.
+
 Built beyond the engine:
 
 - **Adopter repo** (Spec F Part B):
