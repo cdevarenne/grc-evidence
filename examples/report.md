@@ -1,24 +1,24 @@
 # Compliance Scan Report
 
-Generated 2026-10-12T23:49:41+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-10-13T00:57:22+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
 
 ## Risk posture
 
-98 open findings across 9 of 13 controls: 2 critical, 28 high, 27 medium, 21 low, 20 unclassified.
-1 control shows no violations. 3 not assessed. 6 not applicable. 15 coverage gaps to triage. 1 accepted risk and 1 false positive suppressed after review.
+105 open findings across 10 of 13 controls: 2 critical, 29 high, 28 medium, 24 low, 22 unclassified.
+0 controls show no violations. 3 not assessed. 6 not applicable. 8 coverage gaps to triage. 1 accepted risk and 1 false positive suppressed after review.
 
 ## Summary
 
 | Control | Status | Critical | High | Medium | Low | Uncl. | Total |
 |---|---|---|---|---|---|---|---|
 | soc2:a1.1 | not-satisfied | 0 | 0 | 0 | 5 | 7 | 12 |
-| soc2:cc6.1 | not-satisfied | 0 | 5 | 2 | 5 | 9 | 21 |
-| soc2:cc6.6 | not-satisfied | 0 | 2 | 0 | 0 | 2 | 4 |
+| soc2:cc6.1 | not-satisfied | 0 | 6 | 2 | 8 | 9 | 25 |
+| soc2:cc6.6 | not-satisfied | 0 | 2 | 0 | 0 | 3 | 5 |
 | soc2:cc7.1 | not-satisfied | 3 | 17 | 22 | 11 | 0 | 53 |
-| soc2:cc7.2 | no-violations-detected | 0 | 0 | 0 | 0 | 0 | 0 |
+| soc2:cc7.2 | not-satisfied | 0 | 0 | 1 | 0 | 1 | 2 |
 | soc2:cc8.1 | not-satisfied | 0 | 1 | 1 | 0 | 2 | 4 |
 | iso42001:a.4 | not-satisfied | 0 | 1 | 0 | 0 | 0 | 1 |
 | iso42001:a.5 | not-assessed | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -39,10 +39,6 @@ it is evidence, not a control attestation.
 ### A1.1 — Capacity Management
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Processing capacity and the use of system components are maintained, monitored, and managed to meet availability objectives — status is not-satisfied with 12 findings (5 low, 7 unknown).
-
-**Auditor note (LLM):** Review the 5 low-severity and 7 unknown-severity findings to identify gaps in capacity planning, monitoring, and component management.
 
 **Findings:** 5 low, 7 unclassified
 
@@ -71,11 +67,7 @@ every container, sized from observed use.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Access to systems and data is restricted to authorized, least-privileged identities — status is not-satisfied with 21 findings (5 high, 2 medium, 5 low, 9 unknown).
-
-**Auditor note (LLM):** Prioritize the 5 high-severity findings to address authentication, authorization, and privilege escalation paths.
-
-**Findings:** 5 high, 2 medium, 5 low, 9 unclassified
+**Findings:** 6 high, 2 medium, 8 low, 9 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Semgrep](../knowledge/scanners/semgrep.md), [Trivy](../knowledge/scanners/trivy.md), [DRF writes require authentication](../knowledge/policies/drf-authenticated-writes.md), [Least-privilege access to GKE](../knowledge/policies/gke-access.md), [Harden the container runtime](../knowledge/policies/harden-container-runtime.md), [Isolate workloads in their own namespace](../knowledge/policies/isolate-workloads.md), [No hard-coded LLM API keys](../knowledge/policies/llm-hardcoded-key.md), [Require non-root containers](../knowledge/policies/require-non-root.md)
 
@@ -94,6 +86,8 @@ every container, sized from observed use.
 - `semgrep` `drf-allowany` (high) — DRF view allows unauthenticated access (AllowAny); require an authenticated permission class. — `app/widgets/views.py`
 - `semgrep` `llm-hardcoded-key` (high) — An API key is assigned from a string literal; read it from the environment or a secret store. — `app/assistant/settings.py`
 - `trivy` `DS-0002` (high) — Image user should not be 'root': Specify at least 1 USER command in Dockerfile with non-root user as argument — `app/Dockerfile`
+- `trivy` `KSV-0003` (low) — Default capabilities: some containers do not drop all: Container 'api' of Deployment 'widgets-api' should add 'ALL' to 'securityContext.capabilities.drop' — `app/k8s/deployment.yaml`
+- `trivy` `KSV-0004` (low) — Default capabilities: some containers do not drop any: Container 'api' of 'deployment' 'widgets-api' in 'default' namespace should set securityContext.capabilities.drop — `app/k8s/deployment.yaml`
 - `trivy` `KSV-0012` (medium) — Runs as root user: Container 'api' of Deployment 'widgets-api' should set 'securityContext.runAsNonRoot' to true — `app/k8s/deployment.yaml`
 - `trivy` `KSV-0014` (high) — Root file system is not read-only: Container 'api' of Deployment 'widgets-api' should set 'securityContext.readOnlyRootFilesystem' to true — `app/k8s/deployment.yaml`
 - `trivy` `KSV-0020` (low) — Runs with UID <= 10000: Container 'api' of Deployment 'widgets-api' should set 'securityContext.runAsUser' > 10000 — `app/k8s/deployment.yaml`
@@ -101,13 +95,16 @@ every container, sized from observed use.
 - `trivy` `KSV-0030` (low) — Runtime/Default Seccomp profile not set: Either Pod or Container should set 'securityContext.seccompProfile.type' to 'RuntimeDefault' — `app/k8s/deployment.yaml`
 - `trivy` `KSV-0104` (medium) — Seccomp policies disabled: container "api" of deployment "widgets-api" in "default" namespace should specify a seccomp profile — `app/k8s/deployment.yaml`
 - `trivy` `KSV-0105` (low) — Containers must not set runAsUser to 0: securityContext.runAsUser should be set to a value greater than 0 — `app/k8s/deployment.yaml`
+- `trivy` `KSV-0106` (low) — Container capabilities must only include NET_BIND_SERVICE: container should drop all — `app/k8s/deployment.yaml`
 - `trivy` `KSV-0110` (low) — Workloads in the default namespace: deployment widgets-api in default namespace should set metadata.namespace to a non-default namespace — `app/k8s/deployment.yaml`
+- `trivy` `KSV-0118` (high) — Default security context configured: deployment widgets-api in default namespace is using the default security context, which allows root privileges — `app/k8s/deployment.yaml`
 
 **Remediation:** Add a non-root `USER` to the Dockerfile and set `securityContext.runAsNonRoot: true`
 (with a non-zero `runAsUser`) on every container in the Deployment. Create a namespace for the application and set `metadata.namespace` on every
 manifest (or deploy with `-n`), then scope RBAC and network policy to it. Set a `securityContext` on every pod and container: `seccompProfile:
-{type: RuntimeDefault}`, `readOnlyRootFilesystem: true`, `runAsUser` and
-`runAsGroup` above 10000; set `automountServiceAccountToken: false` unless the
+{type: RuntimeDefault}`, `readOnlyRootFilesystem: true`, `capabilities:
+{drop: [ALL]}` (add back only `NET_BIND_SERVICE` if the container binds a port
+below 1024), `runAsUser` and `runAsGroup` above 10000; set `automountServiceAccountToken: false` unless the
 workload calls the Kubernetes API. Replace `AllowAny` with an authenticated permission class (for example
 `IsAuthenticated`, or `IsAuthenticatedOrReadOnly` for public reads). Read the key from the environment (for example `os.environ["ANTHROPIC_API_KEY"]`)
 or a secret manager, and rotate any key that was committed.
@@ -116,31 +113,26 @@ or a secret manager, and rotate any key that was committed.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Resources are protected from access originating outside the system boundary — status is not-satisfied with 4 findings (2 high, 2 unknown).
+**Findings:** 2 high, 3 unclassified
 
-**Auditor note (LLM):** Address the 2 high-severity findings to strengthen external boundary protection, network policies, and encryption in transit.
-
-**Findings:** 2 high, 2 unclassified
-
-**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Trivy](../knowledge/scanners/trivy.md), [No public buckets](../knowledge/policies/no-public-bucket.md), [Keep the GKE cluster private](../knowledge/policies/private-gke-control-plane.md)
+**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Trivy](../knowledge/scanners/trivy.md), [No public buckets](../knowledge/policies/no-public-bucket.md), [Keep the GKE cluster private](../knowledge/policies/private-gke-control-plane.md), [Restrict pod traffic with a NetworkPolicy](../knowledge/policies/restrict-pod-traffic.md)
 
 **Open findings:**
 
+- `checkov` `CKV2_K8S_6` (unknown) — Minimize the admission of pods which lack an associated NetworkPolicy (Pod.default.widgets-api.app-widgets-api) — `app/k8s/deployment.yaml`
 - `checkov` `CKV_GCP_114` (unknown) — Ensure public access prevention is enforced on Cloud Storage bucket (google_storage_bucket.widgets_assets) — `app/infra/main.tf`
 - `checkov` `CKV_GCP_28` (unknown) — Ensure that Cloud Storage bucket is not anonymously or publicly accessible (google_storage_bucket_iam_member.public_read) — `app/infra/main.tf`
 - `conftest` `no_public_bucket` (high) — bucket IAM binding "public_read" grants access to allUsers — `app/infra/main.tf`
 - `trivy` `GCP-0001` (high) — Ensure that Cloud Storage bucket is not anonymously or publicly accessible.: Bucket allows public access. — `app/infra/main.tf`
 
-**Remediation:** Remove public IAM members from the bucket, grant access to named service
+**Remediation:** Add a NetworkPolicy whose `podSelector` matches the workload, with `ingress`
+rules for the callers it serves; start from a namespace-wide default-deny
+policy so that a new pod is closed until it is given its own. Remove public IAM members from the bucket, grant access to named service
 accounts only, and enforce public access prevention on the bucket.
 
 ### CC7.1 — Vulnerability Detection
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Vulnerabilities in code, dependencies, images, and configuration are detected — status is not-satisfied with 52 findings (2 critical, 17 high, 22 medium, 11 low) and 1 accepted risk.
-
-**Auditor note (LLM):** Address the 2 critical and 17 high-severity vulnerabilities as immediate priorities; review the rationale for the 1 accepted risk.
 
 **Findings:** 3 critical, 17 high, 22 medium, 11 low
 
@@ -207,21 +199,24 @@ advisories, then re-scan.
 
 ### CC7.2 — Security Monitoring
 
-**Status:** no-violations-detected
+**Status:** not-satisfied
 
-**Summary (LLM):** System components are monitored for anomalous and malicious activity — status is no-violations-detected.
+**Findings:** 1 medium, 1 unclassified
 
-**Auditor note (LLM):** Verify that monitoring controls are configured and active across all workloads and that alerting thresholds are appropriate.
+**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Trivy](../knowledge/scanners/trivy.md), [Log access to storage buckets](../knowledge/policies/log-bucket-access.md), [Log network flows](../knowledge/policies/network-flow-logs.md)
 
-**Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Log network flows](../knowledge/policies/network-flow-logs.md)
+**Open findings:**
+
+- `checkov` `CKV_GCP_62` (unknown) — Bucket should log access (google_storage_bucket.widgets_assets) — `app/infra/main.tf`
+- `trivy` `GCP-0077` (medium) — Cloud Storage Bucket Logging Not Enabled: Storage bucket logging is not configured with a target log bucket. — `app/infra/main.tf`
+
+**Remediation:** Give each `google_storage_bucket` a `logging` block whose `log_bucket` is a
+separate bucket that only the logging service and security reviewers can
+write to and read.
 
 ### CC8.1 — Change Management
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Changes to infrastructure and software are controlled, reproducible, and reviewed — status is not-satisfied with 4 findings (1 high, 1 medium, 2 unknown).
-
-**Auditor note (LLM):** Review the high-severity finding to confirm that all changes pass automated policy gates and are reproducible before release.
 
 **Findings:** 1 high, 1 medium, 2 unclassified
 
@@ -245,10 +240,6 @@ Authorization on the cluster.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** The organization knows and records the resources each AI system depends on — status is not-satisfied with 1 high-severity finding.
-
-**Auditor note (LLM):** Examine the high-severity finding to identify which AI system resources are not recorded in the inventory.
-
 **Findings:** 1 high
 
 **Evidence:** [Conftest](../knowledge/scanners/conftest.md), [AI inventory is complete](../knowledge/policies/ai-inventory-complete.md)
@@ -263,10 +254,6 @@ purpose, then review its risk tier.
 ### A.6 — AI system life cycle
 
 **Status:** not-satisfied
-
-**Summary (LLM):** AI systems are designed, built, deployed, and operated under defined controls — status is not-satisfied with 2 findings (1 high, 1 medium).
-
-**Auditor note (LLM):** Review both findings to identify gaps in lifecycle controls across design, build, deploy, and operate phases.
 
 **Findings:** 1 high, 1 medium
 
@@ -286,10 +273,6 @@ chat model, sized to the feature's latency and cost budget.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Data that enters or leaves an AI system is governed for quality, provenance, and protection — status is not-satisfied with 1 high-severity finding.
-
-**Auditor note (LLM):** Investigate the high-severity finding to determine what data governance or protection controls are missing.
-
 **Findings:** 1 high
 
 **Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Do not log prompts or completions](../knowledge/policies/llm-prompt-logged.md)
@@ -306,10 +289,6 @@ Keep full transcripts, if needed, in a store with its own access control and ret
 ### Art. 50 — Transparency obligations for certain AI systems
 
 **Status:** not-satisfied
-
-**Summary (LLM):** People are told when they interact with an AI system or see AI-generated content — status is not-satisfied with 1 medium-severity finding.
-
-**Auditor note (LLM):** Review the medium-severity finding to determine what AI-interaction disclosure is missing or incomplete.
 
 **Findings:** 1 medium
 
@@ -337,28 +316,21 @@ comes only from that control's own rule declarations.
 | iso42001:a.9 | not-assessed | eu-ai-act:art-14 | not-applicable | [ISO/IEC 42001 ↔ EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |
 | iso42001:a.6 | not-satisfied | eu-ai-act:art-15 | not-applicable | [ISO/IEC 42001 ↔ EU AI Act](../knowledge/crosswalk/iso42001-ai-act.md) |
 | soc2:cc6.1 | not-satisfied | iso42001:a.6 | not-satisfied | [SOC 2 ↔ ISO/IEC 42001](../knowledge/crosswalk/soc2-iso42001.md) |
-| soc2:cc7.2 | no-violations-detected | iso42001:a.6 | not-satisfied | [SOC 2 ↔ ISO/IEC 42001](../knowledge/crosswalk/soc2-iso42001.md) |
+| soc2:cc7.2 | not-satisfied | iso42001:a.6 | not-satisfied | [SOC 2 ↔ ISO/IEC 42001](../knowledge/crosswalk/soc2-iso42001.md) |
 | soc2:cc8.1 | not-satisfied | iso42001:a.6 | not-satisfied | [SOC 2 ↔ ISO/IEC 42001](../knowledge/crosswalk/soc2-iso42001.md) |
 
 ## Coverage gaps
 
 Findings with no in-bundle control. These are gaps to close, not mappings to invent.
 
-- `checkov` `CKV2_K8S_6` (unknown) — Minimize the admission of pods which lack an associated NetworkPolicy (Pod.default.widgets-api.app-widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `checkov` `CKV_GCP_62` (unknown) — Bucket should log access (google_storage_bucket.widgets_assets) — `app/infra/main.tf` — reason: `no-rule-match`
 - `checkov` `CKV_GCP_78` (unknown) — Ensure Cloud storage has versioning enabled (google_storage_bucket.widgets_assets) — `app/infra/main.tf` — reason: `no-rule-match`
 - `checkov` `CKV_K8S_20` (unknown) — Containers should not run with allowPrivilegeEscalation (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `checkov` `CKV_K8S_28` (unknown) — Minimize the admission of containers with the NET_RAW capability (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `checkov` `CKV_K8S_37` (unknown) — Minimize the admission of containers with capabilities assigned (Deployment.default.widgets-api) — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 - `semgrep` `llm-output-unreviewed-write` (medium) — Model output is written to a record with no human-review flag checked first. — `app/assistant/views.py` — reason: `no-rule-match`
 - `trivy` `GCP-0066` (low) — Cloud Storage buckets should be encrypted with a customer-managed key.: Storage bucket encryption does not use a customer-managed key. — `app/infra/main.tf` — reason: `no-rule-match`
-- `trivy` `GCP-0077` (medium) — Cloud Storage Bucket Logging Not Enabled: Storage bucket logging is not configured with a target log bucket. — `app/infra/main.tf` — reason: `no-rule-match`
 - `trivy` `GCP-0078` (medium) — Cloud Storage Bucket Versioning Disabled: Storage bucket versioning is not enabled. — `app/infra/main.tf` — reason: `no-rule-match`
 - `trivy` `KSV-0001` (medium) — Can elevate its own privileges: Container 'api' of Deployment 'widgets-api' should set 'securityContext.allowPrivilegeEscalation' to false — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `trivy` `KSV-0003` (low) — Default capabilities: some containers do not drop all: Container 'api' of Deployment 'widgets-api' should add 'ALL' to 'securityContext.capabilities.drop' — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `trivy` `KSV-0004` (low) — Default capabilities: some containers do not drop any: Container 'api' of 'deployment' 'widgets-api' in 'default' namespace should set securityContext.capabilities.drop — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `trivy` `KSV-0106` (low) — Container capabilities must only include NET_BIND_SERVICE: container should drop all — `app/k8s/deployment.yaml` — reason: `no-rule-match`
-- `trivy` `KSV-0118` (high) — Default security context configured: deployment widgets-api in default namespace is using the default security context, which allows root privileges — `app/k8s/deployment.yaml` — reason: `no-rule-match`
 
 ## Suppressed
 
@@ -389,4 +361,4 @@ Out of scope at the declared AI risk tier. Findings stay listed; they do not cha
 
 ---
 
-LLM step: 1 call(s), 0 billed, model claude-haiku-4-5, mode claude-cli. Tokens: 10 in, 4271 out, 0 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.
+LLM step: 2 call(s), 2 billed, model claude-haiku-4-5, mode claude-cli. Tokens: 20 in, 8808 out, 0 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.

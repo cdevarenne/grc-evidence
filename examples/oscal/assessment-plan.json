@@ -1,9 +1,9 @@
 {
   "assessment-plan": {
-    "uuid": "9e3d7424-4cb8-5e81-ba6c-a296b90add4d",
+    "uuid": "6f6c0893-15e2-5422-8c85-69f8b822eec9",
     "metadata": {
       "title": "grc-evidence automated assessment plan",
-      "last-modified": "2026-10-12T23:49:41+00:00",
+      "last-modified": "2026-10-13T00:57:22+00:00",
       "version": "0.1.0",
       "oscal-version": "1.2.3"
     },
@@ -107,6 +107,9 @@
                     "control-id": "cc7.1"
                   },
                   {
+                    "control-id": "cc7.2"
+                  },
+                  {
                     "control-id": "cc8.1"
                   }
                 ]
@@ -152,6 +155,9 @@
                   },
                   {
                     "control-id": "cc7.1"
+                  },
+                  {
+                    "control-id": "cc7.2"
                   },
                   {
                     "control-id": "cc8.1"
