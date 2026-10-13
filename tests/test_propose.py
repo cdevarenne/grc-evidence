@@ -177,7 +177,8 @@ def test_control_without_its_own_tag_is_still_tagged(tmp_path: Path, monkeypatch
     repo = _repo(tmp_path, monkeypatch, proposals=[_proposal("gap.one", "soc2:cc7.1")])
     control = repo / "knowledge/controls/cc7.1.md"
     control.write_text(control.read_text().replace(", cc7.1]", "]").replace(" cc7.1,", ""))
-    assert load_bundle(repo / "knowledge").control("soc2:cc7.1").control_tags == ()
+    edited = load_bundle(repo / "knowledge").control("soc2:cc7.1")
+    assert edited is not None and edited.control_tags == ()
     main([])
     _apply(repo)
     assert _frontmatter(repo / f"knowledge/policies/{SLUG}.md")["tags"] == ["cc7.1"]
