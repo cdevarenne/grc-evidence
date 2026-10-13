@@ -21,7 +21,7 @@ bundle are load-time checks only. okflib checks OKF's own fields and signals (`t
 |---|---|---|
 | `framework` | `soc2` (when absent), `iso42001` or `eu-ai-act`; must match the type | schema and loader |
 | `applies_when` | a mapping of context field to a list of values (risk tier, component scope) | schema and loader |
-| `tags` | the control's own key as a tag, for example `cc8.1` or `iso42001:a.6` | loader |
+| `tags` | the control's own key as a tag, for example `cc8.1` or `iso42001:a.6`; nothing in the engine reads it | convention (this repo's conformance test, not the loader) |
 
 ## Rule-declaring concepts
 
