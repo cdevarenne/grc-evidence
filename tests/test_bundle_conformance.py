@@ -135,3 +135,14 @@ def test_suppressions_name_a_known_tool_and_one_owner() -> None:
     for s in BUNDLE.suppressions():
         assert s.tool in TOOLS, f"{s.id}: unknown tool {s.tool!r}"
         assert s.owner.startswith("human:"), s.id
+
+
+@pytest.mark.parametrize(("rule", "key"), [
+    ("trivy:KSV-0003", "soc2:cc6.1"), ("trivy:KSV-0004", "soc2:cc6.1"), ("trivy:KSV-0106", "soc2:cc6.1"),
+    ("trivy:KSV-0118", "soc2:cc6.1"), ("checkov:CKV2_K8S_6", "soc2:cc6.6"),
+    ("checkov:CKV_GCP_62", "soc2:cc7.2"), ("trivy:GCP-0077", "soc2:cc7.2"),
+])
+def test_gaps_reviewed_from_grc_propose_are_declared(rule: str, key: str) -> None:
+    """2.3.1: the drafts a person accepted from the first `grc propose` run on the sample app."""
+    tool, _, rule_id = rule.partition(":")
+    assert {k for c in BUNDLE.by_rule(tool, rule_id) for k in c.control_keys} == {key}

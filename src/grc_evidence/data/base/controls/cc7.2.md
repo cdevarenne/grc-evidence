@@ -12,6 +12,8 @@ verified:
     at: "2026-09-29T17:21:00-07:00"
   - by: "human:cdevarenne"
     at: "2026-10-01T15:58:00-07:00"
+  - by: "human:cdevarenne"
+    at: "2026-10-12T17:45:00-07:00"
 ---
 # Intent
 
@@ -26,10 +28,12 @@ acted on.
 # Satisfied by
 
 - [Log network flows](../policies/network-flow-logs.md)
+- [Log access to storage buckets](../policies/log-bucket-access.md)
 
 # Evidenced by
 
-- [Checkov](../scanners/checkov.md) — whether flow logging is configured
+- [Checkov](../scanners/checkov.md) — whether flow logging and bucket access logging are configured
+- [Trivy](../scanners/trivy.md) — whether bucket access logging is configured
 
 Only configuration is checked: that monitoring data is collected, not that
 anyone reviews it. No scanner here evidences runtime detection.

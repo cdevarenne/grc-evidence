@@ -12,6 +12,8 @@ verified:
     at: "2026-09-29T17:21:00-07:00"
   - by: "human:cdevarenne"
     at: "2026-10-01T15:58:00-07:00"
+  - by: "human:cdevarenne"
+    at: "2026-10-12T17:45:00-07:00"
 ---
 # Intent
 
@@ -27,9 +29,10 @@ and data crossing the boundary is protected in transit.
 
 - [No public buckets](../policies/no-public-bucket.md)
 - [Keep the GKE cluster private](../policies/private-gke-control-plane.md)
+- [Restrict pod traffic with a NetworkPolicy](../policies/restrict-pod-traffic.md)
 
 # Evidenced by
 
-- [Checkov](../scanners/checkov.md) — IaC boundary checks
+- [Checkov](../scanners/checkov.md) — IaC boundary checks, and pods no NetworkPolicy selects
 - [Conftest](../scanners/conftest.md) — the no-public-bucket policy gate
 - [Trivy](../scanners/trivy.md) — public-bucket configuration check

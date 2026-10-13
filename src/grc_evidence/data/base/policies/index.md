@@ -11,12 +11,14 @@ control tag per framework.
 * [No hard-coded LLM API keys](llm-hardcoded-key.md) - Model-provider API keys must come from the environment or a secret store.
 * [Bound every LLM call](llm-unbounded-call.md) - Every model call sets both a timeout and a max_tokens limit.
 * [Disclose AI-generated output](llm-no-ai-disclosure.md) - Responses that carry model output tell the user it is AI-generated.
-* [Harden the container runtime](harden-container-runtime.md) - Containers run with a seccomp profile, a read-only root file system, no mounted service-account token they do not need, and a high non-root UID and GID.
+* [Harden the container runtime](harden-container-runtime.md) - Containers run with a seccomp profile, a read-only root file system, every Linux capability dropped, an explicit security context, no mounted service-account token they do not need, and a high non-root UID and GID.
 * [Isolate workloads in their own namespace](isolate-workloads.md) - Workloads do not run in the default namespace.
 * [Pin images and modules to reviewed sources](pin-image-provenance.md) - Images are pinned by digest from trusted registries, admission requires attested images, and Terraform modules are pinned to a commit.
 * [Keep the GKE cluster private](private-gke-control-plane.md) - The cluster's nodes and control plane are private, the API is reachable only from authorized networks, and network policy is enforced.
+* [Restrict pod traffic with a NetworkPolicy](restrict-pod-traffic.md) - Every pod is selected by a NetworkPolicy, so the traffic it may receive is declared rather than open to the whole cluster.
 * [Least-privilege access to GKE](gke-access.md) - Cluster access uses Google identities and groups, not client certificates; nodes use a dedicated service account and the GKE metadata server.
 * [Log network flows](network-flow-logs.md) - The cluster's VPC flow logs and intranode visibility are enabled.
+* [Log access to storage buckets](log-bucket-access.md) - Each Cloud Storage bucket writes access logs to a log bucket.
 * [Set resource requests and limits](set-resource-limits.md) - Every container declares CPU and memory requests and limits.
 * [Declare health checks](health-checks.md) - Containers declare liveness and readiness probes, and images a HEALTHCHECK.
 * [AI inventory is complete](ai-inventory-complete.md) - Every AI component of the app has an entry in the AI system inventory.

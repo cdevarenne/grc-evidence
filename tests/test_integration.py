@@ -116,10 +116,14 @@ def test_plan_names_the_monitoring_control_the_results_leave_unassessed(mapping:
     assert "cc7.2" in planned and "art-12" not in planned
 
 
-def test_monitoring_control_has_only_a_configuration_check(mapping: dict) -> None:
-    """CC7.2's one rule checks GKE flow logging; the sample has no cluster, so nothing fires (#87)."""
+def test_monitoring_control_has_only_configuration_checks(mapping: dict) -> None:
+    """CC7.2's rules check GKE flow logging (#87; the sample has no cluster, so nothing fires) and bucket access
+    logging (2.3.1), which the sample's bucket lacks."""
     entry = mapping["controls"]["soc2:cc7.2"]
-    assert entry["status"] == "no-violations-detected" and entry["satisfied_by"] == ["policies/network-flow-logs"]
+    assert entry["satisfied_by"] == ["policies/log-bucket-access", "policies/network-flow-logs"]
+    assert entry["status"] == "not-satisfied"
+    assert {(f["tool"], f["rule_id"], f["target"]) for f in entry["findings"]} == {
+        ("checkov", "CKV_GCP_62", "app/infra/main.tf"), ("trivy", "GCP-0077", "app/infra/main.tf")}
 
 
 def test_high_risk_articles_are_not_applicable_at_limited_tier(mapping: dict) -> None:
