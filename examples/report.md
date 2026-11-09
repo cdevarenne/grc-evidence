@@ -1,13 +1,13 @@
 # Compliance Scan Report
 
-Generated 2026-10-13T01:01:11+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-11-09T22:29:11+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
 
 ## Risk posture
 
-105 open findings across 10 of 13 controls: 2 critical, 29 high, 28 medium, 24 low, 22 unclassified.
+108 open findings across 10 of 13 controls: 2 critical, 32 high, 28 medium, 24 low, 22 unclassified.
 0 controls show no violations. 3 not assessed. 6 not applicable. 8 coverage gaps to triage. 1 accepted risk and 1 false positive suppressed after review.
 
 ## Summary
@@ -17,7 +17,7 @@ it is evidence, not a control attestation.
 | soc2:a1.1 | not-satisfied | 0 | 0 | 0 | 5 | 7 | 12 |
 | soc2:cc6.1 | not-satisfied | 0 | 6 | 2 | 8 | 9 | 25 |
 | soc2:cc6.6 | not-satisfied | 0 | 2 | 0 | 0 | 3 | 5 |
-| soc2:cc7.1 | not-satisfied | 3 | 17 | 22 | 11 | 0 | 53 |
+| soc2:cc7.1 | not-satisfied | 3 | 20 | 22 | 11 | 0 | 56 |
 | soc2:cc7.2 | not-satisfied | 0 | 0 | 1 | 0 | 1 | 2 |
 | soc2:cc8.1 | not-satisfied | 0 | 1 | 1 | 0 | 2 | 4 |
 | iso42001:a.4 | not-satisfied | 0 | 1 | 0 | 0 | 0 | 1 |
@@ -39,10 +39,6 @@ it is evidence, not a control attestation.
 ### A1.1 — Capacity Management
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Capacity management is not satisfied, with 12 findings (5 low, 7 unknown).
-
-**Auditor note (LLM):** Review whether workloads declare capacity requirements and health signals; verify that capacity planning and instance replacement follow documented procedures.
 
 **Findings:** 5 low, 7 unclassified
 
@@ -70,10 +66,6 @@ every container, sized from observed use.
 ### CC6.1 — Logical Access
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Logical access control is not satisfied, with 25 findings (6 high, 8 low, 2 medium, 9 unknown).
-
-**Auditor note (LLM):** Audit identity and access controls to verify only authenticated, authorized identities can reach protected functions and that least-privilege enforcement is active.
 
 **Findings:** 6 high, 2 medium, 8 low, 9 unclassified
 
@@ -121,10 +113,6 @@ or a secret manager, and rotate any key that was committed.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** System boundary protection is not satisfied, with 5 findings (2 high, 3 unknown).
-
-**Auditor note (LLM):** Verify that resources inside the system boundary are not reachable anonymously from outside and that data crossing boundaries is protected in transit.
-
 **Findings:** 2 high, 3 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Trivy](../knowledge/scanners/trivy.md), [No public buckets](../knowledge/policies/no-public-bucket.md), [Keep the GKE cluster private](../knowledge/policies/private-gke-control-plane.md), [Restrict pod traffic with a NetworkPolicy](../knowledge/policies/restrict-pod-traffic.md)
@@ -146,11 +134,7 @@ accounts only, and enforce public access prevention on the bucket.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Vulnerability detection is not satisfied, with 52 findings (2 critical, 17 high, 22 medium, 11 low); 1 risk is accepted.
-
-**Auditor note (LLM):** Review the vulnerability scanning program across source code, dependencies, and container images; verify that accepted risks are documented with justification.
-
-**Findings:** 3 critical, 17 high, 22 medium, 11 low
+**Findings:** 3 critical, 20 high, 22 medium, 11 low
 
 **Evidence:** [Trivy](../knowledge/scanners/trivy.md)
 
@@ -188,6 +172,9 @@ accounts only, and enforce public access prevention on the bucket.
 - `trivy` `CVE-2025-64458` (high) — Django 4.2.0: Django: Denial-of-service vulnerability in Django on Windows — `app/requirements.txt`
 - `trivy` `CVE-2025-64459` (critical) — Django 4.2.0: django: Django SQL injection — `app/requirements.txt`
 - `trivy` `CVE-2025-64460` (medium) — Django 4.2.0: Django: Django: Algorithmic complexity in XML Deserializer leads to denial of service — `app/requirements.txt`
+- `trivy` `CVE-2026-114136` (high) — djangorestframework 3.15.2: djangorestframework: djangorestframework: Denial of Service via improper charset handling in JSON parser — `app/requirements.txt`
+- `trivy` `CVE-2026-114137` (high) — djangorestframework 3.15.2: djangorestframework: djangorestframework: Unauthorized access via improper token revocation in TokenProxy — `app/requirements.txt`
+- `trivy` `CVE-2026-114138` (high) — djangorestframework 3.15.2: djangorestframework: djangorestframework: Denial of Service via unbounded Accept header parsing — `app/requirements.txt`
 - `trivy` `CVE-2026-1207` (high) — Django 4.2.0: Django: Django: SQL Injection via RasterField band index parameter — `app/requirements.txt`
 - `trivy` `CVE-2026-1285` (low) — Django 4.2.0: Django: Django: Denial of Service via crafted HTML inputs — `app/requirements.txt`
 - `trivy` `CVE-2026-1287` (high) — Django 4.2.0: Django: Django: SQL Injection via crafted column aliases — `app/requirements.txt`
@@ -217,10 +204,6 @@ advisories, then re-scan.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Security monitoring is not satisfied, with 2 findings (1 medium, 1 unknown).
-
-**Auditor note (LLM):** Verify that running workloads are monitored for anomalies and malicious activity, and that detected incidents trigger documented response procedures.
-
 **Findings:** 1 medium, 1 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Trivy](../knowledge/scanners/trivy.md), [Log access to storage buckets](../knowledge/policies/log-bucket-access.md), [Log network flows](../knowledge/policies/network-flow-logs.md)
@@ -237,10 +220,6 @@ write to and read.
 ### CC8.1 — Change Management
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Change management is not satisfied, with 4 findings (1 high, 1 medium, 2 unknown).
-
-**Auditor note (LLM):** Audit deployment controls to confirm that artifacts are pinned to reviewed versions and that changes pass automated policy gates before release.
 
 **Findings:** 1 high, 1 medium, 2 unclassified
 
@@ -264,10 +243,6 @@ Authorization on the cluster.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** AI system resource inventory is not satisfied, with 1 high-severity finding.
-
-**Auditor note (LLM):** Audit the resource inventory to confirm all AI systems have documented owners and dependencies (models, data, tools, people) are recorded.
-
 **Findings:** 1 high
 
 **Evidence:** [Conftest](../knowledge/scanners/conftest.md), [AI inventory is complete](../knowledge/policies/ai-inventory-complete.md)
@@ -282,10 +257,6 @@ purpose, then review its risk tier.
 ### A.6 — AI system life cycle
 
 **Status:** not-satisfied
-
-**Summary (LLM):** AI system life cycle controls are not satisfied, with 2 findings (1 high, 1 medium).
-
-**Auditor note (LLM):** Verify that design, build, deployment, and operation follow documented engineering controls including secret management, API rate limiting, and reproducible releases.
 
 **Findings:** 1 high, 1 medium
 
@@ -305,10 +276,6 @@ chat model, sized to the feature's latency and cost budget.
 
 **Status:** not-satisfied
 
-**Summary (LLM):** Data governance for AI systems is not satisfied, with 1 high-severity finding.
-
-**Auditor note (LLM):** Audit data handling for AI system inputs and outputs to confirm purpose is defined, sensitive data is protected, and logs do not escape data controls.
-
 **Findings:** 1 high
 
 **Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Do not log prompts or completions](../knowledge/policies/llm-prompt-logged.md)
@@ -325,10 +292,6 @@ Keep full transcripts, if needed, in a store with its own access control and ret
 ### Art. 50 — Transparency obligations for certain AI systems
 
 **Status:** not-satisfied
-
-**Summary (LLM):** Transparency obligations for AI interactions are not satisfied, with 1 medium-severity finding.
-
-**Auditor note (LLM):** Review whether users are being clearly informed when they interact with the AI system or receive AI-generated content.
 
 **Findings:** 1 medium
 

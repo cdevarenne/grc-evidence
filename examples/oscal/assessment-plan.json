@@ -1,9 +1,9 @@
 {
   "assessment-plan": {
-    "uuid": "2e2befe8-026c-55d1-93c4-9bef879a0654",
+    "uuid": "537cc1c7-936c-53e4-aeb6-e907cb5d6047",
     "metadata": {
       "title": "grc-evidence automated assessment plan",
-      "last-modified": "2026-10-13T01:01:11+00:00",
+      "last-modified": "2026-11-09T22:29:11+00:00",
       "version": "0.1.0",
       "oscal-version": "1.2.3"
     },
@@ -16,7 +16,7 @@
         {
           "uuid": "cbe546dd-4c55-5522-84ea-b55ea7e81677",
           "title": "Semgrep code scan",
-          "description": "Run semgrep 1.178.0 over `app` and normalize its JSON output to findings.",
+          "description": "Run semgrep 1.184.0 over `app` and normalize its JSON output to findings.",
           "props": [
             {
               "name": "method",
@@ -25,7 +25,7 @@
             {
               "name": "tool-version",
               "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
-              "value": "1.178.0"
+              "value": "1.184.0"
             }
           ],
           "steps": [
@@ -432,13 +432,13 @@
         {
           "uuid": "9973a0ba-84c3-5aa9-8f98-5682ab4219a7",
           "type": "software",
-          "title": "semgrep 1.178.0",
-          "description": "semgrep, pinned to 1.178.0 in tools.lock.",
+          "title": "semgrep 1.184.0",
+          "description": "semgrep, pinned to 1.184.0 in tools.lock.",
           "props": [
             {
               "name": "tool-version",
               "ns": "https://github.com/cdevarenne/grc-evidence/ns/oscal",
-              "value": "1.178.0"
+              "value": "1.184.0"
             }
           ],
           "status": {
