@@ -88,6 +88,11 @@ security-context checks join *Harden the container runtime* (CC6.1), and two new
 checks cover pods with no NetworkPolicy (CC6.6) and bucket access logging (CC7.2).
 Rules that are triage evaluation cases stay gaps until G6.
 
+`2.3.2` updates the scanners `grc bootstrap` installs: Semgrep 1.184.0, and certifi,
+aiohttp and GitPython in the Checkov and Semgrep locks, past advisories published
+after 2.3.1. Semgrep 1.184.0 allows the fixed PyJWT, so `make audit` needs no
+exceptions.
+
 Built beyond the engine:
 
 - **Adopter repo** (Spec F Part B):
