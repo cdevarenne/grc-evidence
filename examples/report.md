@@ -1,6 +1,6 @@
 # Compliance Scan Report
 
-Generated 2026-11-09T22:29:11+00:00. Every status below is derived from scanner findings joined to
+Generated 2026-11-09T22:31:06+00:00. Every status below is derived from scanner findings joined to
 controls declared in the OKF knowledge bundle; nothing is mapped without a declaration.
 `no-violations-detected` means automated checks found nothing for that control;
 it is evidence, not a control attestation.
@@ -40,6 +40,10 @@ it is evidence, not a control attestation.
 
 **Status:** not-satisfied
 
+**Summary (LLM):** A1.1 status is not-satisfied with 12 findings (5 low-severity, 7 unknown-severity).
+
+**Auditor note (LLM):** Review workload declarations, capacity planning, and health-check signaling for processing infrastructure to meet declared availability objectives.
+
 **Findings:** 5 low, 7 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Trivy](../knowledge/scanners/trivy.md), [Declare health checks](../knowledge/policies/health-checks.md), [Set resource requests and limits](../knowledge/policies/set-resource-limits.md)
@@ -66,6 +70,10 @@ every container, sized from observed use.
 ### CC6.1 — Logical Access
 
 **Status:** not-satisfied
+
+**Summary (LLM):** CC6.1 status is not-satisfied with 25 findings (6 high-severity, 2 medium-severity, 8 low-severity, 9 unknown-severity).
+
+**Auditor note (LLM):** Audit authentication mechanisms, authorization policies, and privilege levels across all systems and data to enforce least-privilege access.
 
 **Findings:** 6 high, 2 medium, 8 low, 9 unclassified
 
@@ -113,6 +121,10 @@ or a secret manager, and rotate any key that was committed.
 
 **Status:** not-satisfied
 
+**Summary (LLM):** CC6.6 status is not-satisfied with 5 findings (2 high-severity, 3 unknown-severity).
+
+**Auditor note (LLM):** Verify that system boundaries block anonymous external access and that data crossing boundaries is protected in transit.
+
 **Findings:** 2 high, 3 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Conftest](../knowledge/scanners/conftest.md), [Trivy](../knowledge/scanners/trivy.md), [No public buckets](../knowledge/policies/no-public-bucket.md), [Keep the GKE cluster private](../knowledge/policies/private-gke-control-plane.md), [Restrict pod traffic with a NetworkPolicy](../knowledge/policies/restrict-pod-traffic.md)
@@ -133,6 +145,10 @@ accounts only, and enforce public access prevention on the bucket.
 ### CC7.1 — Vulnerability Detection
 
 **Status:** not-satisfied
+
+**Summary (LLM):** CC7.1 status is not-satisfied with 55 findings (2 critical-severity, 20 high-severity, 22 medium-severity, 11 low-severity, 1 accepted risk).
+
+**Auditor note (LLM):** Review vulnerability detection across source code, third-party dependencies, and container images; evaluate the documented rationale for the accepted risk.
 
 **Findings:** 3 critical, 20 high, 22 medium, 11 low
 
@@ -204,6 +220,10 @@ advisories, then re-scan.
 
 **Status:** not-satisfied
 
+**Summary (LLM):** CC7.2 status is not-satisfied with 2 findings (1 medium-severity, 1 unknown-severity).
+
+**Auditor note (LLM):** Assess anomaly detection and real-time security monitoring for running workloads to detect and respond to malicious activity.
+
 **Findings:** 1 medium, 1 unclassified
 
 **Evidence:** [Checkov](../knowledge/scanners/checkov.md), [Trivy](../knowledge/scanners/trivy.md), [Log access to storage buckets](../knowledge/policies/log-bucket-access.md), [Log network flows](../knowledge/policies/network-flow-logs.md)
@@ -220,6 +240,10 @@ write to and read.
 ### CC8.1 — Change Management
 
 **Status:** not-satisfied
+
+**Summary (LLM):** CC8.1 status is not-satisfied with 4 findings (1 high-severity, 1 medium-severity, 2 unknown-severity).
+
+**Auditor note (LLM):** Verify that deployed infrastructure and software matches reviewed state through artifact pinning, change policy gates, and deployment automation.
 
 **Findings:** 1 high, 1 medium, 2 unclassified
 
@@ -243,6 +267,10 @@ Authorization on the cluster.
 
 **Status:** not-satisfied
 
+**Summary (LLM):** A.4 status is not-satisfied with 1 high-severity finding.
+
+**Auditor note (LLM):** Audit the AI system inventory to ensure all systems are recorded with assigned owners and documented dependencies on models, providers, data, tooling, and people.
+
 **Findings:** 1 high
 
 **Evidence:** [Conftest](../knowledge/scanners/conftest.md), [AI inventory is complete](../knowledge/policies/ai-inventory-complete.md)
@@ -257,6 +285,10 @@ purpose, then review its risk tier.
 ### A.6 — AI system life cycle
 
 **Status:** not-satisfied
+
+**Summary (LLM):** A.6 status is not-satisfied with 2 findings (1 high-severity, 1 medium-severity).
+
+**Auditor note (LLM):** Review the identified control gaps in design, deployment, or operation to establish production-grade engineering discipline across the AI system life cycle.
 
 **Findings:** 1 high, 1 medium
 
@@ -276,6 +308,10 @@ chat model, sized to the feature's latency and cost budget.
 
 **Status:** not-satisfied
 
+**Summary (LLM):** A.7 status is not-satisfied with 1 high-severity finding.
+
+**Auditor note (LLM):** Identify where prompts, context, or model outputs are handled without defined governance for quality, provenance, or protection.
+
 **Findings:** 1 high
 
 **Evidence:** [Semgrep](../knowledge/scanners/semgrep.md), [Do not log prompts or completions](../knowledge/policies/llm-prompt-logged.md)
@@ -292,6 +328,10 @@ Keep full transcripts, if needed, in a store with its own access control and ret
 ### Art. 50 — Transparency obligations for certain AI systems
 
 **Status:** not-satisfied
+
+**Summary (LLM):** Art. 50 status is not-satisfied with 1 medium-severity finding.
+
+**Auditor note (LLM):** Review the flagged finding to identify which AI-generated content or user interactions lack required transparency notifications.
 
 **Findings:** 1 medium
 
@@ -364,4 +404,4 @@ Out of scope at the declared AI risk tier. Findings stay listed; they do not cha
 
 ---
 
-LLM step: 1 call(s), 1 billed, model claude-haiku-4-5, mode claude-cli. Tokens: 18 in, 4807 out, 24580 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.
+LLM step: 1 call(s), 1 billed, model claude-haiku-4-5, mode claude-cli. Tokens: 18 in, 6410 out, 24845 cache read. Cost $0.0000. The LLM wrote prose only; every status and count above is deterministic.
